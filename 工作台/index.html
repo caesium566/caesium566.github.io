@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="app-version" content="1.0">
+<title>活动日历</title>
+<style>
+/* ===== 主题变量 ===== */
+:root {
+  --bg:#f7f7f5; --panel:#ffffff; --border:#e3e3df; --text:#1a1a1a; --muted:#8a8a86;
+  --hover:#efefec; --accent:#2563eb; --done:#c9c9c4; --today:#e03131;
+}
+[data-theme="dark"] {
+  --bg:#14161a; --panel:#1c1f26; --border:#2c313a; --text:#e6e8ec; --muted:#8b93a1;
+  --hover:#232733; --accent:#4f8cff; --done:#4a4f59; --today:#ff6b6b;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); transition:background .15s,color .15s;
+}
+
+/* ===== 顶栏 ===== */
+header {
+  height:52px; display:flex; align-items:center; gap:10px; padding:0 14px;
+  background:var(--panel); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:30;
+}
+.brand { font-size:16px; font-weight:700; white-space:nowrap; }
+.mnav { display:flex; align-items:center; gap:4px; }
+.mnav button {
+  border:1px solid var(--border); background:var(--bg); color:var(--text);
+  border-radius:8px; width:28px; height:28px; cursor:pointer; font-size:14px;
+}
+.mnav .ym { font-size:14px; font-weight:600; min-width:86px; text-align:center; font-variant-numeric:tabular-nums; }
+.hbtn {
+  border:1px solid var(--border); background:var(--bg); color:var(--text);
+  border-radius:8px; height:30px; padding:0 12px; cursor:pointer; font-size:13px; white-space:nowrap;
+}
+.hbtn:hover, .mnav button:hover { background:var(--hover); }
+.spacer { flex:1; }
+
+/* ===== 游戏筛选 ===== */
+.tabs { display:flex; gap:8px; padding:12px 14px 4px; overflow-x:auto; }
+.tab {
+  display:flex; align-items:center; gap:6px; border:1px solid var(--border);
+  background:var(--panel); color:var(--text); border-radius:16px;
+  padding:5px 14px; font-size:13px; cursor:pointer; white-space:nowrap;
+}
+.tab .dot { width:8px; height:8px; border-radius:50%; flex:none; }
+.tab.on { border-color:var(--text); font-weight:600; }
+
+/* ===== 甘特图 ===== */
+.gwrap { padding:10px 14px 30px; overflow-x:auto; }
+.gtable { min-width:720px; }
+.ghead { display:flex; border-bottom:1px solid var(--border); }
+.ghead .lead { width:300px; flex:none; }
+.gdays { flex:1; display:flex; position:relative; }
+.gday { width:26px; flex:none; font-size:10px; color:var(--muted); text-align:center; padding-bottom:4px; font-variant-numeric:tabular-nums; }
+.gday.wk { color:var(--text); font-weight:600; }
+
+.ggroup { margin-top:14px; }
+.gtitle { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; padding:4px 0 6px; }
+.gtitle .dot { width:9px; height:9px; border-radius:50%; }
+.gtitle .cnt { color:var(--muted); font-weight:400; font-size:11px; }
+.gtitle .clear { margin-left:auto; }
+
+.grow { display:flex; align-items:stretch; height:30px; }
+.grow .lead {
+  width:300px; flex:none; display:flex; align-items:center; gap:8px;
+  padding-right:10px; overflow:hidden;
+}
+.grow .lead input[type=checkbox] { width:15px; height:15px; flex:none; accent-color:var(--accent); cursor:pointer; }
+.grow .lead .t {
+  font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.grow .lead .d { color:var(--muted); font-size:11px; flex:none; font-variant-numeric:tabular-nums; }
+.gtrack { flex:1; position:relative; border-left:1px dashed var(--border); }
+.gtrack .cell { position:absolute; top:0; bottom:0; border-right:1px dashed var(--border); }
+.gtrack .bar {
+  position:absolute; top:4px; height:22px; border-radius:6px;
+  font-size:11px; line-height:22px; padding:0 8px; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; border:1px solid rgba(0,0,0,.15); cursor:default;
+}
+.gtrack .todayline { position:absolute; top:-40px; bottom:0; width:2px; background:var(--today); opacity:.8; }
+
+/* 完成态 */
+.grow.done .t { color:var(--done); text-decoration:line-through; }
+.grow.done .bar { opacity:.35; }
+
+.delx {
+  border:none; background:none; color:var(--muted); cursor:pointer; font-size:13px;
+  flex:none; padding:0 2px; display:none;
+}
+.grow:hover .delx { display:block; }
+.delx:hover { color:var(--today); }
+
+/* ===== 弹窗 ===== */
+.ov {
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+}
+.ov[hidden] { display:none; }
+.box {
+  background:var(--panel); color:var(--text); border:1px solid var(--border);
+  border-radius:12px; max-width:440px; width:100%; max-height:86vh; overflow:auto; padding:18px 20px;
+}
+.box h3 { font-size:16px; margin-bottom:14px; }
+.fg { margin-bottom:12px; }
+.fg label { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
+.fg input, .fg select {
+  width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px;
+  background:var(--bg); color:var(--text); font-size:14px; font:inherit;
+}
+.frow { display:flex; gap:10px; } .frow .fg { flex:1; }
+.bx-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+.btn {
+  border:1px solid var(--border); background:var(--bg); color:var(--text);
+  border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px; font:inherit;
+}
+.btn.pri { background:var(--text); color:var(--bg); border-color:var(--text); font-weight:600; }
+
+/* ===== 工具抽屉 ===== */
+#drawerF, #drawerT {
+  position:fixed; top:52px; right:0; bottom:0; width:280px; max-width:85vw;
+  background:var(--panel); border-left:1px solid var(--border); z-index:40;
+  padding:14px; overflow-y:auto; transform:translateX(100%); transition:transform .18s;
+}
+#drawerF.on, #drawerT.on { transform:none; }
+#drawerF h4, #drawerT h4 { font-size:12px; color:var(--muted); margin:4px 0 8px; }
+.dcard {
+  display:flex; align-items:center; gap:10px; padding:10px 12px; margin-bottom:6px;
+  border:1px solid var(--border); border-radius:10px; text-decoration:none; color:var(--text);
+}
+.dcard:hover { background:var(--hover); }
+.dcard .ic { font-size:18px; }
+.dcard .nm { font-size:13px; font-weight:600; }
+.dcard .ds { font-size:11px; color:var(--muted); margin-top:1px; }
+.dcard .vv { margin-left:auto; font-size:10px; color:var(--muted); border:1px solid var(--border); border-radius:5px; padding:0 5px; }
+#dmask { position:fixed; inset:0; z-index:35; background:transparent; }
+#dmask[hidden] { display:none; }
+.flt {
+  display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+  padding:9px 12px; margin-bottom:4px; border:1px solid var(--border);
+  border-radius:10px; background:var(--bg); color:var(--text);
+  cursor:pointer; font:inherit; font-size:13px;
+}
+.flt:hover { background:var(--hover); }
+.flt.on { border-color:var(--text); font-weight:600; }
+.flt .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+.flt .n { margin-left:auto; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+.empty { color:var(--muted); font-size:13px; padding:24px 0; text-align:center; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">📅 活动日历</span>
+  <div class="mnav">
+    <button id="mPrev" title="上月">‹</button>
+    <span class="ym" id="mLabel"></span>
+    <button id="mNext" title="下月">›</button>
+    <button class="hbtn" id="mToday">回到本月</button>
+  </div>
+  <span class="spacer"></span>
+  <button class="hbtn" id="btnAdd">＋ 添加记录</button>
+  <button class="hbtn" id="btnFilter">🏷 筛选</button>
+  <button class="hbtn" id="btnDrawer">🧰 工具</button>
+  <button class="hbtn" id="btnTheme" title="主题">🌙</button>
+</header>
+
+<div class="gwrap"><div class="gtable" id="gtable"></div></div>
+
+<!-- 添加记录 -->
+<div class="ov" id="ovAdd" hidden>
+  <div class="box">
+    <h3>添加记录</h3>
+    <div class="fg">
+      <label>游戏 / 项目</label>
+      <select id="fGame"></select>
+    </div>
+    <div class="fg" id="fgNewGame" hidden>
+      <label>新名称（会作为新分组加入筛选栏）</label>
+      <input id="fNewGame" placeholder="例如：怪物猎人：荒野">
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label>类型</label>
+        <select id="fType">
+          <option>活动</option><option>卡池</option><option>发售</option><option>其他</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>开始日期 *</label>
+        <input id="fStart" type="date">
+      </div>
+      <div class="fg">
+        <label>结束日期</label>
+        <input id="fEnd" type="date">
+      </div>
+    </div>
+    <div class="fg">
+      <label>标题 *</label>
+      <input id="fTitle" placeholder="例如：2.5 周年庆 / 或某个单机的发售日">
+    </div>
+    <div class="bx-actions">
+      <button class="btn" id="btnAddCancel">取消</button>
+      <button class="btn pri" id="btnAddOk">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工具抽屉 -->
+<div id="dmask" hidden></div>
+<aside id="drawerF">
+  <h4>游戏筛选</h4>
+  <div id="dGames"></div>
+</aside>
+<aside id="drawerT">
+  <h4>工具</h4>
+  <div id="dlist"></div>
+</aside>
+
+<script>
+/* ================= 配置 ================= */
+/* 代表色按游戏图标/主视觉取：方舟=青绿 终末地=黄绿 无期迷途=紫 P5X=红；不准就改 hex */
+var GAMES = [
+  { name:'明日方舟',           color:'#0fb5a3' },
+  { name:'明日方舟：终末地',   color:'#97bd10' },
+  { name:'无期迷途',           color:'#7048e8' },
+  { name:'女神异闻录：夜幕魅影', color:'#e60012' },
+  { name:'自定义',             color:'#868e96' }
+];
+var TOOLS = [
+  { name:'彩墨管理', icon:'🖋️', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/' },
+  { name:'铁巢重炮 · 狙击计算器', icon:'🎯', ver:'', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/' },
+  { name:'极简书房', icon:'📚', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/' }
+];
+/* 预置数据：格式示例，可改可删。监控接入后由 events.json 提供 */
+var BASE_EVENTS = [
+  { id:'demo-1', game:'明日方舟', type:'签到', title:'示例：旬旬签到（可删）', start:'2026-09-01', end:'2026-09-07' },
+  { id:'demo-2', game:'自定义',   type:'发售', title:'示例：某单机发售日（可删）', start:'2026-10-01', end:'' }
+];
+var LS_DONE = 'cal_done_v1', LS_CUSTOM = 'cal_custom_v1', LS_THEME = 'launcher_theme';
+var DW = 26; // 每日宽度 px
+
+/* ================= 状态 ================= */
+var cur = new Date(); cur.setDate(1);
+var filter = '全部';
+var doneMap = {}, customs = [];
+try { doneMap = JSON.parse(localStorage.getItem(LS_DONE) || '{}'); } catch(e){}
+try { customs = JSON.parse(localStorage.getItem(LS_CUSTOM) || '[]'); } catch(e){}
+
+function persistDone(){ try{ localStorage.setItem(LS_DONE, JSON.stringify(doneMap)); }catch(e){} }
+function persistCustom(){ try{ localStorage.setItem(LS_CUSTOM, JSON.stringify(customs)); }catch(e){} }
+function allEvents(){ return BASE_EVENTS.concat(customs); }
+function gameColor(g){
+  for (var i=0;i<GAMES.length;i++) if (GAMES[i].name===g) return GAMES[i].color;
+  return '#868e96';
+}
+function pad(n){ return (n<10?'0':'')+n; }
+function fmtD(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
+/* ================= 主题 ================= */
+var mq = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){
+  var t; try{ t = localStorage.getItem(LS_THEME); }catch(e){}
+  if (t!=='light' && t!=='dark') t = mq.matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('btnTheme').textContent = t==='dark' ? '☀️' : '🌙';
+}
+document.getElementById('btnTheme').onclick = function(){
+  var cur_t = document.documentElement.getAttribute('data-theme');
+  try{ localStorage.setItem(LS_THEME, cur_t==='dark'?'light':'dark'); }catch(e){}
+  applyTheme();
+};
+if (mq.addEventListener) mq.addEventListener('change', applyTheme);
+applyTheme();
+
+/* ================= 月份 ================= */
+function setMonth(y, m){ cur = new Date(y, m, 1); render(); }
+document.getElementById('mPrev').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth()-1); };
+document.getElementById('mNext').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth()+1); };
+document.getElementById('mToday').onclick = function(){ var n=new Date(); setMonth(n.getFullYear(), n.getMonth()); };
+
+/* ================= 渲染 ================= */
+function render(){
+  var y = cur.getFullYear(), m = cur.getMonth();
+  document.getElementById('mLabel').textContent = y + '年' + (m+1) + '月';
+  var dim = new Date(y, m+1, 0).getDate();
+  var monthStart = fmtD(cur), monthEnd = fmtD(new Date(y, m+1, 0));
+
+  /* 事件裁剪到本月 */
+  var evs = allEvents().filter(function(e){
+    var s = e.start <= monthEnd, en = (e.end || e.start) >= monthStart;
+    return s && en && (filter==='全部' || e.game===filter);
+  });
+
+  /* 分组 */
+  var groups = [];
+  function ensure(g){ for (var i=0;i<groups.length;i++) if(groups[i].name===g) return groups[i];
+    var grp = { name:g, items:[] }; groups.push(grp); return grp; }
+  evs.forEach(function(e){ ensure(e.game).items.push(e); });
+  groups.forEach(function(g){ g.items.sort(function(a,b){ return a.start<b.start?-1:1; }); });
+
+  /* 头部日期行 */
+  var h = '<div class="ghead"><div class="lead"></div><div class="gdays">';
+  var wd = ['日','一','二','三','四','五','六'];
+  for (var d=1; d<=dim; d++){
+    var w = new Date(y, m, d).getDay();
+    h += '<div class="gday' + ((w===0||w===6) ? ' wk':'') + '" title="周'+wd[w]+'">'+d+'</div>';
+  }
+  h += '</div></div>';
+
+  /* 今天红线位置 */
+  var now = new Date();
+  var todayIdx = (now.getFullYear()===y && now.getMonth()===m) ? now.getDate() : 0;
+
+  /* 分组行 */
+  groups.forEach(function(g){
+    var c = gameColor(g.name);
+    h += '<div class="ggroup"><div class="gtitle"><span class="dot" style="background:'+c+'"></span>'
+       + esc(g.name) + '<span class="cnt">'+ g.items.length +' 项</span></div>';
+    g.items.forEach(function(e){
+      var segS = e.start < monthStart ? monthStart : e.start;
+      var segE = (e.end || e.start) > monthEnd ? monthEnd : (e.end || e.start);
+      var li = new Date(segS).getDate() - 1;
+      var ri = new Date(segE).getDate() - 1;
+      var isDone = !!doneMap[e.id];
+      h += '<div class="grow'+(isDone?' done':'')+'" data-eid="'+e.id+'">'
+        + '<div class="lead"><input type="checkbox" data-eid="'+e.id+'"'+(isDone?' checked':'')+'>'
+        + '<span class="t" title="'+esc(e.title)+'">'+esc(e.title)+'</span>'
+        + '<span class="d">'+fmtShort(e.start)+'~'+fmtShort(e.end||e.start)+'</span>'
+        + (e.custom ? '<button class="delx" data-del="'+e.id+'" title="删除">×</button>' : '')
+        + '</div><div class="gtrack">';
+      for (var k=0;k<dim;k++) h += '<div class="cell" style="left:'+(k*DW)+'px;width:'+DW+'px"></div>';
+      if (todayIdx) h += '<div class="todayline" style="left:'+(todayIdx*DW-1)+'px"></div>';
+      h += '<div class="bar" style="left:'+(li*DW+2)+'px;width:'+((ri-li+1)*DW-4)+'px;background:'+c+'22;color:'+c+';border-color:'+c+'55">'
+         + esc(e.type) + ' · ' + esc(e.title) + '</div>';
+      h += '</div></div>';
+    });
+    h += '</div>';
+  });
+
+  if (!groups.length) h += '<div class="empty">本月没有记录，点右上角「＋ 添加记录」</div>';
+  document.getElementById('gtable').innerHTML = h;
+
+  /* 事件绑定 */
+  var rows = document.querySelectorAll('#gtable .grow');
+  for (var i=0;i<rows.length;i++){
+    rows[i].querySelector('input[type=checkbox]').addEventListener('change', function(){
+      doneMap[this.dataset.eid] = this.checked;
+      if (!this.checked) delete doneMap[this.dataset.eid];
+      persistDone(); render();
+    });
+  }
+  var dels = document.querySelectorAll('#gtable .delx');
+  for (var j=0;j<dels.length;j++){
+    dels[j].addEventListener('click', function(ev){
+      ev.stopPropagation();
+      if (!confirm('删除这条记录？')) return;
+      customs = customs.filter(function(x){ return x.id !== this.dataset.del; }, this);
+      persistCustom(); render();
+    });
+  }
+
+  renderDrawer();
+}
+
+function fmtShort(s){ return s ? s.slice(5).replace('-','/') : ''; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];}); }
+
+/* ================= 抽屉：游戏筛选 + 工具 ================= */
+function renderDrawer(){
+  var names = ['全部'];
+  GAMES.forEach(function(g){ names.push(g.name); });
+  customs.forEach(function(e){ if (names.indexOf(e.game)<0) names.push(e.game); });
+  var h = '';
+  names.forEach(function(n){
+    var c = n==='全部' ? 'var(--muted)' : gameColor(n);
+    var cnt = n==='全部' ? allEvents().length
+            : allEvents().filter(function(e){ return e.game===n; }).length;
+    h += '<button class="flt'+(filter===n?' on':'')+'" data-g="'+esc(n)+'">'
+       + '<span class="dot" style="background:'+c+'"></span>'+esc(n)
+       + '<span class="n">'+cnt+'</span></button>';
+  });
+  document.getElementById('dGames').innerHTML = h;
+  var fs = document.querySelectorAll('#dGames .flt');
+  for (var i=0;i<fs.length;i++){
+    fs[i].onclick = function(){ filter = this.dataset.g; render(); toggleF(false); };
+  }
+}
+
+/* ================= 添加记录 ================= */
+var ovAdd = document.getElementById('ovAdd');
+function fillGameSelect(){
+  var sel = document.getElementById('fGame');
+  var h = '';
+  GAMES.forEach(function(g){ h += '<option>'+esc(g.name)+'</option>'; });
+  h += '<option value="__new__">＋ 新游戏 / 项目</option>';
+  sel.innerHTML = h;
+  document.getElementById('fgNewGame').hidden = true;
+}
+fillGameSelect();
+document.getElementById('fGame').addEventListener('change', function(){
+  document.getElementById('fgNewGame').hidden = this.value !== '__new__';
+});
+document.getElementById('btnAdd').onclick = function(){
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fStart').value = fmtD(new Date());
+  document.getElementById('fEnd').value = '';
+  ovAdd.hidden = false;
+};
+document.getElementById('btnAddCancel').onclick = function(){ ovAdd.hidden = true; };
+ovAdd.addEventListener('click', function(e){ if (e.target===ovAdd) ovAdd.hidden = true; });
+document.getElementById('btnAddOk').onclick = function(){
+  var g = document.getElementById('fGame').value;
+  if (g === '__new__'){
+    g = document.getElementById('fNewGame').value.trim();
+    if (!g){ alert('请输入新名称'); return; }
+    if (!GAMES.some(function(x){return x.name===g;})) GAMES.push({name:g, color:'#868e96'});
+  }
+  var title = document.getElementById('fTitle').value.trim();
+  var s = document.getElementById('fStart').value;
+  var en = document.getElementById('fEnd').value;
+  if (!title){ alert('标题必填'); return; }
+  if (!s){ alert('开始日期必填'); return; }
+  if (en && en < s){ alert('结束日期早于开始日期'); return; }
+  customs.push({
+    id: 'c' + Date.now().toString(36),
+    game: g, type: document.getElementById('fType').value,
+    title: title, start: s, end: en, custom: true
+  });
+  persistCustom();
+  ovAdd.hidden = true;
+  render();
+};
+
+/* ================= 工具抽屉 ================= */
+var dF = document.getElementById('drawerF'), dT = document.getElementById('drawerT'), dmask = document.getElementById('dmask');
+(function(){
+  var h = '';
+  TOOLS.forEach(function(t){
+    h += '<a class="dcard" href="'+t.url+'"><span class="ic">'+t.icon+'</span>'
+       + '<span><span class="nm">'+esc(t.name)+'</span><br><span class="ds">'+esc(t.desc)+'</span></span>'
+       + '<span class="vv">'+(t.ver?'v'+t.ver:'未标注')+'</span></a>';
+  });
+  document.getElementById('dlist').innerHTML = h;
+})();
+function toggleF(on){ dF.classList.toggle('on', on); if (on) dT.classList.remove('on'); refreshMask(); }
+function toggleT(on){ dT.classList.toggle('on', on); if (on) dF.classList.remove('on'); refreshMask(); }
+function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on')); }
+document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
+document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
+dmask.onclick = function(){ toggleF(false); toggleT(false); };
+
+render();
+</script>
+</body>
+</html>
