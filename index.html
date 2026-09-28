@@ -170,8 +170,7 @@ header {
     <button id="mPrev" title="上月">‹</button>
     <span class="ym" id="mLabel"></span>
     <button id="mNext" title="下月">›</button>
-    <button class="hbtn" id="mToday">回到本月</button>
-  </div>
+      </div>
   <span class="spacer"></span>
   <button class="hbtn" id="btnAdd">＋ 添加记录</button>
   <button class="hbtn" id="btnFilter">🏷 筛选</button>
@@ -291,7 +290,6 @@ applyTheme();
 function setMonth(y, m){ cur = new Date(y, m, 1); render(); }
 document.getElementById('mPrev').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth()-1); };
 document.getElementById('mNext').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth()+1); };
-document.getElementById('mToday').onclick = function(){ var n=new Date(); setMonth(n.getFullYear(), n.getMonth()); };
 
 /* ================= 渲染 ================= */
 function render(){
