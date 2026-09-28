@@ -23,7 +23,7 @@ RSS_HUBS = [
 
 KW_GACHA  = re.compile(r'卡池|寻访|追踪')
 KW_EVENT  = re.compile(r'活动|SideStory|故事集|危机合约|赛季|玩法')
-RANGE_RE  = re.compile(r'(\d{1,2})\s*月\s*(\d{1,2})\s*日[^0-9年月日]{0,16}?[~～—–\-至到]{1,3}\s*(?:(\d{1,2})\s*月\s*)?(\d{1,2})\s*日')
+RANGE_RE  = re.compile(r'(\d{1,2})\s*月\s*(\d{1,2})\s*日[^月]{0,24}?[~～—–\-至到]{1,3}\s*(?:(\d{1,2})\s*月\s*)?(\d{1,2})\s*日')
 SINGLE_RE = re.compile(r'(\d{1,2})\s*月\s*(\d{1,2})\s*日')
 TAG_RE    = re.compile(r'<[^>]+>')
 YEAR = datetime.date.today().year
@@ -63,7 +63,11 @@ def fetch_rss(uid):
 
 def classify(text):
     if KW_GACHA.search(text): return '卡池'
-    if KW_EVENT.search(text): return '活动'
+    if KW_EVENT.search(text):
+        # 签到/每日类不算活动（除非带强活动词）
+        if re.search(r'签到|每日登录|打卡', text) and not re.search(r'SideStory|故事集|危机合约|赛季|主题活动', text):
+            return None
+        return '活动'
     return None
 
 def extract(text, title, guid, game):
@@ -122,7 +126,7 @@ def main():
             title = clean(it.findtext('title'))[:26]
             desc  = clean(it.findtext('description'))
             guid  = it.findtext('guid') or it.findtext('link') or ''
-            got.extend extract if False else extract(desc, title, guid, g['name'])
+            got.extend(extract(desc, title, guid, g['name']))
         print('  extracted %d events' % len(got))
         events.extend(got)
 
