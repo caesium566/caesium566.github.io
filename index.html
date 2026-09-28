@@ -23,12 +23,13 @@ body {
 
 /* ===== 顶栏 ===== */
 header {
-  height:52px; display:flex; align-items:center; gap:10px; padding:0 14px;
+  height:52px; display:flex; align-items:center; gap:8px; padding:0 14px;
   background:var(--panel); border-bottom:1px solid var(--border);
-  position:sticky; top:0; z-index:30;
+  position:sticky; top:0; z-index:30; overflow-x:auto;
 }
+.brand { flex:none; }
 .brand { font-size:16px; font-weight:700; white-space:nowrap; }
-.mnav { display:flex; align-items:center; gap:4px; }
+.mnav { display:flex; align-items:center; gap:4px; flex:none; }
 .mnav button {
   border:1px solid var(--border); background:var(--bg); color:var(--text);
   border-radius:8px; width:28px; height:28px; cursor:pointer; font-size:14px;
@@ -37,6 +38,7 @@ header {
 .hbtn {
   border:1px solid var(--border); background:var(--bg); color:var(--text);
   border-radius:8px; height:30px; padding:0 12px; cursor:pointer; font-size:13px; white-space:nowrap;
+  flex:none;
 }
 .hbtn:hover, .mnav button:hover { background:var(--hover); }
 .spacer { flex:1; }
@@ -241,7 +243,7 @@ var GAMES = [
 ];
 var TOOLS = [
   { name:'彩墨管理', icon:'🖋️', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/' },
-  { name:'铁巢重炮 · 狙击计算器', icon:'🎯', ver:'', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/' },
+  { name:'铁巢重炮 · 狙击计算器', icon:'🎯', ver:'1.0', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/' },
   { name:'极简书房', icon:'📚', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/' }
 ];
 /* 预置数据：格式示例，可改可删。监控接入后由 events.json 提供 */
