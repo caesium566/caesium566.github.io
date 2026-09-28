@@ -40,6 +40,11 @@ header {
 }
 .hbtn:hover, .mnav button:hover { background:var(--hover); }
 .spacer { flex:1; }
+.ver {
+  font-size: 11px; font-weight: 400; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 1px 7px; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
 
 /* ===== 游戏筛选 ===== */
 .tabs { display:flex; gap:8px; padding:12px 14px 4px; overflow-x:auto; }
@@ -158,7 +163,7 @@ header {
 <body>
 
 <header>
-  <span class="brand">📅 活动日历</span>
+  <span class="brand">📅 活动日历 <span class="ver">v1.0</span></span>
   <div class="mnav">
     <button id="mPrev" title="上月">‹</button>
     <span class="ym" id="mLabel"></span>
