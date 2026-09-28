@@ -15,10 +15,13 @@ GAMES = [
     {'name': '女神异闻录：夜幕魅影', 'uid': '1606210274'},
 ]
 RSS_HUBS = [
-    'https://rsshub.app',
     'https://rsshub.rssforever.com',
+    'https://rsshub.woodland.cafe',
     'https://rsshub.ktachibana.party',
     'https://rsshub.pseudoyu.com',
+    'https://rsshub.dle.ink',
+    'https://rsshub.xiaob8.com',
+    'https://rsshub.app',
 ]
 
 KW_GACHA  = re.compile(r'卡池|寻访|追踪')
