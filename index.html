@@ -256,13 +256,18 @@ var DW = 26; // 每日宽度 px
 /* ================= 状态 ================= */
 var cur = new Date(); cur.setDate(1);
 var filter = '全部';
-var doneMap = {}, customs = [];
+var doneMap = {}, customs = [], monitored = [];
 try { doneMap = JSON.parse(localStorage.getItem(LS_DONE) || '{}'); } catch(e){}
 try { customs = JSON.parse(localStorage.getItem(LS_CUSTOM) || '[]'); } catch(e){}
+/* 监控数据：仓库 events.json（定时任务生成；404/失败静默忽略，不影响本地功能） */
+fetch('./events.json?t=' + Date.now())
+  .then(function(r){ return r.ok ? r.json() : null; })
+  .then(function(d){ if (d && Array.isArray(d.events)) { monitored = d.events; render(); } })
+  .catch(function(){});
 
 function persistDone(){ try{ localStorage.setItem(LS_DONE, JSON.stringify(doneMap)); }catch(e){} }
 function persistCustom(){ try{ localStorage.setItem(LS_CUSTOM, JSON.stringify(customs)); }catch(e){} }
-function allEvents(){ return BASE_EVENTS.concat(customs); }
+function allEvents(){ return BASE_EVENTS.concat(monitored).concat(customs); }
 function gameColor(g){
   for (var i=0;i<GAMES.length;i++) if (GAMES[i].name===g) return GAMES[i].color;
   return '#868e96';
