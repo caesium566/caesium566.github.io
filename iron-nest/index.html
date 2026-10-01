@@ -36,6 +36,10 @@ input:focus{outline:none;border-color:var(--tx3)}
 .empty{font-size:13px;color:var(--tx3);padding:8px 0}
 .hl{color:var(--tx);font-weight:600;font-size:14px;padding:1px 6px;border-radius:6px;background:#12151a;border:1px solid var(--line)}
 .hint{font-size:12px;color:var(--tx3);margin-top:10px;line-height:1.7}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.segbtn{flex:1;padding:8px 2px;background:transparent;border:none;color:var(--tx2);cursor:pointer;font-size:13px}
+.segbtn.on{background:var(--tx);color:#14171c;font-weight:600}
+.hint2{font-size:11px;color:var(--tx3);margin-top:5px;min-height:14px}
 table{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
 td,th{border:1px solid var(--line);padding:4px 6px;text-align:center;color:var(--tx2)}
 th{color:var(--tx)}
@@ -53,12 +57,12 @@ tbody td{color:var(--tx)}
     <div><label>目标编号</label><input id="fId" placeholder="如 A-07"></div>
     <div><label>距离（km）</label><input id="fDist" type="number" step="any" placeholder="3 ~ 20"></div>
     <div><label>方向角</label><input id="fDir" type="number" step="any" placeholder="0"></div>
-    <div><label>装药量（1~6）</label><input id="fChg" type="number" step="1" min="1" max="6" placeholder="1"></div>
+    <div><label>装药量</label><div class="seg" id="segChg"><button class="segbtn on" data-v="min">最小装药</button><button class="segbtn" data-v="max">最大装药</button></div><div class="hint2" id="chgHint"></div></div>
     <div><label>目标到达时刻（选填）</label><input id="fArr" placeholder="HH:MM:SS 如 10:50:17"></div>
   </div>
   <div class="err" id="err"></div>
   <div class="out" id="out" style="display:none">
-    <div class="item"><div class="l">炮口仰角</div><div class="v" id="oElev">—</div></div>
+    <div class="item"><div class="l">装药量</div><div class="v" id="oChg" style="font-size:24px">—</div></div><div class="item"><div class="l">炮口仰角</div><div class="v" id="oElev">—</div></div>
     <div class="item"><div class="l">飞行时间</div><div class="v" id="oTime">—</div></div>
     <div class="item" id="oLaunchWrap" style="display:none"><div class="l">发射时刻</div><div class="v" id="oLaunch" style="color:var(--amber)">—</div></div>
     <span style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="btnReset">清除参数</button><button class="btn primary" id="btnSave">保存这条</button></span>
@@ -74,7 +78,7 @@ tbody td{color:var(--tx)}
 <div class="panel">
   <div class="sec">速查表（飞行时间，秒）</div>
   <div style="overflow-x:auto"><table id="tbl"></table></div>
-  <div class="hint">各装药最大射程：药1 → 5km｜药2 → 10km｜药3 → 15km｜药4/5/6 → 20km。表格外距离按相邻两点线性插值，仰角恒等于 距离×12÷装药量。</div>
+  <div class="hint">各装药最大射程：药1 → 5km｜药2 → 10km｜药3 → 15km｜药4/5/6 → 20km。表格外距离按相邻两点线性插值，仰角恒等于 距离×12÷装药量。最小装药 = ⌈距离 ÷ 5⌉（保证仰角不超过 60°），可一键切最大装药 6 号。</div>
 </div>
 
 <script>
@@ -111,26 +115,29 @@ function $(id){return document.getElementById(id)}
 var recs=[];try{recs=JSON.parse(localStorage.getItem('artRec2')||'[]')}catch(e){}
 function persist(){try{localStorage.setItem('artRec2',JSON.stringify(recs))}catch(e){}}
 function num(id){var v=parseFloat($(id).value);return isNaN(v)?null:v}
+var chgMode='min';
+function minChg(r){return Math.min(6,Math.max(1,Math.ceil(r/5)))}
 function calc(){
-  var r=num('fDist'),c=num('fChg'),err='';
-  if(r===null||c===null)err='';
-  else if(c<1||c>6||c%1!==0)err='装药量必须是 1~6 的整数';
-  else if(r<3)err='最小射程 3km';
-  else if(r>MAXR[c-1])err='装药量 '+c+' 的最大射程为 '+MAXR[c-1]+'km，超出表格范围';
-  var t=(!err&&r!==null&&c!==null)?flightTime(c,r):null;
-  var elev=(r!==null&&c!==null&&c>0)?r*12/c:null;
+  var r=num('fDist'),err='';
+  if(r!==null&&r<3)err='最小射程 3km';
+  else if(r!==null&&r>20)err='最大射程 20km';
+  var c=(r!==null&&!err)?(chgMode==='max'?6:minChg(r)):null;
+  var t=(c!==null)?flightTime(c,r):null;
+  var elev=(c!==null)?r*12/c:null;
   var arr=parseT($('fArr').value);
   $('err').style.display=err?'block':'none';$('err').textContent=err;
+  $('chgHint').textContent=(r!==null&&!err)?('距离 '+r+' km → 可打到的最小装药 '+minChg(r)+'，当前用 '+c+' 号药'+(chgMode==='min'?'（自动取最小）':'（固定最大）')):'';
   var show=(t!==null&&elev!==null);
   $('out').style.display=show?'flex':'none';
   if(!show)return null;
+  $('oChg').innerHTML=c+'<small> 号</small>';
   $('oElev').innerHTML=elev.toFixed(2)+'<small>°</small>';
   $('oTime').innerHTML=t+'<small> 秒</small>';
   if(arr!==null){$('oLaunchWrap').style.display='block';$('oLaunch').textContent=fmtT(arr-t)}
   else $('oLaunchWrap').style.display='none';
   return{id:$('fId').value,r:r,c:c,dir:num('fDir'),elev:elev,t:t,arrS:arr!==null?fmtT(arr):null,launch:arr!==null?fmtT(arr-t):null};
 }
-['fId','fDist','fDir','fChg','fArr'].forEach(function(id){$(id).addEventListener('input',calc)});
+['fId','fDist','fDir','fArr'].forEach(function(id){$(id).addEventListener('input',calc)});document.querySelectorAll('#segChg .segbtn').forEach(function(b){b.addEventListener('click',function(){chgMode=b.dataset.v;document.querySelectorAll('#segChg .segbtn').forEach(function(x){x.classList.toggle('on',x===b)});calc();});});
 $('btnSave').addEventListener('click',function(){var o=calc();if(!o)return;recs.push(o);persist();render()});
 $('btnReset').addEventListener('click',function(){
   ['fId','fDist','fDir','fChg','fArr'].forEach(function(id){$(id).value=''});
