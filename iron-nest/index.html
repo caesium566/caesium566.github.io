@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>铁巢重炮 · 狙击计算器</title>
-<meta name="app-version" content="1.0">
 <style>
 :root{--bg:#14171c;--panel:#1c2129;--line:#2c333d;--tx:#e6e9ee;--tx2:#9aa4b0;--tx3:#5c6672;--red:#e5484d;--amber:#f5a524;--green:#30a46c}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -35,12 +34,14 @@ input:focus{outline:none;border-color:var(--tx3)}
 .acts{display:flex;gap:6px}
 .acts button{padding:3px 10px;font-size:12px;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--tx3);cursor:pointer}
 .empty{font-size:13px;color:var(--tx3);padding:8px 0}
+.hl{color:var(--tx);font-weight:600;font-size:14px;padding:1px 6px;border-radius:6px;background:#12151a;border:1px solid var(--line)}
 .hint{font-size:12px;color:var(--tx3);margin-top:10px;line-height:1.7}
 table{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
 td,th{border:1px solid var(--line);padding:4px 6px;text-align:center;color:var(--tx2)}
 th{color:var(--tx)}
 tbody td{color:var(--tx)}
 </style>
+<base target="_blank">
 </head>
 <body>
 <h1>铁巢重炮 · 狙击计算器</h1>
@@ -60,7 +61,7 @@ tbody td{color:var(--tx)}
     <div class="item"><div class="l">炮口仰角</div><div class="v" id="oElev">—</div></div>
     <div class="item"><div class="l">飞行时间</div><div class="v" id="oTime">—</div></div>
     <div class="item" id="oLaunchWrap" style="display:none"><div class="l">发射时刻</div><div class="v" id="oLaunch" style="color:var(--amber)">—</div></div>
-    <button class="btn primary" id="btnSave" style="margin-left:auto">保存这条</button>
+    <span style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="btnReset">清除参数</button><button class="btn primary" id="btnSave">保存这条</button></span>
   </div>
 </div>
 
@@ -131,6 +132,10 @@ function calc(){
 }
 ['fId','fDist','fDir','fChg','fArr'].forEach(function(id){$(id).addEventListener('input',calc)});
 $('btnSave').addEventListener('click',function(){var o=calc();if(!o)return;recs.push(o);persist();render()});
+$('btnReset').addEventListener('click',function(){
+  ['fId','fDist','fDir','fChg','fArr'].forEach(function(id){$(id).value=''});
+  calc();
+});
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
 function render(){
   var box=$('list');box.innerHTML='';
@@ -139,7 +144,7 @@ function render(){
   recs.forEach(function(r,i){
     var d=document.createElement('div');d.className='row';
     d.innerHTML='<span class="id">'+esc(r.id||'—')+'</span>'
-      +'<span class="dim">药 '+r.c+' · '+r.r+'km · 方向角 '+(r.dir==null?'—':r.dir)+' · 仰角 '+r.elev.toFixed(2)+'° · 飞行 '+r.t+'s</span>'
+      +'<span class="dim">药 '+r.c+' · '+r.r+'km · </span>'+'<b class="hl">方向角 '+(r.dir==null?'—':r.dir)+'</b>'+'<span class="dim"> · </span>'+'<b class="hl">仰角 '+r.elev.toFixed(2)+'°</b>'+'<span class="dim"> · 飞行 '+r.t+'s</span>'
       +(r.arrS?'<span class="dim">到达 '+r.arrS+' → <b style="color:var(--amber)">'+r.launch+'</b> 发射</span>':'')
       +'<span class="cd" data-i="'+i+'"></span>'
       +'<span class="acts"><button data-a="copy">复制</button><button data-a="del">删除</button></span>';
