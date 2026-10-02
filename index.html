@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="1.0">
-<title>活动日历</title>
+<meta name="app-version" content="2.0">
+<title>工作台</title>
 <style>
 /* ===== 主题变量 ===== */
 :root {
@@ -207,7 +207,7 @@ header {
 <body>
 
 <header>
-  <span class="brand">📅 活动日历 <span class="ver">v1.0</span></span>
+  <span class="brand">🧰 工作台 <span class="ver">v2.0</span></span>
   <div class="mnav">
     <button id="mPrev" title="上月">‹</button>
     <span class="ym" id="mLabel"></span>
@@ -215,6 +215,7 @@ header {
       </div>
   <span class="spacer"></span>
   <button class="hbtn" id="btnAdd">＋ 添加记录</button>
+  <button class="hbtn" id="btnImport">⬆ 导入</button>
   <button class="hbtn" id="btnFilter">🏷 筛选</button>
   <button class="hbtn" id="btnDrawer">🧰 工具</button>
   <button class="hbtn" id="btnBudget">💰 预算</button>
@@ -274,6 +275,45 @@ header {
   <div id="dlist"></div>
 </aside>
 
+<!-- 导入活动数据 -->
+<div class="ov" id="ovImport" hidden>
+  <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
+    <h3>⬆ 导入活动数据</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.7">
+      粘贴 events.json（活动）或 budget.json（预算）的内容，或选择文件，自动识别。<br>
+      活动按 id 合并：同 id 更新、新 id 追加，<b>不删除任何已有数据</b>；预算整体覆盖本地。<br>
+      删活动条目用日历里每行悬停的 ×。
+    </div>
+    <textarea id="impTa" class="b-ta" style="min-height:150px" placeholder='{"events":[{"id":"ak-01","game":"明日方舟","type":"活动","title":"…","start":"2026-10-01","end":"2026-10-15"}]}'></textarea>
+    <div style="margin-top:8px"><input type="file" id="impFile" accept=".json" style="font-size:12px;color:var(--muted)"></div>
+    <div class="bx-actions">
+      <button class="btn" id="impCancel">取消</button>
+      <button class="btn pri" id="impOk">导入</button>
+    </div>
+    <div class="b-msg" id="impMsg"></div>
+  </div>
+</div>
+
+<!-- 同步设置 -->
+<div class="ov" id="ovGh" hidden>
+  <div class="box" style="max-width:460px" onclick="event.stopPropagation()">
+    <h3>数据同步（GitHub）</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+      全部数据存 <b>Private 仓库</b> 的 data.json，Token 只保存在本机浏览器，别人看不到你的数据。<br>
+      Token 获取：GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → 勾 repo → 生成后复制。
+    </div>
+    <div class="fg"><label>GitHub 用户名</label><input id="ghUser" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+    <div class="fg"><label>数据仓库名（Private，先建好）</label><input id="ghRepo" class="b-ta" style="min-height:0;padding:8px 10px" value="cal-data"></div>
+    <div class="fg"><label>Token（classic，勾 repo）</label><input id="ghToken" type="password" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+    <div class="fg"><span id="ghStatus" style="font-size:12px;color:var(--muted)"></span></div>
+    <div class="bx-actions">
+      <button class="btn" id="ghBtnOff">断开</button>
+      <button class="btn" id="ghBtnNow">立即同步</button>
+      <button class="btn pri" id="ghBtnSave">保存并同步</button>
+    </div>
+  </div>
+</div>
+
 <!-- 预算看板 -->
 <div class="ov" id="bOv" hidden>
   <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
@@ -284,10 +324,12 @@ header {
     <div class="b-sec">已锁定 / 预留</div>
     <div id="bLock"></div>
     <div class="bx-actions">
-      <button class="btn" id="bBtnExport">导出 JSON</button>
+      <button class="btn" id="bBtnSyncSet">同步设置</button>
+      <button class="btn" id="bBtnSyncNow">立即同步</button>
       <button class="btn" id="bBtnReset">重置数据</button>
-      <button class="btn pri" id="bBtnEdit">更新预算</button>
+      <button class="btn pri" id="bBtnEdit">更新数据</button>
     </div>
+    <div class="b-msg" id="syncLine" style="text-align:right;margin-top:6px"></div>
   </div>
 </div>
 
@@ -334,18 +376,37 @@ var DW = 26; // 每日宽度 px
 /* ================= 状态 ================= */
 var cur = new Date(); cur.setDate(1);
 var filter = '全部';
-var doneMap = {}, customs = [], monitored = [];
+var doneMap = {}, customs = [], monitored = [], imported = [], hiddenMap = {};
 try { doneMap = JSON.parse(localStorage.getItem(LS_DONE) || '{}'); } catch(e){}
 try { customs = JSON.parse(localStorage.getItem(LS_CUSTOM) || '[]'); } catch(e){}
-/* 监控数据：仓库 events.json（定时任务生成；404/失败静默忽略，不影响本地功能） */
+try { imported = JSON.parse(localStorage.getItem('cal_import_v1') || '[]'); } catch(e){}
+try { hiddenMap = JSON.parse(localStorage.getItem('cal_hidden_v1') || '{}'); } catch(e){}
+function persistImported(){ try{ localStorage.setItem('cal_import_v1', JSON.stringify(imported)); }catch(e){} }
+function persistHidden(){ try{ localStorage.setItem('cal_hidden_v1', JSON.stringify(hiddenMap)); }catch(e){} }
+/* 公开 events.json：活动初始数据 + 可选全量字段（存在什么覆盖什么） */
 fetch('./events.json?t=' + Date.now())
   .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(d){ if (d && Array.isArray(d.events)) { monitored = d.events; render(); } })
+  .then(function(d){
+    if (!d) return;
+    if (Array.isArray(d.events)) { monitored = d.events; }
+    if (Array.isArray(d.customs)) { customs = d.customs; persistCustom(); }
+    if (d.done) { doneMap = d.done; persistDone(); }
+    if (d.hidden) { hiddenMap = d.hidden; persistHidden(); }
+    if (d.budget && Array.isArray(d.budget.categories)) {
+      try { localStorage.setItem('cal_budget_v1', JSON.stringify(d.budget)); } catch(e) {}
+    }
+    render(); bRenderWeekStrip();
+  })
   .catch(function(){});
 
 function persistDone(){ try{ localStorage.setItem(LS_DONE, JSON.stringify(doneMap)); }catch(e){} }
 function persistCustom(){ try{ localStorage.setItem(LS_CUSTOM, JSON.stringify(customs)); }catch(e){} }
-function allEvents(){ return BASE_EVENTS.concat(monitored).concat(customs); }
+function allEvents(){
+  var map = {};
+  monitored.concat(imported).forEach(function(e){ map[e.id] = e; });
+  return BASE_EVENTS.concat(Object.keys(map).map(function(k){ return map[k]; })).concat(customs)
+    .filter(function(e){ return !hiddenMap[e.id]; });
+}
 function gameColor(g){
   for (var i=0;i<GAMES.length;i++) if (GAMES[i].name===g) return GAMES[i].color;
   return '#868e96';
@@ -422,7 +483,7 @@ function render(){
         + '<div class="lead"><input type="checkbox" data-eid="'+e.id+'"'+(isDone?' checked':'')+'>'
         + '<span class="t" title="'+esc(e.title)+'">'+esc(e.title)+'</span>'
         + '<span class="d">'+fmtShort(e.start)+'~'+fmtShort(e.end||e.start)+'</span>'
-        + (e.custom ? '<button class="delx" data-del="'+e.id+'" title="删除">×</button>' : '')
+        + '<button class="delx" data-del="'+e.id+'" title="删除">×</button>'
         + '</div><div class="gtrack">';
       for (var k=0;k<dim;k++) h += '<div class="cell" style="left:'+(k*DW)+'px;width:'+DW+'px"></div>';
       if (todayIdx) h += '<div class="todayline" style="left:'+(todayIdx*DW-1)+'px"></div>';
@@ -449,9 +510,17 @@ function render(){
   for (var j=0;j<dels.length;j++){
     dels[j].addEventListener('click', function(ev){
       ev.stopPropagation();
-      if (!confirm('删除这条记录？')) return;
-      customs = customs.filter(function(x){ return x.id !== this.dataset.del; }, this);
-      persistCustom(); render();
+      if (!confirm('删除/隐藏这条记录？')) return;
+      var id = this.dataset.del;
+      var isCustom = customs.some(function(x){ return x.id === id; });
+      if (isCustom) {
+        customs = customs.filter(function(x){ return x.id !== id; });
+        persistCustom();
+      } else {
+        hiddenMap[id] = true;
+        persistHidden();
+      }
+      render();
     });
   }
 
@@ -544,6 +613,59 @@ function toggleT(on){ dT.classList.toggle('on', on); if (on) dF.classList.remove
 function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on')); }
 document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
 document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
+
+/* ---------- 导入活动数据 ---------- */
+var ovImport = document.getElementById('ovImport');
+function doImportText(text){
+  var d;
+  try { d = JSON.parse(text); } catch(e) { return { ok:false, msg:'JSON 解析失败：' + e.message }; }
+  var msgs = [];
+  var evs = Array.isArray(d) ? d : d.events;
+  if (Array.isArray(evs)) {
+    var map = {}, ok = 0, bad = 0;
+    imported.forEach(function(e){ map[e.id] = e; });
+    evs.forEach(function(e){
+      if (e && e.id && e.game && e.type && e.title && e.start) { map[e.id] = e; ok++; }
+      else bad++;
+    });
+    imported = Object.keys(map).map(function(k){ return map[k]; });
+    persistImported();
+    msgs.push('活动合并 ' + ok + ' 条' + (bad ? '，跳过 ' + bad + ' 条无效' : ''));
+  }
+  if (Array.isArray(d.customs)) {
+    var cmap = {};
+    customs.forEach(function(e){ cmap[e.id] = e; });
+    d.customs.forEach(function(e){ if (e && e.id) cmap[e.id] = e; });
+    customs = Object.keys(cmap).map(function(k){ return cmap[k]; });
+    persistCustom();
+    msgs.push('自定义合并 ' + d.customs.length + ' 条');
+  }
+  if (d.done) { for (var k in d.done) doneMap[k] = d.done[k]; persistDone(); }
+  if (d.hidden) { for (var k2 in d.hidden) hiddenMap[k2] = d.hidden[k2]; persistHidden(); }
+  if (d.budget && Array.isArray(d.budget.categories)) {
+    try { localStorage.setItem('cal_budget_v1', JSON.stringify(d.budget)); } catch(e) {}
+    msgs.push('预算已覆盖');
+  }
+  if (!msgs.length) return { ok:false, msg:'找不到可识别的数据（events / customs / budget）' };
+  return { ok:true, msg:msgs.join('；') };
+}
+document.getElementById('btnImport').onclick = function(){ ovImport.hidden = false; };
+document.getElementById('ovImport').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('impCancel').onclick = function(){ ovImport.hidden = true; };
+document.getElementById('impOk').onclick = function(){
+  var r = doImportText(document.getElementById('impTa').value);
+  var msg = document.getElementById('impMsg');
+  msg.textContent = r.msg;
+  msg.className = 'b-msg' + (r.ok ? '' : ' err');
+  if (r.ok) { ovImport.hidden = true; render(); }
+};
+document.getElementById('impFile').addEventListener('change', function(){
+  var f = this.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){ document.getElementById('impTa').value = reader.result; };
+  reader.readAsText(f);
+});
 dmask.onclick = function(){ toggleF(false); toggleT(false); };
 
 /* ================= 预算管理 ================= */
@@ -847,28 +969,6 @@ document.getElementById('bBtnReset').onclick = function(){
   try { localStorage.removeItem(BKEY); } catch(e) {}
   bLoad(); bRender(); bRenderWeekStrip();
 };
-document.getElementById('bBtnExport').onclick = function(){
-  bLoad();
-  var blob = new Blob([JSON.stringify(budget, null, 1)], { type: 'application/json' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'budget.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-};
-/* 远程 budget.json 优先：和 events.json 一起传到仓库根即可多设备同步 */
-fetch('./budget.json?t=' + Date.now())
-  .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(d){
-    if (d && Array.isArray(d.categories)) {
-      try { localStorage.setItem(BKEY, JSON.stringify(d)); } catch(e) {}
-      bLoad(); bRenderWeekStrip();
-      if (!document.getElementById('bOv').hidden) bRender();
-    }
-  })
-  .catch(function(){});
 document.getElementById('bBtnParse').onclick = function(){
   var r = bParseAll(document.getElementById('bTa').value);
   var msg = document.getElementById('bMsg');
@@ -927,6 +1027,147 @@ function bParseWeek(text){
   return out;
 }
 
+
+/* ================= GitHub 双向同步（Private 仓库 data.json） ================= */
+var ghCfg = null, ghTimer = null, ghBusy = false;
+try { ghCfg = JSON.parse(localStorage.getItem('cal_gh') || 'null'); } catch(e) {}
+function ghSaveCfg(){ if (ghCfg) { try { localStorage.setItem('cal_gh', JSON.stringify(ghCfg)); } catch(e) {} } else { localStorage.removeItem('cal_gh'); } }
+function ghUrl(){ return 'https://api.github.com/repos/' + ghCfg.user + '/' + ghCfg.repo + '/contents/data.json'; }
+function b64e(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64d(str){ return decodeURIComponent(escape(atob(str.replace(/\n/g, '')))); }
+
+function syncLine(t){ var el = document.getElementById('syncLine'); if (el) el.textContent = t; }
+function ghStatus(t){ var el = document.getElementById('ghStatus'); if (el) el.textContent = t; }
+
+function collectSync(){
+  var map = {};
+  monitored.concat(imported).forEach(function(e){ map[e.id] = e; });
+  return {
+    updatedAt: Date.now(),
+    events: Object.keys(map).map(function(k){ return map[k]; }),
+    customs: customs,
+    done: doneMap,
+    hidden: hiddenMap,
+    budget: (function(){ try { return JSON.parse(localStorage.getItem('cal_budget_v1')); } catch(e){ return null; } })()
+  };
+}
+function applySync(d){
+  if (!d) return;
+  if (Array.isArray(d.events)) { imported = d.events; persistImported(); }
+  if (Array.isArray(d.customs)) { customs = d.customs; persistCustom(); }
+  if (d.done) { doneMap = d.done; persistDone(); }
+  if (d.hidden) { hiddenMap = d.hidden; persistHidden(); }
+  if (d.budget && Array.isArray(d.budget.categories)) {
+    try { localStorage.setItem('cal_budget_v1', JSON.stringify(d.budget)); } catch(e) {}
+  }
+  render(); bRenderWeekStrip();
+}
+function mergeSync(local, remote){
+  if (!remote) return local;
+  var map = {};
+  local.events.forEach(function(e){ map[e.id] = e; });
+  (remote.events || []).forEach(function(e){ if (e && !map[e.id]) map[e.id] = e; });
+  local.events = Object.keys(map).map(function(k){ return map[k]; });
+  var cmap = {};
+  local.customs.forEach(function(e){ cmap[e.id] = e; });
+  (remote.customs || []).forEach(function(e){ if (e && !cmap[e.id]) cmap[e.id] = e; });
+  local.customs = Object.keys(cmap).map(function(k){ return cmap[k]; });
+  for (var k in (remote.done || {})) local.done[k] = remote.done[k];
+  for (var k2 in (remote.hidden || {})) local.hidden[k2] = remote.hidden[k2];
+  var rb = remote.budget;
+  if (rb && Array.isArray(rb.categories) && (!local.budget || (rb.updatedAt || 0) > (local.budget.updatedAt || 0))) {
+    local.budget = rb;
+  }
+  return local;
+}
+/* 拉取（启动/手动） */
+function ghPull(){
+  if (!ghCfg || ghBusy) return Promise.resolve(false);
+  ghBusy = true;
+  syncLine('同步中…');
+  return fetch(ghUrl(), { headers: { 'Authorization': 'token ' + ghCfg.token } })
+    .then(function(r){ if (r.status === 404) return null; if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(f){
+      ghBusy = false;
+      if (!f || !f.content) { syncLine('远程暂无数据'); return false; }
+      applySync(JSON.parse(b64d(f.content)));
+      syncLine('已同步 ' + new Date().toLocaleTimeString());
+      return true;
+    })
+    .catch(function(e){ ghBusy = false; syncLine('同步失败：' + e.message); return false; });
+}
+/* 推拉一体：先取远程合并，再推回（网差/多端修改都不丢） */
+function ghSyncAll(){
+  if (!ghCfg) { ghStatus('先保存同步配置'); return Promise.resolve(false); }
+  if (ghBusy) return Promise.resolve(false);
+  ghBusy = true;
+  syncLine('同步中…');
+  return fetch(ghUrl(), { headers: { 'Authorization': 'token ' + ghCfg.token } })
+    .then(function(r){
+      if (r.status === 404) return { sha: null, remote: null };
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().then(function(f){ return { sha: f.sha, remote: JSON.parse(b64d(f.content)) }; });
+    })
+    .then(function(cur){
+      var merged = mergeSync(collectSync(), cur.remote);
+      merged.updatedAt = Date.now();
+      return fetch(ghUrl(), {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + ghCfg.token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'cal sync', content: b64e(JSON.stringify(merged)), branch: 'main', sha: cur.sha || undefined })
+      }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(){ ghBusy = false; applySync(merged); syncLine('已同步 ' + new Date().toLocaleTimeString()); return true; });
+    })
+    .catch(function(e){ ghBusy = false; syncLine('同步失败：' + e.message + '（可点「立即同步」重试）'); return false; });
+}
+/* 数据变化后 3 秒自动同步 */
+function ghSchedule(){ if (!ghCfg) return; clearTimeout(ghTimer); ghTimer = setTimeout(ghSyncAll, 3000); }
+
+/* 设置弹窗 */
+document.getElementById('bBtnSyncSet').onclick = function(){
+  if (ghCfg) {
+    document.getElementById('ghUser').value = ghCfg.user || '';
+    document.getElementById('ghRepo').value = ghCfg.repo || 'cal-data';
+    document.getElementById('ghToken').value = ghCfg.token || '';
+    ghStatus('已配置（' + ghCfg.user + '/' + ghCfg.repo + '）');
+  } else {
+    ghStatus('未配置：数据只在本机');
+  }
+  document.getElementById('ovGh').hidden = false;
+};
+document.getElementById('ovGh').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('ghBtnSave').onclick = function(){
+  var u = document.getElementById('ghUser').value.trim();
+  var t = document.getElementById('ghToken').value.trim();
+  if (!u || !t) { ghStatus('用户名和 Token 必填'); return; }
+  ghCfg = { user: u, repo: document.getElementById('ghRepo').value.trim() || 'cal-data', token: t };
+  ghSaveCfg();
+  document.getElementById('ovGh').hidden = true;
+  ghSyncAll();
+};
+document.getElementById('ghBtnNow').onclick = function(){ ghSyncAll(); };
+document.getElementById('ghBtnOff').onclick = function(){
+  ghCfg = null; ghSaveCfg();
+  document.getElementById('ghToken').value = '';
+  ghStatus('已断开（数据只在本机）');
+  syncLine('');
+};
+
+/* 手动同步（看板直达） */
+document.getElementById('bBtnSyncNow').onclick = function(){ ghSyncAll(); };
+
+/* 自动同步触发点 */
+var _oldPersistDone = persistDone;
+persistDone = function(){ _oldPersistDone(); ghSchedule(); };
+var _oldPersistCustom = persistCustom;
+persistCustom = function(){ _oldPersistCustom(); ghSchedule(); };
+var _oldPersistHidden = persistHidden;
+persistHidden = function(){ _oldPersistHidden(); ghSchedule(); };
+var _oldBSave = bSave;
+bSave = function(){ _oldBSave(); ghSchedule(); };
+
+/* 启动：已配置则先拉远程 */
+if (ghCfg) { ghPull(); }
 
 render();
 </script>
