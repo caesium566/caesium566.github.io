@@ -159,6 +159,48 @@ header {
 .flt .n { margin-left:auto; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
 
 .empty { color:var(--muted); font-size:13px; padding:24px 0; text-align:center; }
+
+/* ===== 预算管理 ===== */
+.b-sum { display:flex; gap:16px; background:var(--hover); border-radius:10px; padding:12px 16px; margin-bottom:14px; }
+.b-sum .it { flex:1; min-width:0; }
+.b-sum .l { font-size:11px; color:var(--muted); margin-bottom:2px; }
+.b-sum .v { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; }
+.b-sum .v.neg { color:#e5484d; }
+.b-sec { font-size:12px; color:var(--muted); font-weight:600; margin:14px 0 8px; }
+.b-cat { margin-bottom:12px; }
+.b-cat .r1 { display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+.b-cat .r1 .amt { color:var(--muted); font-variant-numeric:tabular-nums; }
+.b-cat .bar { height:10px; border-radius:5px; background:var(--hover); overflow:hidden; }
+.b-cat .fill { height:100%; border-radius:5px; transition:width .25s; }
+.b-cat .fill.b { background:var(--accent); }
+.b-cat .fill.y { background:#f5a524; }
+.b-cat .fill.r { background:#e5484d; }
+.b-lock { display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius:10px; padding:8px 12px; margin-bottom:6px; font-size:13px; }
+.b-lock .nm { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lock .am { font-variant-numeric:tabular-nums; color:var(--muted); }
+.b-tag { font-size:11px; border-radius:6px; padding:1px 8px; flex:none; }
+.b-tag.ok { background:rgba(48,164,108,.15); color:#30a46c; }
+.b-tag.pd { background:rgba(245,165,36,.15); color:#b7791f; }
+.b-tag.lk { background:rgba(229,72,77,.15); color:#e5484d; }
+.ws-box { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 14px; margin-bottom:10px; }
+.ws-head { display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:600; margin-bottom:4px; }
+.ws-box .b-week { padding:3px 0; }
+.b-ta { width:100%; min-height:180px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font:inherit; font-size:13px; line-height:1.7; resize:vertical; box-sizing:border-box; }
+.b-ta:focus { outline:none; border-color:var(--muted); }
+.b-msg { font-size:12px; color:var(--muted); margin-top:8px; }
+.b-msg.err { color:#e5484d; }
+.b-lock input[type=checkbox] { width:15px; height:15px; flex:none; accent-color:var(--accent); cursor:pointer; }
+.b-lock.used { opacity:.55; }
+.b-lock.used .nm { text-decoration:line-through; }
+.b-sel { padding:2px 4px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--muted); font-size:11px; max-width:110px; }
+.b-week { display:flex; gap:8px; align-items:baseline; font-size:13px; padding:5px 0; }
+.b-week .dot { width:9px; height:9px; border-radius:50%; flex:none; align-self:center; }
+.b-week .dot.g { background:#30a46c; }
+.b-week .dot.y { background:#f5a524; }
+.b-week .dot.r { background:#e5484d; }
+.b-week .cat { font-weight:600; flex:none; }
+.b-week .tx { color:var(--muted); flex:1; min-width:0; }
+
 </style>
 <base target="_blank">
 </head>
@@ -175,9 +217,11 @@ header {
   <button class="hbtn" id="btnAdd">＋ 添加记录</button>
   <button class="hbtn" id="btnFilter">🏷 筛选</button>
   <button class="hbtn" id="btnDrawer">🧰 工具</button>
+  <button class="hbtn" id="btnBudget">💰 预算</button>
   <button class="hbtn" id="btnTheme" title="主题">🌙</button>
 </header>
 
+<div id="weekStrip" style="padding:10px 14px 0"></div>
 <div class="gwrap"><div class="gtable" id="gtable"></div></div>
 
 <!-- 添加记录 -->
@@ -229,6 +273,40 @@ header {
   <h4>工具</h4>
   <div id="dlist"></div>
 </aside>
+
+<!-- 预算看板 -->
+<div class="ov" id="bOv" hidden>
+  <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
+    <h3>💰 月度预算 <span id="bMonth" style="font-size:12px;color:var(--muted);font-weight:400"></span></h3>
+    <div class="b-sum" id="bSum"></div>
+    <div class="b-sec">分类预算</div>
+    <div id="bCats"></div>
+    <div class="b-sec">已锁定 / 预留</div>
+    <div id="bLock"></div>
+    <div class="bx-actions">
+      <button class="btn" id="bBtnExport">导出 JSON</button>
+      <button class="btn" id="bBtnReset">重置数据</button>
+      <button class="btn pri" id="bBtnEdit">更新预算</button>
+    </div>
+  </div>
+</div>
+
+<!-- 更新预算 -->
+<div class="ov" id="bOvEdit" hidden>
+  <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
+    <h3>更新数据</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-line:1.7;line-height:1.7">
+      <b>月度预算</b>：餐饮：1250（纯预算）或 餐饮：500/1250（已用/预算）；含"预留/已放行/待购"的行进锁定列表。<br>
+      <b>本周纪律</b>：从"本周："标题或 🟢🟡🔴 圆点行开始，之后的行自动归入纪律。
+    </div>
+    <textarea id="bTa" class="b-ta" placeholder="餐饮：1250&#10;游戏月卡：128&#10;影之刃零预留：268&#10;&#10;本周：&#10;🟢 餐饮：正常吃，日均¥64&#10;🔴 弹性娱乐：锁死"></textarea>
+    <div class="bx-actions">
+      <button class="btn" id="bBtnCancel">取消</button>
+      <button class="btn pri" id="bBtnParse">解析并保存</button>
+    </div>
+    <div class="b-msg" id="bMsg"></div>
+  </div>
+</div>
 
 <script>
 /* ================= 配置 ================= */
@@ -378,6 +456,7 @@ function render(){
   }
 
   renderDrawer();
+  bRenderWeekStrip();
 }
 
 function fmtShort(s){ return s ? s.slice(5).replace('-','/') : ''; }
@@ -466,6 +545,388 @@ function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.class
 document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
 document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
 dmask.onclick = function(){ toggleF(false); toggleT(false); };
+
+/* ================= 预算管理 ================= */
+var BKEY = 'cal_budget_v1';
+var B_DEFAULT = {
+  month: '2026-10',
+  categories: [
+    { name:'强制理财', budget:2000, spent:0, group:'' },
+    { name:'餐饮', budget:1250, spent:0, group:'日常预算' },
+    { name:'交通', budget:650, spent:0, group:'日常预算' },
+    { name:'通讯+医疗', budget:200, spent:0, group:'日常预算' },
+    { name:'VIP订阅', budget:198.56, spent:0, group:'日常预算' },
+    { name:'游戏月卡', budget:128, spent:0, group:'日常预算' },
+    { name:'弹性娱乐-日用杂物', budget:150, spent:0, group:'日常预算' },
+    { name:'弹性娱乐-纯娱乐池', budget:423.44, spent:0, group:'日常预算' }
+  ],
+  locked: [
+    { name:'影之刃零', amount:268, status:'locked', cat:'弹性娱乐-纯娱乐池', used:false },
+    { name:'时间轴印章', amount:30.1, status:'approved', cat:'弹性娱乐-日用杂物', used:false },
+    { name:'筋膜轮', amount:33.9, status:'approved', cat:'弹性娱乐-日用杂物', used:false }
+  ],
+  weekly: [
+    { cat:'餐饮', level:'g', text:'正常吃，日均¥64，单笔控制¥50' },
+    { cat:'交通', level:'g', text:'正常通行' },
+    { cat:'通讯+医疗', level:'y', text:'已超¥18，如有额外医疗走储备金' },
+    { cat:'弹性娱乐', level:'r', text:'锁死，任何东西都不买（包括时间轴印章，等10月）' },
+    { cat:'日用杂物', level:'r', text:'锁死，等10月预算' },
+    { cat:'终末地', level:'g', text:'每日正常做任务，10抽保底自然到手，无需氪金' }
+  ]
+};
+var budget = null;
+
+function bClone(o){ return JSON.parse(JSON.stringify(o)); }
+function bLoad(){
+  try { budget = JSON.parse(localStorage.getItem(BKEY)); } catch(e) { budget = null; }
+  if (!budget || !Array.isArray(budget.categories) || !budget.categories.length) {
+    budget = bClone(B_DEFAULT);
+    bSave();
+    return;
+  }
+  /* 旧数据迁移 */
+  var catMap = { '影之刃零':'弹性娱乐-纯娱乐池', '时间轴印章':'弹性娱乐-日用杂物', '筋膜轮':'弹性娱乐-日用杂物' };
+  (budget.locked || []).forEach(function(l){
+    if (l.cat === undefined) l.cat = catMap[l.name] || '';
+    if (l.used === undefined) l.used = false;
+    if (l.name === '影之刃零') l.status = 'locked';
+  });
+  var GROUP_MAP = { '餐饮':'日常预算','交通':'日常预算','通讯+医疗':'日常预算','VIP订阅':'日常预算',
+    '游戏月卡':'日常预算','弹性娱乐-日用杂物':'日常预算','弹性娱乐-纯娱乐池':'日常预算' };
+  var hasFinance = false;
+  budget.categories.forEach(function(c){
+    if (c.group === undefined) c.group = GROUP_MAP[c.name] || '';
+    if (c.name === '强制理财') hasFinance = true;
+  });
+  if (!hasFinance) {
+    budget.categories.unshift({ name:'强制理财', budget:2000, spent:0, group:'' });
+  }
+  if (!Array.isArray(budget.weekly)) { budget.weekly = bClone(B_DEFAULT.weekly); bSave(); }
+}
+function bSave(){ try { budget.updatedAt = new Date().toISOString(); localStorage.setItem(BKEY, JSON.stringify(budget)); } catch(e) {} }
+function bFmt(n){
+  n = Math.round((+n || 0) * 100) / 100;
+  return '¥' + (n % 1 === 0 ? String(n) : n.toFixed(2));
+}
+/* 分类已用金额 = 基础 spent + 绑定该类且已勾选的锁定项 */
+function bSpentOf(catName){
+  var base = 0;
+  (budget.categories || []).forEach(function(c){ if (c.name === catName) base = +c.spent || 0; });
+  (budget.locked || []).forEach(function(l){
+    if (l.used && l.cat === catName) base += +l.amount || 0;
+  });
+  return base;
+}
+
+function bCurMonth(){
+  var d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth() + 1 < 10 ? '0' : '') + (d.getMonth() + 1);
+}
+
+/* ---------- 看板渲染 ---------- */
+function bRender(){
+  bLoad();
+  document.getElementById('bMonth').textContent = budget.month || '';
+  var tb = 0, ts = 0;
+  budget.categories.forEach(function(c){ tb += +c.budget || 0; ts += bSpentOf(c.name); });
+  (budget.locked || []).forEach(function(l){ if (l.used && !l.cat) ts += +l.amount || 0; });
+  var left = tb - ts;
+  document.getElementById('bSum').innerHTML =
+    '<div class="it"><div class="l">总预算</div><div class="v">' + bFmt(tb) + '</div></div>' +
+    '<div class="it"><div class="l">已用</div><div class="v">' + bFmt(ts) + '</div></div>' +
+    '<div class="it"><div class="l">剩余</div><div class="v' + (left < 0 ? ' neg' : '') + '">' + bFmt(left) + '</div></div>';
+
+  /* 分类按 group 分组渲染，组带小计 */
+  var gOrder = [], gMap = {};
+  budget.categories.forEach(function(c){
+    var g = c.group || '';
+    if (!gMap[g]) { gMap[g] = []; gOrder.push(g); }
+    gMap[g].push(c);
+  });
+  var catRow = function(c){
+    var spent = bSpentOf(c.name);
+    var pct = c.budget > 0 ? Math.round(spent / c.budget * 100) : 0;
+    var cls = pct > 100 ? 'r' : (pct >= 80 ? 'y' : 'b');
+    return '<div class="b-cat"><div class="r1"><span>' + esc(c.name) + '</span><span class="amt">'
+      + bFmt(spent) + ' / ' + bFmt(c.budget) + '（' + pct + '%）</span></div>'
+      + '<div class="bar"><div class="fill ' + cls + '" style="width:' + Math.min(pct, 100) + '%"></div></div></div>';
+  };
+  var catsHtml = '';
+  gOrder.forEach(function(g){
+    if (g) {
+      var gb = 0, gs = 0;
+      gMap[g].forEach(function(c){ gb += +c.budget || 0; gs += bSpentOf(c.name); });
+      var gpct = gb > 0 ? Math.round(gs / gb * 100) : 0;
+      catsHtml += '<div class="b-sec">' + esc(g) + '：' + bFmt(gs) + ' / ' + bFmt(gb)
+        + '（' + gpct + '%）</div>';
+    }
+    catsHtml += gMap[g].map(catRow).join('');
+  });
+  document.getElementById('bCats').innerHTML = catsHtml || '<div style="color:var(--muted);font-size:12px">暂无分类</div>';
+
+  /* 锁定列表：勾选 = 钱已实际花掉，计入绑定分类 */
+  var catOpts = function(sel){
+    var h = '<option value="">未分配</option>';
+    budget.categories.forEach(function(c){
+      h += '<option value="' + esc(c.name) + '"' + (sel === c.name ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+    });
+    return h;
+  };
+  document.getElementById('bLock').innerHTML = (budget.locked || []).map(function(l, i){
+    return '<div class="b-lock' + (l.used ? ' used' : '') + '">'
+      + '<input type="checkbox" data-bi="' + i + '"' + (l.used ? ' checked' : '') + ' title="已购入">'
+      + '<span class="nm">' + esc(l.name) + '</span>'
+      + '<select class="b-sel" data-bi="' + i + '" title="计入哪个分类">' + catOpts(l.cat) + '</select>'
+      + '<span class="am">' + bFmt(l.amount) + '</span>'
+      + '<span class="b-tag ' + (l.status === 'approved' ? 'ok' : (l.status === 'locked' ? 'lk' : 'pd')) + '">'
+      + (l.status === 'approved' ? '已放行' : (l.status === 'locked' ? '锁定' : '待购')) + '</span></div>';
+  }).join('') || '<div style="color:var(--muted);font-size:12px">暂无锁定项</div>';
+
+  /* 锁定项事件：勾选 / 改分类 */
+  document.querySelectorAll('#bLock input[type=checkbox]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      budget.locked[+this.dataset.bi].used = this.checked;
+      bSave(); bRender();
+    });
+  });
+  document.querySelectorAll('#bLock select').forEach(function(sel){
+    sel.addEventListener('change', function(){
+      budget.locked[+this.dataset.bi].cat = this.value;
+      bSave(); bRender();
+    });
+  });
+
+}
+
+/* ---------- 解析 ---------- */
+function bCleanName(n){
+  return n.replace(/(预留|锁定|已放行|待购)[:：]?$/, '').trim();
+}
+function bLockStatus(line){
+  if (/已放行|通过/.test(line)) return 'approved';
+  if (/待购/.test(line)) return 'pending';
+  return 'locked';
+}
+function bParse(text){
+  var EXCL = /类别|项目|名称|预算|已用|剩余|状态|合计|总计|小计|备注|来源|日期|^月份/;
+  var LOCK_RE = /预留|锁定|已放行|放行/;
+  var SKIP_GROUP = { '日常预算':1, '弹性娱乐':1 };
+  var cats = [], locked = [], lastGroup = '';
+  var lines = String(text || '').split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++){
+    var raw = lines[i];
+    var line = raw.trim();
+    if (!line) continue;
+    var m, name, val;
+
+    /* 0. 已用/预算：名称：200/1250 */
+    m = /^([^\d/：:|]+?)\s*[：:]?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/.exec(line);
+    if (m && !EXCL.test(m[1]) && !LOCK_RE.test(m[1])) {
+      cats.push({ name: m[1].trim(), budget: +m[3], spent: +m[2] });
+      continue;
+    }
+
+    /* 1. Markdown 表格行：| 名称 | 金额 | */
+    m = /\|\s*([^|]+?)\s*\|\s*(\d+(?:\.\d+)?)\s*\|/.exec(line);
+    if (m && !EXCL.test(m[1])) {
+      name = m[1].trim(); val = +m[2];
+      if (SKIP_GROUP[name]) { lastGroup = name; continue; }
+      if (LOCK_RE.test(name)) {
+        locked.push({ name: name.replace(/^(预留|锁定|已放行|放行)[:：]?\s*/, ''), amount: val,
+          status: /已放行|通过|approved/i.test(line) ? 'approved' : 'pending' });
+      } else {
+        cats.push({ name: name, budget: val, spent: 0 });
+      }
+      continue;
+    }
+    /* 2. 简单键值对：名称：金额 / 名称: 金额 / 名称 金额 */
+    m = /^([^\d:：|]+?)[\s：:]+(\d+(?:\.\d+)?)\s*$/.exec(line);
+    if (m && !/^(合计|总计|小计|备注|来源|日期|月份)/.test(m[1].trim()) && !EXCL.test(m[1])) {
+      name = m[1].trim(); val = +m[2];
+      if (LOCK_RE.test(name)) {
+        var nm = name.replace(/^(预留|锁定|已放行|放行)[:：]?\s*/, '');
+        var st = /已放行|通过|approved/i.test(line) ? 'approved' : 'pending';
+        var oldL = (budget.locked || []).filter(function(x){ return x.name === nm; })[0];
+        if (oldL && oldL.status === 'locked' && st === 'pending') st = 'locked';
+        locked.push({ name: nm, amount: val, status: st });
+      } else {
+        if (/^\s/.test(raw) && lastGroup) name = lastGroup + '-' + name;
+        else if (/^\s/.test(raw) && cats.length) name = cats[cats.length - 1].name.split('-')[0] + '-' + name;
+        cats.push({ name: name, budget: val, spent: 0 });
+      }
+      continue;
+    }
+  }
+  cats = cats.filter(function(c){ return !SKIP_GROUP[c.name]; });
+  if (!cats.length) return { ok: false, msg: '没有解析出任何分类，预算未改动' };
+
+  /* 同名去重（保留最后一次） */
+  var seen = {}, deduped = [];
+  cats.forEach(function(c){
+    if (seen[c.name] != null) deduped[seen[c.name]] = c;
+    else { seen[c.name] = deduped.length; deduped.push(c); }
+  });
+  cats = deduped;
+
+  /* 同名分类继承组归属（spent 以新数据为准） */
+  var oldCats = {};
+  (budget.categories || []).forEach(function(c){ oldCats[c.name] = c.group || ''; });
+  cats.forEach(function(c){ c.group = oldCats[c.name] || ''; });
+
+  budget = {
+    month: bCurMonth(),
+    categories: cats,
+    locked: locked.length ? locked : (budget.locked || []),
+    weekly: budget.weekly || []
+  };
+  bSave();
+  return { ok: true, msg: '预算更新 ' + cats.length + ' 个分类' + (locked.length ? '，' + locked.length + ' 个锁定项' : '') };
+}
+
+/* 统一解析：【本周纪律】段进纪律，【月度…】段进预算，无标记默认按预算 */
+function bParseAll(text){
+  var weekLines = [], monthLines = [], mode = '';
+  String(text || '').split(/\r?\n/).forEach(function(raw){
+    var t = raw.trim();
+    if (!t) return;
+    if (t.length <= 20 && /本周|纪律/.test(t)) { mode = 'week'; return; }
+    if (t.length <= 20 && /月度|使用情况/.test(t)) { mode = 'month'; return; }
+    if (mode === 'week') weekLines.push(raw);
+    else monthLines.push(raw);
+  });
+  var msgs = [], ok = false;
+  if (monthLines.length) {
+    var rm = bParse(monthLines.join('\n'));
+    msgs.push(rm.msg); ok = ok || rm.ok;
+  }
+  if (weekLines.length) {
+    budget.weekly = bParseWeek(weekLines.join('\n'));
+    bSave();
+    msgs.push('本周纪律 ' + budget.weekly.length + ' 条');
+    ok = true;
+  }
+  return { ok: ok, msg: msgs.join('；') || '没有可解析的内容' };
+}
+
+/* 全量序列化（预填用） */
+function bAllToText(){
+  bLoad();
+  var lines = (budget.weekly || []).map(function(w){
+    return (B_EMOJI[w.level] || '🟢') + ' ' + (w.cat ? w.cat + '：' : '') + (w.text || '');
+  });
+  lines.push('', '【月度预算使用情况】');
+  budget.categories.forEach(function(c){
+    lines.push(c.name + '：' + (+c.spent || 0) + '/' + c.budget);
+  });
+  (budget.locked || []).forEach(function(l){
+    var tag = l.status === 'approved' ? '已放行' : (l.status === 'locked' ? '锁定' : '预留');
+    lines.push(l.name + tag + '：' + l.amount);
+  });
+  return lines.join('\n');
+}
+
+/* ---------- 事件绑定（DOM 已就绪：script 在 body 末尾） ---------- */
+document.getElementById('btnBudget').onclick = function(){
+  bRender();
+  document.getElementById('bOv').hidden = false;
+};
+document.getElementById('bOv').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('bBtnEdit').onclick = function(){
+  document.getElementById('bMsg').textContent = '';
+  document.getElementById('bMsg').className = 'b-msg';
+  bLoad();
+  document.getElementById('bTa').value = bAllToText();
+  document.getElementById('bOvEdit').hidden = false;
+};
+document.getElementById('bOvEdit').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('bBtnCancel').onclick = function(){
+  document.getElementById('bOvEdit').hidden = true;
+};
+document.getElementById('bBtnReset').onclick = function(){
+  if (!confirm('清除本地预算数据并恢复默认？')) return;
+  try { localStorage.removeItem(BKEY); } catch(e) {}
+  bLoad(); bRender(); bRenderWeekStrip();
+};
+document.getElementById('bBtnExport').onclick = function(){
+  bLoad();
+  var blob = new Blob([JSON.stringify(budget, null, 1)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'budget.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+};
+/* 远程 budget.json 优先：和 events.json 一起传到仓库根即可多设备同步 */
+fetch('./budget.json?t=' + Date.now())
+  .then(function(r){ return r.ok ? r.json() : null; })
+  .then(function(d){
+    if (d && Array.isArray(d.categories)) {
+      try { localStorage.setItem(BKEY, JSON.stringify(d)); } catch(e) {}
+      bLoad(); bRenderWeekStrip();
+      if (!document.getElementById('bOv').hidden) bRender();
+    }
+  })
+  .catch(function(){});
+document.getElementById('bBtnParse').onclick = function(){
+  var r = bParseAll(document.getElementById('bTa').value);
+  var msg = document.getElementById('bMsg');
+  msg.textContent = r.msg;
+  msg.className = 'b-msg' + (r.ok ? '' : ' err');
+  if (r.ok) {
+    document.getElementById('bOvEdit').hidden = true;
+    bRender();
+    bRenderWeekStrip();
+  }
+};
+
+/* ---------- 主页面纪律条 ---------- */
+function bRenderWeekStrip(){
+  var el = document.getElementById('weekStrip');
+  if (!el) return;
+  bLoad();
+  var list = budget.weekly || [];
+  if (!list.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="ws-box"><div class="ws-head"><span>📋 本周纪律</span>'
+    + '<button class="btn" id="bBtnWeek2" style="height:24px;font-size:12px;padding:0 10px">编辑</button></div>'
+    + list.map(function(w){
+        return '<div class="b-week"><span class="dot ' + (w.level || 'g') + '"></span><span class="tx">'
+          + (w.cat ? '<b>' + esc(w.cat) + '</b>：' : '') + esc(w.text) + '</span></div>';
+      }).join('')
+    + '</div>';
+  document.getElementById('bBtnWeek2').onclick = function(){
+    bLoad();
+    document.getElementById('bTa').value = bAllToText();
+    document.getElementById('bOvEdit').hidden = false;
+  };
+}
+
+/* ---------- 本周纪律：解析 / 序列化 / 弹窗 ---------- */
+var B_EMOJI = { g:'🟢', y:'🟡', r:'🔴' };
+function bWeekToText(){
+  return (budget.weekly || []).map(function(w){
+    return (B_EMOJI[w.level] || '🟢') + ' ' + (w.cat ? w.cat + '：' : '') + (w.text || '');
+  }).join('\n');
+}
+function bParseWeek(text){
+  var out = [];
+  String(text || '').split(/\r?\n/).forEach(function(line){
+    line = line.trim();
+    if (!line) return;
+    var level = 'g', body = line;
+    var m = /^([🟢🟡🔴🟩🟨🟥])\s*(.+)$/.exec(line);
+    if (m) {
+      body = m[2];
+      level = { '🟢':'g','🟩':'g','🟡':'y','🟨':'y','🔴':'r','🟥':'r' }[m[1]];
+    }
+    var mm = /^([^:：\s]{1,12})\s*[:：]\s*(.+)$/.exec(body);
+    if (mm) out.push({ cat: mm[1].trim(), level: level, text: mm[2].trim() });
+    else out.push({ cat: '', level: level, text: body });
+  });
+  return out;
+}
+
 
 render();
 </script>
