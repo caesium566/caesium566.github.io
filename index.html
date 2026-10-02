@@ -1041,11 +1041,11 @@ function syncLine(t){ var el = document.getElementById('syncLine'); if (el) el.t
 function ghStatus(t){ var el = document.getElementById('ghStatus'); if (el) el.textContent = t; }
 
 function collectSync(){
-  var map = {};
-  monitored.concat(imported).forEach(function(e){ map[e.id] = e; });
+  /* 只打包"用户层"数据：导入的活动 + 自定义 + 勾选 + 隐藏 + 预算。
+     monitored（公开 events.json 内容）是只读公共层，每次打开自动重新 fetch，不进同步。 */
   return {
     updatedAt: Date.now(),
-    events: Object.keys(map).map(function(k){ return map[k]; }),
+    events: imported.slice(),
     customs: customs,
     done: doneMap,
     hidden: hiddenMap,
