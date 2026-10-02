@@ -318,7 +318,10 @@ header {
 <!-- 预算看板 -->
 <div class="ov" id="bOv" hidden>
   <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
-    <h3>💰 月度预算 <span id="bMonth" style="font-size:12px;color:var(--muted);font-weight:400"></span></h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0">💰 月度预算 <span id="bMonth" style="font-size:12px;color:var(--muted);font-weight:400"></span></h3>
+      <button class="btn" id="bBtnClose" style="height:28px;padding:0 12px;font-size:15px;line-height:1">×</button>
+    </div>
     <div class="b-sum" id="bSum"></div>
     <div class="b-sec">分类预算</div>
     <div id="bCats"></div>
@@ -954,6 +957,7 @@ document.getElementById('btnBudget').onclick = function(){
   document.getElementById('bOv').hidden = false;
 };
 document.getElementById('bOv').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('bBtnClose').onclick = function(){ document.getElementById('bOv').hidden = true; };
 document.getElementById('bBtnEdit').onclick = function(){
   document.getElementById('bMsg').textContent = '';
   document.getElementById('bMsg').className = 'b-msg';
@@ -1169,6 +1173,8 @@ bSave = function(){ _oldBSave(); ghSchedule(); };
 
 /* 启动：已配置则先拉远程 */
 if (ghCfg) { ghPull(); }
+/* 运行中轮询：页面可见时每 2 分钟拉一次（手机放着也会自动更新） */
+setInterval(function(){ if (ghCfg && !document.hidden && !ghBusy) ghPull(); }, 120000);
 
 render();
 </script>
