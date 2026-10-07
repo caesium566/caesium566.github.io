@@ -158,7 +158,7 @@ nav button.on::before {
 #navL {
   position:fixed; top:48px; left:0; bottom:0; width:264px; z-index:40;
   padding:20px 18px; display:none; flex-direction:column; gap:12px;
-  background:linear-gradient(90deg, rgba(3,8,26,.72), rgba(3,8,26,0));
+  background:rgba(3,8,26,.94); border-right:2px solid var(--cyan-dim);
   transform:translateX(-105%); transition:transform .2s;
 }
 #navL.on { transform:none; }
@@ -232,7 +232,8 @@ nav button.on::before {
 /* ===== 甘特图 ===== */
 .gwrap { padding:4px 0 30px; overflow-x:auto; }
 .gtable {
-  min-width:720px; padding:10px 12px 14px;
+  /* 左列 300 + 31 天 × 26 = 1106，必须兜住整月，否则窄屏下 17 号以后被切角裁掉 */
+  min-width:1110px; padding:10px 12px 14px;
   background:rgba(3,8,26,.55);
   clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
   filter:drop-shadow(5px 5px 0 rgba(0,4,16,.4));
@@ -799,14 +800,14 @@ PAGES.forEach(function(x){
   document.getElementById('nav-' + x).onclick = function(){ go(x); };
 });
 
-/* ================= 电脑端左侧边栏（点顶栏月相呼出） ================= */
+/* ================= 电脑端左侧边栏（点顶栏月相呼出/收起；切页不自动收） ================= */
 function isPC(){ return window.matchMedia('(min-width:900px)').matches; }
 document.querySelectorAll('#navL .lnav').forEach(function(b){
-  b.onclick = function(){ go(b.dataset.go); navL.classList.remove('on'); refreshMask(); };
+  b.onclick = function(){ go(b.dataset.go); };
 });
 document.querySelector('.hdate').addEventListener('click', function(){
   if (!isPC()) return;
-  navL.classList.toggle('on'); refreshMask();
+  navL.classList.toggle('on');
 });
 
 /* ================= 月份 ================= */
@@ -988,10 +989,10 @@ var dF = document.getElementById('drawerF'), dT = document.getElementById('drawe
 })();
 function toggleF(on){ dF.classList.toggle('on', on); if (on) dT.classList.remove('on'); refreshMask(); }
 function toggleT(on){ dT.classList.toggle('on', on); if (on) dF.classList.remove('on'); refreshMask(); }
-function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on') || navL.classList.contains('on')); }
+function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on')); }
 document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
 document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
-dmask.onclick = function(){ toggleF(false); toggleT(false); navL.classList.remove('on'); refreshMask(); };
+dmask.onclick = function(){ toggleF(false); toggleT(false); };
 
 /* ---------- 设置（同步 / 导入 / 手册 集中于此） ---------- */
 var ovSettings = document.getElementById('ovSettings');
