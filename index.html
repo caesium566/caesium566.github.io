@@ -154,6 +154,35 @@ nav button.on::before {
   background:var(--yellow); clip-path:polygon(0 0,100% 0,78% 100%,22% 100%);
 }
 
+/* ===== 电脑端：底导航换成左侧边栏，点左上角月相呼出 ===== */
+#navL {
+  position:fixed; top:48px; left:0; bottom:0; width:264px; z-index:40;
+  padding:20px 18px; display:none; flex-direction:column; gap:12px;
+  background:linear-gradient(90deg, rgba(3,8,26,.72), rgba(3,8,26,0));
+  transform:translateX(-105%); transition:transform .2s;
+}
+#navL.on { transform:none; }
+.lnav {
+  display:flex; align-items:baseline; gap:12px; text-align:left;
+  background:var(--bar); color:var(--tx); border:none; border-left:4px solid var(--cyan-dim);
+  cursor:pointer; padding:14px 18px; font:inherit; font-size:18px; font-weight:900; font-style:italic;
+  letter-spacing:3px; clip-path:var(--slant);
+  filter:drop-shadow(4px 4px 0 rgba(0,4,16,.5));
+  transition:transform .12s, color .12s, border-color .12s;
+}
+.lnav .no { font-size:11px; color:var(--cyan); letter-spacing:1px; font-style:normal; }
+.lnav .en { margin-left:auto; font-size:9px; font-family:Georgia,serif; font-style:normal; letter-spacing:3px; color:var(--tx-3); }
+.lnav:hover { transform:translateX(6px); border-left-color:var(--cyan); color:var(--cyan); }
+.lnav.on { border-left-color:var(--yellow); color:var(--yellow); }
+.lnav.on .en { color:var(--gold); }
+@media (min-width:900px){
+  body { padding-bottom:0; }
+  nav { display:none; }
+  #navL { display:flex; }
+  .hdate { cursor:pointer; }
+  .hdate:hover b { color:var(--cyan); }
+}
+
 /* ===== 页面 ===== */
 .page { display:none; padding:16px 14px; max-width:980px; margin:0 auto; }
 .page.on { display:block; }
@@ -308,7 +337,8 @@ nav button.on::before {
   clip-path:var(--slant-sm);
 }
 .dcard:hover { border-color:var(--cyan); }
-.dcard .ic { font-size:18px; }
+.dcard .ic { width:20px; flex:none; color:var(--cyan); display:flex; align-items:center; }
+.dcard .ic svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .dcard .nm { font-size:13px; font-weight:700; }
 .dcard .ds { font-size:11px; font-weight:500; color:var(--tx-2); margin-top:1px; }
 .dcard .vv { margin-left:auto; font-size:10px; color:var(--gold); border:1px solid var(--gold-dim); padding:0 5px; }
@@ -483,7 +513,6 @@ nav button.on::before {
     <div class="b-sec">已锁定 / 预留</div>
     <div id="bLock"></div>
     <div class="bx-actions">
-      <button class="btn" id="bBtnReset">重置数据</button>
       <button class="btn pri" id="bBtnEdit">更新数据</button>
     </div>
   </div>
@@ -498,6 +527,14 @@ nav button.on::before {
   <button id="nav-cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>活动<span class="en">EVENTS</span></button>
   <button id="nav-budget"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 9.8c0-1 1.1-1.8 2.5-1.8s2.5.8 2.5 1.8c0 2.6-5 1.4-5 4 0 1 1.1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg>预算<span class="en">BUDGET</span></button>
 </nav>
+
+<!-- 电脑端左侧边栏（手机端不显示，用底导航） -->
+<aside id="navL">
+  <button class="lnav" data-go="today"><span class="no">01</span>今日<span class="en">TODAY</span></button>
+  <button class="lnav" data-go="growth"><span class="no">02</span>成长<span class="en">GROWTH</span></button>
+  <button class="lnav" data-go="cal"><span class="no">03</span>活动<span class="en">EVENTS</span></button>
+  <button class="lnav" data-go="budget"><span class="no">04</span>预算<span class="en">BUDGET</span></button>
+</aside>
 
 <!-- 添加记录 -->
 <div class="ov" id="ovAdd" hidden>
@@ -594,8 +631,8 @@ nav button.on::before {
       <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_gh</code>；<code>velvet_*</code> 段预留。同步走 Private 仓 <code>cal-data</code> 的 data.json（按条目合并），Token 只存本机。公开 events.json 是只读层，不进同步。</p>
       <h4>使用说明</h4>
       <ul>
-        <li>底部导航切四页；活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
-        <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析；锁定项勾选 = 已购入，计入绑定分类。</li>
+        <li>手机用底部导航切四页；电脑点左上角月相呼出左侧边栏。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
+        <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析（纪律与预算同窗编辑）；锁定项勾选 = 已购入，计入绑定分类。</li>
         <li>同步、导入 events.json、本手册都在顶栏「设置」里；变更后 3 秒自动推、前台每 2 分钟轮询拉。</li>
       </ul>
       <h4>维护要点</h4>
@@ -643,9 +680,12 @@ var GAMES = [
   { name:'自定义',             color:'#868e96' }
 ];
 var TOOLS = [
-  { name:'彩墨管理', icon:'🖋️', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/' },
-  { name:'铁巢重炮 · 狙击计算器', icon:'🎯', ver:'1.0', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/' },
-  { name:'极简书房', icon:'📚', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/' }
+  { name:'彩墨管理', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/',
+    icon:'<svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>' },
+  { name:'铁巢重炮 · 狙击计算器', ver:'1.0', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/',
+    icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5"/></svg>' },
+  { name:'极简书房', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/',
+    icon:'<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' }
 ];
 /* 预置数据：格式示例，可改可删。监控接入后由 events.json 提供 */
 var BASE_EVENTS = [
@@ -744,16 +784,29 @@ function fmtD(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDa
 
 /* ================= 页面切换 ================= */
 var PAGES = ['today', 'growth', 'cal', 'budget'];
+var navL = document.getElementById('navL');
 function go(p){
   PAGES.forEach(function(x){
     document.getElementById('page-' + x).classList.toggle('on', x === p);
     document.getElementById('nav-' + x).classList.toggle('on', x === p);
   });
+  var lbs = document.querySelectorAll('#navL .lnav');
+  for (var i=0;i<lbs.length;i++) lbs[i].classList.toggle('on', lbs[i].dataset.go === p);
   if (p === 'budget') { bRender(); bRenderWeekStrip(); }
   window.scrollTo(0, 0);
 }
 PAGES.forEach(function(x){
   document.getElementById('nav-' + x).onclick = function(){ go(x); };
+});
+
+/* ================= 电脑端左侧边栏（点顶栏月相呼出） ================= */
+function isPC(){ return window.matchMedia('(min-width:900px)').matches; }
+document.querySelectorAll('#navL .lnav').forEach(function(b){
+  b.onclick = function(){ go(b.dataset.go); navL.classList.remove('on'); refreshMask(); };
+});
+document.querySelector('.hdate').addEventListener('click', function(){
+  if (!isPC()) return;
+  navL.classList.toggle('on'); refreshMask();
 });
 
 /* ================= 月份 ================= */
@@ -935,10 +988,10 @@ var dF = document.getElementById('drawerF'), dT = document.getElementById('drawe
 })();
 function toggleF(on){ dF.classList.toggle('on', on); if (on) dT.classList.remove('on'); refreshMask(); }
 function toggleT(on){ dT.classList.toggle('on', on); if (on) dF.classList.remove('on'); refreshMask(); }
-function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on')); }
+function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on') || navL.classList.contains('on')); }
 document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
 document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
-dmask.onclick = function(){ toggleF(false); toggleT(false); };
+dmask.onclick = function(){ toggleF(false); toggleT(false); navL.classList.remove('on'); refreshMask(); };
 
 /* ---------- 设置（同步 / 导入 / 手册 集中于此） ---------- */
 var ovSettings = document.getElementById('ovSettings');
@@ -1286,11 +1339,6 @@ document.getElementById('bOvEdit').addEventListener('click', function(e){ if (e.
 document.getElementById('bBtnCancel').onclick = function(){
   document.getElementById('bOvEdit').hidden = true;
 };
-document.getElementById('bBtnReset').onclick = function(){
-  if (!confirm('清除本地预算数据并恢复默认？')) return;
-  try { localStorage.removeItem(BKEY); } catch(e) {}
-  bLoad(); bRender(); bRenderWeekStrip();
-};
 document.getElementById('bBtnParse').onclick = function(){
   var r = bParseAll(document.getElementById('bTa').value);
   var msg = document.getElementById('bMsg');
@@ -1310,18 +1358,12 @@ function bRenderWeekStrip(){
   bLoad();
   var list = budget.weekly || [];
   if (!list.length) { el.innerHTML = ''; return; }
-  el.innerHTML = '<div class="ws-box"><div class="ws-head"><span>本周纪律</span>'
-    + '<button class="btn" id="bBtnWeek2" style="height:24px;font-size:12px;padding:0 10px">编辑</button></div>'
+  el.innerHTML = '<div class="ws-box"><div class="ws-head"><span>本周纪律</span></div>'
     + list.map(function(w){
         return '<div class="b-week"><span class="dot ' + (w.level || 'g') + '"></span><span class="tx">'
           + (w.cat ? '<b>' + esc(w.cat) + '</b>：' : '') + esc(w.text) + '</span></div>';
       }).join('')
     + '</div>';
-  document.getElementById('bBtnWeek2').onclick = function(){
-    bLoad();
-    document.getElementById('bTa').value = bAllToText();
-    document.getElementById('bOvEdit').hidden = false;
-  };
 }
 
 /* ---------- 本周纪律：解析 / 序列化 / 弹窗 ---------- */
