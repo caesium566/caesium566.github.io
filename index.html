@@ -439,29 +439,33 @@ nav button.on::before {
 }
 .tl-card .ops button:hover { color:var(--cyan); border-color:var(--cyan); }
 
-/* 计划块 / 关联卡：金框 + 大阿尔卡纳卡面隐约透出（不显示分类） */
+/* 计划块 / 关联卡：金框实底 + 右侧大阿尔卡纳卡面条幅（不显示分类）。
+   内容区 padding-right 让出牌面位；操作钮停在内容区内（right:128px），不压牌面不压标签 */
 .tl-plan {
   border:1px solid var(--gold-dim); border-left:4px solid var(--gold);
   background:rgba(10,15,30,.92);
-  cursor:pointer; overflow:hidden;
+  cursor:pointer; overflow:hidden; padding-right:128px;
 }
 .tl-plan .arcBg {
-  position:absolute; right:-12px; top:50%; transform:translateY(-50%) rotate(8deg);
-  opacity:.17; pointer-events:none;
+  position:absolute; right:0; top:0; bottom:0; width:124px;
+  display:flex; align-items:stretch; justify-content:flex-end;
+  opacity:.72; pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 40%);
+  mask-image:linear-gradient(90deg, transparent 0, #000 40%);
 }
-.tl-plan .arcBg svg { width:88px; height:154px; display:block; }
+.tl-plan .arcBg svg { height:100%; width:auto; display:block; }
 .tl-plan .arc {
   display:inline-flex; align-items:center; gap:6px; font-size:10px; font-family:Georgia,serif;
   color:var(--gold); border:1px solid var(--gold-dim); padding:1px 8px; letter-spacing:2px;
   background:#0a0f1e;
 }
 .tl-plan .ptag {
-  position:absolute; top:-1px; right:-1px; background:var(--gold); color:#0a0f1e;
-  font-size:10px; font-weight:900; font-style:italic; padding:2px 10px; letter-spacing:2px;
-  clip-path:polygon(8px 0,100% 0,100% 100%,0 100%); z-index:2;
+  background:var(--gold); color:#0a0f1e; flex:none;
+  font-size:10px; font-weight:900; font-style:italic; padding:1px 8px; letter-spacing:2px;
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
 }
 .tl-plan .ct { color:var(--gold); }
-.tl-plan .ops { z-index:2; }
+.tl-plan .ops { right:128px; z-index:3; }
 .tl-sec { font-size:12px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--gold); margin:14px 0 8px; border-left:3px solid var(--gold-dim); padding-left:8px; }
 
 /* 日志弹窗要压住维护层（70） */
@@ -476,34 +480,31 @@ nav button.on::before {
 .mdetail .dl { color:var(--tx); }
 .mdetail .dd { color:var(--gold); font-variant-numeric:tabular-nums; margin-right:6px; }
 
-/* 备注：自适应高度 + 历史快捷标签 */
-#teNote { width:100%; padding:8px 10px; border:1px solid var(--line); background:var(--bar-2); color:var(--tx); font:inherit; font-size:14px; line-height:1.6; resize:none; overflow:hidden; min-height:38px; }
-.nhist { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
-.nhist span {
-  font-size:11px; font-weight:600; color:var(--tx-2); border:1px solid var(--line);
-  padding:2px 9px; cursor:pointer; clip-path:var(--slant-sm); background:var(--bar);
-  max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.nhist span:hover { color:var(--cyan); border-color:var(--cyan); }
+/* 备注：自适应高度，随内容长高（上限 220px，超出内部滚动） */
+#teNote { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--line); background:var(--bar-2); color:var(--tx); font:inherit; font-size:14px; line-height:1.6; resize:none; overflow-y:hidden; min-height:38px; }
 
-/* 抽选动画：三张牌背洗牌 → 翻开 */
+/* 抽选动画：三张牌叠落中央 → 扇形展开 → 依次翻开；点任意处收下 */
 #ovDraw { z-index:75; }
-.drawfan { display:flex; justify-content:center; gap:12px; perspective:900px; padding:10px 0; }
-.dcard3 { width:108px; height:184px; position:relative; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.3,1.4,.4,1); }
+.drawfan { display:flex; justify-content:center; perspective:1000px; padding:16px 0 6px; }
+.dcard3 {
+  width:124px; height:217px; position:relative; margin:0 -16px;
+  transform-style:preserve-3d; transition:transform .6s cubic-bezier(.3,1.3,.4,1);
+  transform:var(--sp0);
+}
+.dcard3.spread { transform:var(--sp); }
+.dcard3.spread.flip { transform:var(--sp) rotateY(180deg); }
 .dcard3 .bface, .dcard3 .bback { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:10px; overflow:hidden; }
 .dcard3 .bback svg, .dcard3 .bface svg { width:100%; height:100%; display:block; }
-.dcard3 .bface { transform:rotateY(180deg); background:#0a0f1e; border:2px solid var(--gold); }
+.dcard3 .bface { transform:rotateY(180deg); box-shadow:0 0 22px rgba(201,168,106,.35); }
 .dcard3 .bface .fi {
   position:absolute; left:0; right:0; bottom:0; padding:8px 8px 10px; text-align:center;
   font-size:12px; font-weight:700; color:var(--tx); line-height:1.5;
   background:linear-gradient(180deg, transparent, rgba(10,15,30,.95) 40%);
+  max-height:76px; overflow:hidden;
 }
 .dcard3 .bface .fi .fc { display:block; font-size:9px; font-family:Georgia,serif; color:var(--gold); letter-spacing:2px; margin-bottom:2px; }
-.dcard3.flip { transform:rotateY(180deg); }
-.dcard3.deal0 { transform:translateX(120px) rotate(6deg); }
-.dcard3.deal2 { transform:translateX(-120px) rotate(-6deg); }
 #drawHint { margin-top:18px; color:var(--gold); font-size:12px; letter-spacing:3px; font-weight:600; }
-@media (max-width:420px){ .dcard3 { width:92px; height:158px; } }
+@media (max-width:420px){ .dcard3 { width:102px; height:179px; margin:0 -14px; } }
 
 /* 计时 FAB */
 #tFab {
@@ -786,8 +787,8 @@ nav button.on::before {
       <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
       <h4>使用说明</h4>
       <ul>
-        <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块，点计划块落定实际起止并追加日志（回流 md 计分）。右下悬浮钮计时，结束自动成时段卡。「转日志」把关联时段的备注写进对应条目。</li>
-        <li>维护弹出页：待办（新增/完成/删/追加日志）与工坊（新增项目/追加日志/删）两栏；全部手术刀式写回 md，不重排全文。</li>
+        <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块（可移除、不留记录），点计划块落定实际起止。右下悬浮钮计时，结束自动成时段卡。<b>关联了待办/工坊的时段，备注即当日日志</b>：保存时自动写进 md，改备注同步改日志（同日整行替换）。</li>
+        <li>维护弹出页：待办（进行中：新增/完成/删/追加日志）、已完成（档案馆：点开看开始日期与全部日志，可恢复为进行中）、工坊（新增项目/追加日志/删）三栏；全部手术刀式写回 md，不重排全文。</li>
         <li>成长页：雷达形状 = 近 30 天各维得分占比，五角数字 = 总 Rank；等级名到 R4 / R7 / R10 才有庆祝章，下一级名未达前显示 ???。</li>
         <li>手机用底部导航切四页；电脑点左上角月相呼出左侧边栏。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
         <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析；锁定项勾选 = 已购入，计入绑定分类。</li>
@@ -841,9 +842,8 @@ nav button.on::before {
       <div class="fg"><label>结束</label><input id="teE" type="time"></div>
     </div>
     <div class="fg">
-      <label>备注</label>
+      <label>备注（有关联条目时 = 当日日志，写完自动同步进 md）</label>
       <textarea id="teNote" rows="1" placeholder="做了什么…"></textarea>
-      <div class="nhist" id="noteHist"></div>
     </div>
     <div class="fg">
       <label>关联（可选，搜索待办 / 工坊）</label>
@@ -852,7 +852,6 @@ nav button.on::before {
       <div id="teLinkCur" style="font-size:12px;color:var(--gold);margin-top:4px"></div>
     </div>
     <div class="bx-actions">
-      <button class="btn" id="teLogBtn" hidden>转日志</button>
       <button class="btn" id="teDel" hidden style="color:var(--magenta)">删除</button>
       <button class="btn" id="teCancel">取消</button>
       <button class="btn pri" id="teOk">保存</button>
@@ -881,6 +880,7 @@ nav button.on::before {
     <h3>维护<span class="en">MAINTENANCE</span></h3>
     <div class="mtabs">
       <button id="mtTodo" class="on">待办</button>
+      <button id="mtDone">已完成</button>
       <button id="mtWork">工坊</button>
     </div>
     <div id="mtBody"></div>
@@ -892,7 +892,7 @@ nav button.on::before {
 
 <!-- 抽选动画 -->
 <div class="ov" id="ovDraw" hidden>
-  <div onclick="event.stopPropagation()">
+  <div>
     <div class="drawfan" id="drawFan"></div>
     <div id="drawHint" style="text-align:center">洗牌中…</div>
   </div>
@@ -1791,7 +1791,7 @@ var ARCANA = ['THE FOOL','THE MAGICIAN','THE PRIESTESS','THE EMPRESS','THE EMPER
 var ARC_NO = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
 var CATS_DEFAULT = ['吃饭','学习','工作','休息','内务','运动','路上','娱乐','其他'];
 
-/* ---- 大阿尔卡纳卡面生成（碎玻璃彩绘 + 白线符号，全部 SVG 代码绘制，规范 §7） ---- */
+/* ---- 大阿尔卡纳卡面生成（P3 风格：蓝色雕花牌框 + 罗马数字圆徽 + 黑边彩绘玻璃 + 金字牌名横幅，全部 SVG 代码绘制，规范 §7） ---- */
 var ARC_COLORS = ['#c9a86a','#8fb8ff','#9b7ede','#ff7eb0','#e05555','#b48cd9','#ff9ff3','#f6b93b',
   '#38ada9','#3c6382','#6ab04c','#22a6b3','#eb2f4a','#95a5a6','#0fb5a3','#7d2e2e',
   '#dff9fb','#f9ca24','#00d8ff','#f0932b','#eccc68','#c9a86a'];
@@ -1821,24 +1821,47 @@ var ARC_SYM = [
 ];
 function arcanaSVG(idx){
   var rnd = mulberry32(1000 + idx * 77);
-  var c = ARC_COLORS[idx], shards = '';
-  for (var k = 0; k < 10; k++){
-    var a0 = rnd()*Math.PI*2, a1 = a0 + 0.35 + rnd()*0.55;
-    var r0 = 26 + rnd()*36, r1 = 150, cx = 100, cy = 158;
-    var pp = [[a0,r0],[a0,r1],[a1,r1],[a1,r0]].map(function(q){
-      return (cx + Math.cos(q[0])*q[1]).toFixed(1) + ',' + (cy + Math.sin(q[0])*q[1]).toFixed(1);
-    }).join(' ');
-    shards += '<polygon points="' + pp + '" fill="' + c + '" opacity="' + (0.10 + rnd()*0.22).toFixed(2) + '"/>';
+  var c = ARC_COLORS[idx];
+  function sh(f){  /* 主题色变体 */
+    var n = parseInt(c.slice(1), 16);
+    var g = function(x){ return Math.min(255, Math.max(0, Math.round(x*f))); };
+    return 'rgb(' + g((n>>16)&255) + ',' + g((n>>8)&255) + ',' + g(n&255) + ')';
   }
+  var dk = sh(0.42), lt = sh(1.3);
+  /* 彩绘玻璃：粗黑边碎片铺满艺术窗 */
+  var shards = '';
+  for (var k = 0; k < 16; k++){
+    var cx = 17 + rnd()*166, cy = 50 + rnd()*238, rr = 18 + rnd()*44;
+    var n = 3 + Math.floor(rnd()*3), pts = [];
+    for (var q = 0; q < n; q++){
+      var a = rnd()*Math.PI*2, r2 = rr*(0.55 + rnd()*0.75);
+      pts.push((cx + Math.cos(a)*r2).toFixed(1) + ',' + (cy + Math.sin(a)*r2).toFixed(1));
+    }
+    shards += '<polygon points="' + pts.join(' ') + '" fill="' + [c, dk, lt][k%3]
+      + '" opacity="' + (0.5 + rnd()*0.45).toFixed(2) + '" stroke="#070b18" stroke-width="3"/>';
+  }
+  var fsz = ARC_NO[idx].length > 3 ? 10 : 13;
+  var tsz = ARCANA[idx].length > 12 ? 9 : 11;
   return '<svg viewBox="0 0 200 350">'
-    + '<rect x="4" y="4" width="192" height="342" rx="10" fill="#0a0f1e" stroke="#c9a86a" stroke-width="2"/>'
-    + '<rect x="12" y="12" width="176" height="326" rx="6" fill="none" stroke="#7a6844"/>'
-    + shards
-    + '<circle cx="100" cy="158" r="34" fill="#0a0f1e" opacity=".72"/>'
-    + '<g transform="translate(100,158)" stroke="#ffffff" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">'
-    + ARC_SYM[idx] + '</g>'
-    + '<text x="100" y="48" text-anchor="middle" fill="#c9a86a" font-family="Georgia,serif" font-size="21">' + ARC_NO[idx] + '</text>'
-    + '<text x="100" y="320" text-anchor="middle" fill="#c9a86a" font-family="Georgia,serif" font-size="11" letter-spacing="2">' + ARCANA[idx] + '</text>'
+    + '<clipPath id="arcw"><rect x="17" y="50" width="166" height="238"/></clipPath>'
+    /* 蓝色牌框 + 四角铆钉 */
+    + '<rect x="3" y="3" width="194" height="344" rx="12" fill="#22407c" stroke="#0a1226" stroke-width="2"/>'
+    + '<rect x="9" y="9" width="182" height="332" rx="8" fill="none" stroke="#5b7fc9" stroke-width="1.5"/>'
+    + '<g fill="#0d1a38" stroke="#8fabdf" stroke-width="1.2">'
+    + '<circle cx="15" cy="15" r="4"/><circle cx="185" cy="15" r="4"/>'
+    + '<circle cx="15" cy="335" r="4"/><circle cx="185" cy="335" r="4"/></g>'
+    /* 艺术窗：黑底彩绘玻璃 + 黑色剪影符号（主题色光晕） */
+    + '<rect x="17" y="50" width="166" height="238" fill="#070b18" stroke="#c9a86a" stroke-width="1.5"/>'
+    + '<g clip-path="url(#arcw)">' + shards
+    + '<g transform="translate(100,169) scale(2.1)" stroke="' + c + '" fill="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity=".45">' + ARC_SYM[idx] + '</g>'
+    + '<g transform="translate(100,169) scale(2.1)" stroke="#070b18" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">' + ARC_SYM[idx] + '</g>'
+    + '</g>'
+    /* 顶部罗马数字圆徽 */
+    + '<ellipse cx="100" cy="26" rx="23" ry="15" fill="#6e1b28" stroke="#c9a86a" stroke-width="2"/>'
+    + '<text x="100" y="31" text-anchor="middle" fill="#e8cc8f" font-family="Georgia,serif" font-weight="bold" font-size="' + fsz + '">' + ARC_NO[idx] + '</text>'
+    /* 底部金字牌名横幅 */
+    + '<rect x="17" y="294" width="166" height="38" fill="#0a1226" stroke="#c9a86a" stroke-width="1.5"/>'
+    + '<text x="100" y="318" text-anchor="middle" fill="#c9a86a" font-family="Georgia,serif" font-size="' + tsz + '" letter-spacing="1.5">' + ARCANA[idx] + '</text>'
     + '</svg>';
 }
 var CARD_BACK = '<svg viewBox="0 0 200 350"><rect x="5" y="5" width="190" height="340" rx="10" fill="#0a0f1e" stroke="#c9a86a" stroke-width="2"/>'
@@ -2129,13 +2152,15 @@ function vEnsurePlan(){
   if (!vPlans[d] && vPool().length) { vDoDraw(d, hashStr(d)); }
 }
 
-/* ---- 抽选动画：三张牌背发牌 → 依次翻开（reduced-motion 下跳过） ---- */
+/* ---- 抽选动画：牌背叠落 → 扇形展开 → 依次翻开（reduced-motion 下跳过；点任意处收下） ---- */
 function vShowDraw(plan){
   if (!plan || !plan.items || !plan.items.length) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var ov = document.getElementById('ovDraw'), fan = document.getElementById('drawFan');
+  var n = plan.items.length;
   fan.innerHTML = plan.items.map(function(it, i){
-    return '<div class="dcard3 deal' + i + '" id="dc' + i + '">'
+    var rot = (i - (n-1)/2) * 10, ty = Math.abs(i - (n-1)/2) * 7;
+    return '<div class="dcard3" id="dc' + i + '" style="--sp0:translateY(-30px) scale(.88); --sp:rotate(' + rot + 'deg) translateY(' + ty + 'px)">'
       + '<div class="bback">' + CARD_BACK + '</div>'
       + '<div class="bface">' + arcanaSVG(it.card)
       + '<div class="fi"><span class="fc">' + ARC_NO[it.card] + ' · ' + ARCANA[it.card] + '</span>' + esc(it.name) + '</div></div>'
@@ -2143,15 +2168,21 @@ function vShowDraw(plan){
   }).join('');
   document.getElementById('drawHint').textContent = '洗牌中…';
   ov.hidden = false;
-  setTimeout(function(){
-    fan.querySelectorAll('.dcard3').forEach(function(c){ c.classList.remove('deal0'); c.classList.remove('deal2'); });
-  }, 380);
+  /* 扇形展开（逐张错开） */
+  plan.items.forEach(function(_, i){
+    setTimeout(function(){
+      var c = document.getElementById('dc' + i);
+      if (c) c.classList.add('spread');
+    }, 420 + i * 110);
+  });
+  /* 依次翻开 */
+  var flipStart = 420 + n * 110 + 550;
   plan.items.forEach(function(_, i){
     setTimeout(function(){
       var c = document.getElementById('dc' + i);
       if (c) c.classList.add('flip');
-      if (i === plan.items.length - 1) document.getElementById('drawHint').textContent = '点任意处收下';
-    }, 1050 + i * 240);
+      if (i === n - 1) document.getElementById('drawHint').textContent = '点任意处收下';
+    }, flipStart + i * 280);
   });
 }
 document.getElementById('ovDraw').addEventListener('click', function(){ this.hidden = true; });
@@ -2182,6 +2213,7 @@ function vRenderTime(){
       + '</div>';
   } else hint.innerHTML = '';
   document.getElementById('tPlans').innerHTML = '';
+  vEnsurePlan();   /* 今天还没有计划且池非空 → 自动抽三（只补空缺，不覆盖已有计划） */
 
   /* 合并：时段卡 + 计划块（19:00）统一按开始时间排序 */
   var cards = vTl.filter(function(e){ return e.d === d; })
@@ -2197,10 +2229,9 @@ function vRenderTime(){
     if (cd.kind === 'p') {
       var it = cd.it;
       h += '<div class="tl-card tl-plan" data-pi="' + cd.i + '">'
-        + '<span class="ptag">计划</span>'
         + '<div class="arcBg">' + arcanaSVG(it.card) + '</div>'
         + '<div class="ops"><button data-op="pdel" title="移除（不产生任何记录）">移除</button></div>'
-        + '<div class="r1"><span class="tm">19:00</span><span class="arc">' + ARC_NO[it.card] + ' · ' + ARCANA[it.card] + '</span></div>'
+        + '<div class="r1"><span class="ptag">计划</span><span class="tm">19:00</span><span class="arc">' + ARC_NO[it.card] + ' · ' + ARCANA[it.card] + '</span></div>'
         + '<div class="nt">' + esc(it.name) + '</div>'
         + '</div>';
     } else {
@@ -2210,12 +2241,11 @@ function vRenderTime(){
         h += '<div class="tl-card tl-plan" data-eid="' + e.id + '">'
           + '<div class="arcBg">' + arcanaSVG(ci) + '</div>'
           + '<div class="ops">'
-          + (!e.lg ? '<button data-op="log">转日志</button>' : '')
           + '<button data-op="edit">编辑</button><button data-op="del">删除</button></div>'
           + '<div class="r1"><span class="tm">' + e.s + '–' + e.e + '</span>'
           + '<span class="arc">' + ARC_NO[ci] + ' · ' + ARCANA[ci] + '</span>'
           + '<span class="du">' + vDurText(e.s, e.e) + '</span></div>'
-          + '<div class="nt">' + esc(e.link.name) + (e.note ? '｜' + esc(e.note) : '') + (e.lg ? ' <span style="color:var(--gold);font-size:10px">· 已转日志</span>' : '') + '</div>'
+          + '<div class="nt">' + esc(e.link.name) + (e.note ? '｜' + esc(e.note) : '') + (e.lg ? ' <span style="color:var(--gold);font-size:10px">· 已入日志</span>' : '') + '</div>'
           + '</div>';
       } else {
         h += '<div class="tl-card" data-eid="' + e.id + '">'
@@ -2243,7 +2273,6 @@ function vRenderTime(){
         var op = btn.dataset.op;
         if (op === 'del') { if (confirm('删除这个时段？')) { vTl = vTl.filter(function(x){ return x.id !== eid; }); vSaveAll(); vRenderTime(); } }
         if (op === 'edit') vOpenEntry('edit', e);
-        if (op === 'log') vOpenLog({ t:e.link.t, cat:e.link.cat, name:e.link.name }, e.note, function(){ e.lg = true; e.mu = Date.now(); vSaveAll(); vRenderTime(); });
       };
     });
   });
@@ -2313,28 +2342,17 @@ function vOpenEntry(mode, entry, planIdx){
   var teNoteEl = document.getElementById('teNote');
   teNoteEl.value = note;
   teNoteEl.style.height = 'auto';
-  teNoteEl.style.height = Math.min(teNoteEl.scrollHeight, 180) + 'px';
+  teNoteEl.style.height = Math.min(teNoteEl.scrollHeight, 220) + 'px';
   document.getElementById('teLinkQ').value = '';
   document.getElementById('teLinkList').hidden = true;
   document.getElementById('teLinkCur').textContent = vLinkLabel(teLink);
   document.getElementById('teDel').hidden = (mode !== 'edit');
-  document.getElementById('teLogBtn').hidden = !(mode === 'edit' && entry && entry.link && !entry.lg);
   document.getElementById('teOk').textContent = (mode === 'timer') ? '开始' : '保存';
-  /* 历史备注快捷复用（点击填入） */
-  var seen = {}, hh = '', cnt = 0;
-  vTl.slice().reverse().forEach(function(x){
-    if (x.note && !seen[x.note] && cnt < 6) { seen[x.note] = 1; cnt++; hh += '<span data-n="' + esc(x.note) + '">' + esc(x.note) + '</span>'; }
-  });
-  var nh = document.getElementById('noteHist');
-  nh.innerHTML = hh;
-  nh.querySelectorAll('span').forEach(function(sp){
-    sp.onclick = function(){ teNoteEl.value = sp.dataset.n; teNoteEl.style.height = 'auto'; teNoteEl.style.height = Math.min(teNoteEl.scrollHeight, 180) + 'px'; };
-  });
   ov.hidden = false;
 }
 document.getElementById('teNote').addEventListener('input', function(){
   this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 180) + 'px';
+  this.style.height = Math.min(this.scrollHeight, 220) + 'px';
 });
 document.getElementById('teLinkQ').addEventListener('input', function(){
   var q = this.value.trim(), box = document.getElementById('teLinkList');
@@ -2364,11 +2382,18 @@ document.getElementById('teDel').onclick = function(){
   vSaveAll(); vRenderTime();
   document.getElementById('ovTEntry').hidden = true;
 };
-document.getElementById('teLogBtn').onclick = function(){
-  if (!teEntry || !teEntry.link) return;
-  document.getElementById('ovTEntry').hidden = true;
-  vOpenLog(teEntry.link, teEntry.note, function(){ teEntry.lg = true; teEntry.mu = Date.now(); vSaveAll(); vRenderTime(); });
-};
+/* 备注即日志：关联条目的时段，保存时备注非空 → 自动写入/更新该条目当日日志（同日已有则整行替换）。
+   备注清空不删已有日志（只增/只改，不反向抹除——只庆祝不惩罚）。 */
+function vSyncEntryLog(entry){
+  if (!entry || !entry.link || !entry.note) return;
+  var lk = entry.link;
+  var edit = lk.t === 'work'
+    ? vEditWorkUpsertLog(lk.name, entry.d, entry.note)
+    : vEditUpsertLog(lk.cat, lk.name, entry.d, entry.note);
+  vFileWrite(lk.t === 'work' ? 'work' : 'todo', edit, function(){
+    entry.lg = true; entry.mu = Date.now(); vSaveAll(); vRenderTime();
+  });
+}
 document.getElementById('teOk').onclick = function(){
   var cat = document.getElementById('teCat').value;
   var note = document.getElementById('teNote').value.trim();
@@ -2385,6 +2410,7 @@ document.getElementById('teOk').onclick = function(){
     teEntry.c = cat; teEntry.s = s; teEntry.e = e; teEntry.note = note; teEntry.link = teLink; teEntry.mu = Date.now();
     vSaveAll(); vRenderTime();
     document.getElementById('ovTEntry').hidden = true;
+    vSyncEntryLog(teEntry);
     return;
   }
   var entry = { id:'e' + Date.now().toString(36) + Math.floor(Math.random()*36).toString(36),
@@ -2393,13 +2419,10 @@ document.getElementById('teOk').onclick = function(){
   if (teMode === 'plan') {
     var d = vDayStr(tCur);
     vPlans[d].items[tePlanIdx].st = 'done';
-    if (note) {  /* 日志回流 md（计使用分） */
-      var it = vPlans[d].items[tePlanIdx];
-      vFileWrite('todo', vEditAppendLog(it.cat, it.name, d, note), null);
-    }
   }
   vSaveAll(); vRenderTime();
   document.getElementById('ovTEntry').hidden = true;
+  vSyncEntryLog(entry);   /* 备注非空且有关联 → 自动落 md 日志 */
 };
 
 /* ---- 计时 FAB（时间戳差值，锁屏/切后台不计时差） ---- */
@@ -2470,11 +2493,37 @@ function vEditAppendLog(cat, name, date, text){
     return { ok:true };
   };
 }
+/* 同日已有时段日志 → 整行替换；没有 → 追加（时段卡备注 ⇄ 日志 自动同步用） */
+function vEditUpsertLog(cat, name, date, text){
+  return function(lines){
+    var it = vFindItem(parseTodoMd(lines.join('\n')), cat, name);
+    if (!it) return { ok:false, msg:'找不到条目：' + name };
+    if (!/；\s*$/.test(text)) text += '；';
+    for (var i=0;i<it.logs.length;i++){
+      if (it.logs[i].date === date) {
+        lines[it.logs[i].line] = '  ' + it.logs[i].bullet + ' ' + date + '：' + text;
+        return { ok:true };
+      }
+    }
+    var at = it.line;
+    it.logs.forEach(function(l){ if (l.line > at) at = l.line; });
+    lines.splice(at + 1, 0, '  ' + it.bullet + ' ' + date + '：' + text);
+    return { ok:true };
+  };
+}
 function vEditComplete(cat, name){
   return function(lines){
     var it = vFindItem(parseTodoMd(lines.join('\n')), cat, name);
     if (!it) return { ok:false, msg:'找不到条目：' + name };
     lines[it.line] = lines[it.line].replace('- [ ]', '- [x]');
+    return { ok:true };
+  };
+}
+function vEditUndo(cat, name){
+  return function(lines){
+    var it = vFindItem(parseTodoMd(lines.join('\n')), cat, name);
+    if (!it) return { ok:false, msg:'找不到条目：' + name };
+    lines[it.line] = lines[it.line].replace('- [x]', '- [ ]');
     return { ok:true };
   };
 }
@@ -2534,6 +2583,29 @@ function vEditWorkLog(name, date, text){
     return { ok:true };
   };
 }
+/* 工坊版 upsert：同日已有 → 整行替换；没有 → 追加 */
+function vEditWorkUpsertLog(name, date, text){
+  return function(lines){
+    var b = vFindBlock(parseWorkMd(lines.join('\n')), name);
+    if (!b) return { ok:false, msg:'找不到工坊条目：' + name };
+    if (!/；\s*$/.test(text)) text += '；';
+    for (var i=0;i<b.logs.length;i++){
+      if (b.logs[i].date === date) {
+        lines[b.logs[i].line] = '  ' + b.logs[i].bullet + ' ' + date + '：' + text;
+        return { ok:true };
+      }
+    }
+    var newline = '  ' + b.bullet + ' ' + date + '：' + text;
+    if (b.logSecLine >= 0) {
+      var at = b.logSecLine;
+      b.logs.forEach(function(l){ if (l.line > at) at = l.line; });
+      lines.splice(at + 1, 0, newline);
+    } else {
+      lines.splice(b.lastLine + 1, 0, '### 日志', newline);
+    }
+    return { ok:true };
+  };
+}
 function vEditWorkAdd(name, use, pos, site){
   return function(lines){
     if (vFindBlock(parseWorkMd(lines.join('\n')), name)) return { ok:false, msg:'同名工坊条目已存在' };
@@ -2561,9 +2633,54 @@ var mtTab = 'todo';
 function vRenderMaint(){
   var body = document.getElementById('mtBody');
   document.getElementById('mtTodo').classList.toggle('on', mtTab === 'todo');
+  document.getElementById('mtDone').classList.toggle('on', mtTab === 'done');
   document.getElementById('mtWork').classList.toggle('on', mtTab === 'work');
   var dimOpts = DIMS.map(function(d){ return '<option>' + d.name + '</option>'; }).join('');
   var h = '';
+  if (mtTab === 'done') {
+    /* 已完成档案馆：只读陈列 + 点开看日志；不提供完成/删，想动先回「待办」 */
+    if (!vMdCache.todo) { body.innerHTML = '<div class="hint">还没有待办镜像。</div>'; return; }
+    var nDone = 0;
+    vTodoCats.forEach(function(c){
+      var its = c.items.filter(function(it){ return it.done && !it.datePrefixed; });
+      if (!its.length) return;
+      h += '<div class="mgrp">' + esc(c.name) + '</div>';
+      its.forEach(function(it){
+        nDone++;
+        h += '<div class="mrow done" data-cat="' + esc(c.name) + '" data-name="' + esc(it.name) + '">'
+          + '<span class="mn">' + esc(it.disp) + '</span>'
+          + '<span class="dim">' + esc(DIMS.filter(function(d){ return d.key === vDimOf(c.name, it); })[0].name) + '</span>'
+          + '<button data-op="undo">恢复</button></div>';
+      });
+    });
+    body.innerHTML = nDone ? h : '<div class="hint">还没有完成过任何条目——完成了的会收进这里。</div>';
+    body.querySelectorAll('.mrow').forEach(function(row){
+      var cat = row.dataset.cat, name = row.dataset.name;
+      row.addEventListener('click', function(ev){
+        if (ev.target.tagName === 'BUTTON') return;
+        var nxt = row.nextElementSibling;
+        if (nxt && nxt.classList && nxt.classList.contains('mdetail')) { nxt.remove(); return; }
+        var it = vFindItem(vTodoCats, cat, name);
+        if (!it) return;
+        var div = document.createElement('div');
+        div.className = 'mdetail';
+        div.innerHTML = (it.start ? '<span class="dd">开始 ' + esc(it.start) + '</span>' : '')
+          + '归属：' + esc(DIMS.filter(function(dd){ return dd.key === vDimOf(cat, it); })[0].name)
+          + (it.logs.length
+              ? '<br>' + it.logs.map(function(l){ return '<span class="dd">' + l.date + '</span><span class="dl">' + esc(l.text) + '</span>'; }).join('<br>')
+              : '<br>暂无日志');
+        row.parentNode.insertBefore(div, row.nextSibling);
+      });
+      row.querySelectorAll('button').forEach(function(btn){
+        btn.onclick = function(ev){
+          ev.stopPropagation();
+          if (btn.dataset.op === 'undo' && confirm('把「' + name + '」恢复为进行中？'))
+            vFileWrite('todo', vEditUndo(cat, name), function(){ vRenderMaint(); });
+        };
+      });
+    });
+    return;
+  }
   if (mtTab === 'todo') {
     if (!vMdCache.todo) { body.innerHTML = '<div class="hint">还没有待办镜像。配好同步后，在电脑 ob 库跑 <code>python .tools/velvet_sync.py push</code> 初始化。</div>'; return; }
     h += '<div class="panel" style="margin-bottom:12px"><div class="fg" style="margin-bottom:8px"><label>新增项目</label>'
@@ -2575,14 +2692,14 @@ function vRenderMaint(){
       + '<div class="fg"><label>预计总量（可选）</label><input id="maTotal" type="number" min="1" placeholder="如 187"></div></div>'
       + '<div class="bx-actions" style="margin-top:4px"><button class="btn pri" id="maAdd">新增</button></div></div>';
     vTodoCats.forEach(function(c){
-      if (!c.items.length) return;
+      if (!c.items.some(function(it){ return !it.done && !it.datePrefixed; })) return;
       h += '<div class="mgrp">' + esc(c.name) + '</div>';
       c.items.forEach(function(it){
-        if (it.datePrefixed) return;
-        h += '<div class="mrow' + (it.done ? ' done' : '') + '" data-cat="' + esc(c.name) + '" data-name="' + esc(it.name) + '">'
+        if (it.datePrefixed || it.done) return;   /* 已完成的收进「已完成」页签 */
+        h += '<div class="mrow" data-cat="' + esc(c.name) + '" data-name="' + esc(it.name) + '">'
           + '<span class="mn">' + esc(it.disp) + '</span>'
           + '<span class="dim">' + esc(DIMS.filter(function(d){ return d.key === vDimOf(c.name, it); })[0].name) + '</span>'
-          + (it.done ? '' : '<button data-op="done">完成</button>')
+          + '<button data-op="done">完成</button>'
           + '<button data-op="log">日志</button>'
           + '<button class="del" data-op="del">删</button></div>';
       });
@@ -2687,6 +2804,7 @@ function vRenderMaint(){
 }
 document.getElementById('tMaint').onclick = function(){ mtTab = 'todo'; vRenderMaint(); document.getElementById('ovMaint').hidden = false; };
 document.getElementById('mtTodo').onclick = function(){ mtTab = 'todo'; vRenderMaint(); };
+document.getElementById('mtDone').onclick = function(){ mtTab = 'done'; vRenderMaint(); };
 document.getElementById('mtWork').onclick = function(){ mtTab = 'work'; vRenderMaint(); };
 document.getElementById('mtClose').onclick = function(){ document.getElementById('ovMaint').hidden = true; };
 document.getElementById('ovMaint').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
