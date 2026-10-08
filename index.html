@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="3.0">
+<meta name="app-version" content="3.1">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -398,6 +398,138 @@ nav button.on::before {
 .b-week .cat { font-weight:700; flex:none; }
 .b-week .tx { color:var(--tx-2); flex:1; min-width:0; }
 
+/* ===== v3.1 时光页 ===== */
+.tbar { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.mbtn {
+  border:none; background:var(--bar); color:var(--cyan); width:30px; height:30px;
+  cursor:pointer; font-size:16px; font-weight:900; flex:none;
+  clip-path:var(--slant-sm); filter:drop-shadow(3px 3px 0 rgba(5,7,13,.5));
+}
+.mbtn:active { transform:translate(2px,2px); filter:none; }
+.tdate { display:flex; align-items:baseline; gap:8px; }
+.tdate b { font-size:18px; font-weight:900; font-style:italic; letter-spacing:1px; text-shadow:0 0 16px rgba(0,216,255,.35); }
+.tdate .tw { font-size:11px; font-weight:600; color:var(--tx-2); }
+.tfeel {
+  width:100%; border:1px solid var(--line); background:rgba(5,7,13,.88); color:var(--tx);
+  font:inherit; font-size:17px; font-weight:700; padding:12px 16px; margin-bottom:12px;
+  clip-path:var(--slant-sm);
+}
+.tfeel:focus { outline:none; border-color:var(--gold); }
+.tfeel::placeholder { color:var(--tx-3); font-weight:500; font-size:13px; }
+
+/* 时段卡（实线 = 实际发生） */
+.tl-card {
+  position:relative; background:rgba(5,7,13,.88); border:1px solid var(--line);
+  border-left:4px solid var(--cyan); padding:9px 14px 9px 12px; margin-bottom:8px;
+  clip-path:var(--slant-sm); filter:drop-shadow(3px 3px 0 rgba(0,4,16,.4));
+}
+.tl-card .r1 { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.tl-card .tm { font-size:14px; font-weight:900; font-style:italic; font-variant-numeric:tabular-nums; }
+.tl-card .ct { font-size:12px; font-weight:700; color:var(--cyan); }
+.tl-card .du { font-size:11px; color:var(--tx-3); font-variant-numeric:tabular-nums; }
+.tl-card .nt { font-size:13px; font-weight:500; color:var(--tx); margin-top:3px; line-height:1.6; white-space:pre-wrap; }
+.tl-card .lk {
+  display:inline-block; margin-top:4px; font-size:11px; font-weight:700; color:var(--gold);
+  border:1px solid var(--gold-dim); padding:0 7px; clip-path:var(--slant-sm);
+}
+.tl-card .ops { position:absolute; top:7px; right:10px; display:flex; gap:4px; }
+.tl-card .ops button {
+  border:1px solid var(--line); background:var(--bar-2); color:var(--tx-3);
+  font-size:10px; font-weight:700; padding:2px 7px; cursor:pointer; font-family:inherit;
+}
+.tl-card .ops button:hover { color:var(--cyan); border-color:var(--cyan); }
+
+/* 计划块（斜纹 + 塔罗牌框，一眼区分） */
+.tl-plan {
+  border:1px dashed var(--gold-dim); border-left:4px solid var(--gold);
+  background:
+    repeating-linear-gradient(45deg, rgba(201,168,106,.10) 0 8px, rgba(5,7,13,.88) 8px 16px);
+  cursor:pointer;
+}
+.tl-plan .arc {
+  display:inline-flex; align-items:center; gap:6px; font-size:10px; font-family:Georgia,serif;
+  color:var(--gold); border:1px solid var(--gold-dim); padding:1px 8px; letter-spacing:2px;
+  background:#0a0f1e;
+}
+.tl-plan .ptag {
+  position:absolute; top:-1px; right:-1px; background:var(--gold); color:#0a0f1e;
+  font-size:10px; font-weight:900; font-style:italic; padding:2px 10px; letter-spacing:2px;
+  clip-path:polygon(8px 0,100% 0,100% 100%,0 100%);
+}
+.tl-plan .ct { color:var(--gold); }
+.tl-sec { font-size:12px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--gold); margin:14px 0 8px; border-left:3px solid var(--gold-dim); padding-left:8px; }
+
+/* 计时 FAB */
+#tFab {
+  position:fixed; right:16px; bottom:78px; z-index:30;
+  min-width:56px; height:56px; border:none; cursor:pointer;
+  background:var(--cyan); color:#001020; clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);
+  display:flex; align-items:center; justify-content:center; gap:6px; padding:0 14px;
+  filter:drop-shadow(4px 4px 0 rgba(0,4,16,.5)); box-shadow:0 0 18px rgba(0,216,255,.5);
+  font:inherit; font-weight:900;
+}
+#tFab svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
+#tFab .ft { font-size:17px; font-style:italic; font-variant-numeric:tabular-nums; }
+#tFab.run { background:var(--yellow); box-shadow:0 0 22px rgba(245,216,74,.6); }
+@media (min-width:900px){ #tFab { bottom:24px; } }
+
+/* 维护弹出页（全屏遮罩，z-index 梯度：设置 60 → 维护 70 → 庆祝 80） */
+#ovMaint { z-index:70; }
+#ovMaint .box { max-width:640px; max-height:92vh; }
+.mtabs { display:flex; gap:8px; margin-bottom:14px; }
+.mtabs button {
+  flex:1; border:1px solid var(--line); background:var(--bar-2); color:var(--tx-3);
+  padding:9px 0; cursor:pointer; font:inherit; font-size:14px; font-weight:900; font-style:italic;
+  letter-spacing:3px; clip-path:var(--slant-sm);
+}
+.mtabs button.on { background:var(--cyan); color:#001020; border-color:var(--cyan); }
+.mgrp { font-size:12px; font-weight:900; font-style:italic; color:var(--cyan); letter-spacing:2px; margin:14px 0 6px; border-left:3px solid var(--cyan-dim); padding-left:8px; }
+.mrow {
+  display:flex; align-items:center; gap:8px; padding:7px 10px; margin-bottom:5px;
+  border:1px solid var(--line); background:var(--bar-2); clip-path:var(--slant-sm);
+  font-size:13px; font-weight:600;
+}
+.mrow.done > .mn { color:var(--tx-3); text-decoration:line-through; }
+.mrow .mn { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mrow .dim { font-size:10px; color:var(--gold); border:1px solid var(--gold-dim); padding:0 5px; flex:none; }
+.mrow button {
+  border:1px solid var(--line); background:var(--bar); color:var(--tx-2);
+  font-size:11px; font-weight:700; padding:3px 8px; cursor:pointer; font-family:inherit; flex:none;
+}
+.mrow button:hover { color:var(--cyan); border-color:var(--cyan); }
+.mrow button.del:hover { color:var(--magenta); border-color:var(--magenta); }
+.lkpick { border:1px solid var(--line); background:var(--bar); margin-top:4px; max-height:150px; overflow:auto; }
+.lkpick div { padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; }
+.lkpick div:hover { background:var(--bar-2); color:var(--cyan); }
+.lkpick div .t { color:var(--tx-3); font-size:10px; margin-left:6px; }
+
+/* 成长页：雷达 + Rank 列表 */
+#radarBox { display:flex; justify-content:center; padding:8px 0 2px; }
+.dimrow {
+  display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+  border:1px solid var(--line); background:rgba(5,7,13,.88); clip-path:var(--slant-sm);
+}
+.dimrow .dn { width:44px; flex:none; font-size:15px; font-weight:900; font-style:italic; letter-spacing:2px; }
+.dimrow .rk { font-size:12px; font-weight:900; color:var(--cyan); flex:none; font-variant-numeric:tabular-nums; }
+.dimrow .rn { font-size:13px; font-weight:700; color:var(--gold); }
+.dimrow .nx { font-size:10px; color:var(--tx-3); margin-left:auto; flex:none; font-variant-numeric:tabular-nums; }
+.dimrow .pbar { flex:1; min-width:40px; height:8px; background:rgba(255,255,255,.06); border:1px solid var(--line); clip-path:var(--slant-sm); overflow:hidden; }
+.dimrow .pbar i { display:block; height:100%; background:var(--cyan); box-shadow:0 0 8px rgba(0,216,255,.5); }
+
+/* RANK UP 庆祝章（只庆祝） */
+#ovRank { z-index:80; }
+.rankstamp {
+  text-align:center; transform:rotate(-8deg);
+  animation:stampIn .5s cubic-bezier(.2,2.2,.4,1);
+}
+.rankstamp .r1 { font-size:13px; font-family:Georgia,serif; letter-spacing:6px; color:var(--gold); }
+.rankstamp .r2 {
+  font-size:44px; font-weight:900; font-style:italic; letter-spacing:6px; color:var(--gold);
+  text-shadow:0 0 24px rgba(201,168,106,.8); margin:6px 0;
+}
+.rankstamp .r3 { font-size:16px; font-weight:900; letter-spacing:4px; color:var(--tx); }
+@keyframes stampIn { from { transform:rotate(-8deg) scale(2.4); opacity:0; } to { transform:rotate(-8deg) scale(1); opacity:1; } }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition:none !important; animation:none !important; }
 }
@@ -429,7 +561,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v3.0 · 2026-10-05</span>
+  <span class="ver">v3.1 · 2026-10-08</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -437,55 +569,31 @@ nav button.on::before {
 
 <main>
 
-<!-- ===== 今日（v3.1 启封） ===== -->
+<!-- ===== 时光（v3.1：时间线 + 计划块 + 计时） ===== -->
 <section class="page" id="page-today">
-  <div class="veil">
-    <svg width="150" height="262" viewBox="0 0 200 350" aria-label="塔罗牌背">
-      <rect x="5" y="5" width="190" height="340" rx="10" fill="#0a0f1e" stroke="#c9a86a" stroke-width="2"/>
-      <rect x="13" y="13" width="174" height="324" rx="6" fill="none" stroke="#7a6844" stroke-width="1"/>
-      <g stroke="#7a6844" stroke-width="1">
-        <line x1="164" y1="160" x2="180" y2="160"/><line x1="155.4" y1="192" x2="169.3" y2="200"/>
-        <line x1="132" y1="215.4" x2="140" y2="229.3"/><line x1="100" y1="224" x2="100" y2="240"/>
-        <line x1="68" y1="215.4" x2="60" y2="229.3"/><line x1="44.6" y1="192" x2="30.7" y2="200"/>
-        <line x1="36" y1="160" x2="20" y2="160"/><line x1="44.6" y1="128" x2="30.7" y2="120"/>
-        <line x1="68" y1="104.6" x2="60" y2="90.7"/><line x1="100" y1="96" x2="100" y2="80"/>
-        <line x1="132" y1="104.6" x2="140" y2="90.7"/><line x1="155.4" y1="128" x2="169.3" y2="120"/>
-      </g>
-      <circle cx="100" cy="160" r="46" fill="none" stroke="#c9a86a" stroke-width="1.5"/>
-      <circle cx="100" cy="160" r="58" fill="none" stroke="#7a6844" stroke-width="1" stroke-dasharray="3 5"/>
-      <circle cx="100" cy="160" r="20" fill="#c9a86a"/>
-      <circle cx="107" cy="160" r="18" fill="#0a0f1e"/>
-      <text x="100" y="322" text-anchor="middle" fill="#c9a86a" font-family="Georgia,serif" font-size="13" letter-spacing="4">VELVET</text>
-    </svg>
-    <div class="t1">今日</div>
-    <div class="en">THE COIN · 正与反</div>
-    <div class="t2">每日抽三项 · 每日塔罗 · 夜间结算<br>牌面已在印制中，v3.1 启封。</div>
-    <div class="seal">v3.1 COMING</div>
+  <div class="tbar">
+    <button class="mbtn" id="tPrev" title="前一天">‹</button>
+    <div class="tdate"><b id="tDateL"></b><span class="tw" id="tWday"></span></div>
+    <button class="mbtn" id="tNext" title="后一天">›</button>
+    <span class="spacer"></span>
+    <button class="icobtn" id="tRedraw" title="重新抽取今日计划"><svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></button>
+    <button class="icobtn" id="tMaint" title="维护待办与工坊"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></button>
+  </div>
+  <input class="tfeel" id="tFeel" maxlength="60" placeholder="今日感受（一天一条，如「又冷又热的」）">
+  <div id="tHint"></div>
+  <div id="tPlans"></div>
+  <div id="tLine"></div>
+  <div style="text-align:center;margin-top:14px">
+    <button class="btn" id="tAddBtn">＋ 补录时段</button>
   </div>
 </section>
 
-<!-- ===== 成长（v3.2 启封） ===== -->
+<!-- ===== 成长（v3.1：五维 Rank 展示；月相/成就 v3.2） ===== -->
 <section class="page" id="page-growth">
-  <div class="veil">
-    <svg width="200" height="200" viewBox="0 0 200 200" aria-label="五维雷达底图">
-      <g fill="none" stroke="#7a6844" stroke-width="1">
-        <polygon points="100,30 166.6,78.4 141.1,156.6 58.9,156.6 33.4,78.4"/>
-        <polygon points="100,53 144.7,85.5 127.6,138 72.4,138 55.3,85.5"/>
-        <polygon points="100,76.5 122.4,92.7 113.8,119 86.2,119 77.6,92.7"/>
-      </g>
-      <g stroke="rgba(0,216,255,.25)" stroke-width="1">
-        <line x1="100" y1="100" x2="100" y2="30"/><line x1="100" y1="100" x2="166.6" y2="78.4"/>
-        <line x1="100" y1="100" x2="141.1" y2="156.6"/><line x1="100" y1="100" x2="58.9" y2="156.6"/>
-        <line x1="100" y1="100" x2="33.4" y2="78.4"/>
-      </g>
-      <polygon points="100,58 140,87 125,132 80,125 48,82" fill="rgba(0,216,255,.14)" stroke="#00d8ff" stroke-width="1.5"/>
-      <circle cx="100" cy="100" r="2.5" fill="#c9a86a"/>
-    </svg>
-    <div class="t1">成长</div>
-    <div class="en">COMMU · RANK UP</div>
-    <div class="t2">五维雷达 · 月相进度 · 成就墙<br>属性从今日页记录自动推导，v3.2 启封。</div>
-    <div class="seal">v3.2 COMING</div>
-  </div>
+  <div class="ptitle">成长<span class="en">GROWTH</span><span class="sub">五维 Rank · 只增不减</span></div>
+  <div class="panel" style="margin-bottom:12px"><div id="radarBox"></div></div>
+  <div id="dimList"></div>
+  <div style="text-align:center;color:var(--tx-3);font-size:11px;font-weight:600;padding:16px 0 4px">月相进度 · 成就墙　v3.2 启封</div>
 </section>
 
 <!-- ===== 活动 ===== -->
@@ -523,7 +631,7 @@ nav button.on::before {
 
 <!-- ===== 底部导航 ===== -->
 <nav>
-  <button id="nav-today"><svg viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 17.5h6"/></svg>今日<span class="en">TODAY</span></button>
+  <button id="nav-today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3.5 2"/></svg>时光<span class="en">TIME</span></button>
   <button id="nav-growth"><svg viewBox="0 0 24 24"><polygon points="12,3 20,9 17,19 7,19 4,9"/><circle cx="12" cy="12" r="2"/></svg>成长<span class="en">GROWTH</span></button>
   <button id="nav-cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>活动<span class="en">EVENTS</span></button>
   <button id="nav-budget"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 9.8c0-1 1.1-1.8 2.5-1.8s2.5.8 2.5 1.8c0 2.6-5 1.4-5 4 0 1 1.1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg>预算<span class="en">BUDGET</span></button>
@@ -531,7 +639,7 @@ nav button.on::before {
 
 <!-- 电脑端左侧边栏（手机端不显示，用底导航） -->
 <aside id="navL">
-  <button class="lnav" data-go="today"><span class="no">01</span>今日<span class="en">TODAY</span></button>
+  <button class="lnav" data-go="today"><span class="no">01</span>时光<span class="en">TIME</span></button>
   <button class="lnav" data-go="growth"><span class="no">02</span>成长<span class="en">GROWTH</span></button>
   <button class="lnav" data-go="cal"><span class="no">03</span>活动<span class="en">EVENTS</span></button>
   <button class="lnav" data-go="budget"><span class="no">04</span>预算<span class="en">BUDGET</span></button>
@@ -627,24 +735,28 @@ nav button.on::before {
     <div class="set-sec man">
       <div class="st">维护手册</div>
       <h4>功能</h4>
-      <p>P3 风格个人工作台：今日（每日抽三 × 塔罗，v3.1）/ 成长（五维·月相·成就，v3.2）/ 活动（游戏日历甘特图）/ 预算（指令单看板 + 本周纪律）+ 老工具入口抽屉。</p>
+      <p>P3 风格个人工作台：时光（时间线 + 每日抽三计划块 + 计时 + 当日感受 + 待办/工坊维护）/ 成长（五维 Rank，xp 从 md 日志推导，只增不减）/ 活动（游戏日历甘特图）/ 预算（指令单看板 + 本周纪律）+ 老工具入口抽屉。</p>
       <h4>数据存储</h4>
-      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_gh</code>；<code>velvet_*</code> 段预留。同步走 Private 仓 <code>cal-data</code> 的 data.json（按条目合并），Token 只存本机。公开 events.json 是只读层，不进同步。</p>
+      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
       <h4>使用说明</h4>
       <ul>
+        <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块，点计划块落定实际起止并追加日志（回流 md 计分）。右下悬浮钮计时，结束自动成时段卡。「转日志」把关联时段的备注写进对应条目。</li>
+        <li>维护弹出页：待办（新增/完成/删/追加日志）与工坊（新增项目/追加日志/删）两栏；全部手术刀式写回 md，不重排全文。</li>
+        <li>成长页：雷达形状 = 近 30 天各维得分占比，五角数字 = 总 Rank；等级名到 R4 / R7 / R10 才有庆祝章，下一级名未达前显示 ???。</li>
         <li>手机用底部导航切四页；电脑点左上角月相呼出左侧边栏。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
-        <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析（纪律与预算同窗编辑）；锁定项勾选 = 已购入，计入绑定分类。</li>
-        <li>同步、导入 events.json、本手册都在顶栏「设置」里；变更后 3 秒自动推、前台每 2 分钟轮询拉。</li>
+        <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析；锁定项勾选 = 已购入，计入绑定分类。</li>
+        <li>ob 侧：首次在电脑库里跑 <code>python .tools/velvet_sync.py push</code> 初始化镜像，之后日常跑 <code>python .tools/velvet_sync.py</code> 拉取覆盖。</li>
       </ul>
       <h4>维护要点</h4>
       <ul>
         <li>预算解析器（bParse 系）与指令单格式是<b>冻结契约</b>，一个字符不改。</li>
         <li>localStorage 键名勿改；版本号在 <code>&lt;meta name="app-version"&gt;</code> 与顶栏徽标，两处同步 +1。</li>
-        <li>弹层 z-index 梯度：普通 50、设置 60，新弹层继续 +10。</li>
+        <li>弹层 z-index 梯度：普通 50、设置 60、维护 70、庆祝 80，新弹层继续 +10。</li>
         <li>只庆祝不惩罚：不加扣点/断签/streak；红色仅用于庆祝与预算超支。</li>
+        <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
-      <p>v3.0（2026-10-05）换皮迁移：P3R 亮蓝水场皮肤 + 四页框架；后台功能收编「设置」；纪律条并入预算页；v2.0 活动/预算/同步功能全量保留。流水账看 git log。</p>
+      <p>v3.1（2026-10-08）时光页启封：时间线 + 计划块 + 计时 + 维护弹出页；五维 Rank 系统（10 级 × 5 维，xp 由 md 日志推导）；成长页雷达启封；velvet/ 镜像与 data.json 同步上线。v3.0（2026-10-05）换皮迁移。流水账看 git log。</p>
     </div>
 
     <div class="bx-actions">
@@ -667,6 +779,78 @@ nav button.on::before {
       <button class="btn pri" id="bBtnParse">解析并保存</button>
     </div>
     <div class="b-msg" id="bMsg"></div>
+  </div>
+</div>
+
+<!-- 计时悬浮按钮 -->
+<button id="tFab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6"/></svg><span class="ft" id="tFabT"></span></button>
+
+<!-- 时段：补录 / 编辑 / 计划块落定 -->
+<div class="ov" id="ovTEntry" hidden>
+  <div class="box" onclick="event.stopPropagation()">
+    <h3 id="teTitle">补录时段<span class="en">TIME ENTRY</span></h3>
+    <div class="frow">
+      <div class="fg"><label>分类</label><select id="teCat"></select></div>
+      <div class="fg"><label>开始</label><input id="teS" type="time"></div>
+      <div class="fg"><label>结束</label><input id="teE" type="time"></div>
+    </div>
+    <div class="fg">
+      <label>备注</label>
+      <input id="teNote" list="noteHist" placeholder="做了什么…">
+      <datalist id="noteHist"></datalist>
+    </div>
+    <div class="fg">
+      <label>关联（可选，搜索待办 / 工坊）</label>
+      <input id="teLinkQ" placeholder="输入关键词搜索…" autocomplete="off">
+      <div class="lkpick" id="teLinkList" hidden></div>
+      <div id="teLinkCur" style="font-size:12px;color:var(--gold);margin-top:4px"></div>
+    </div>
+    <div class="bx-actions">
+      <button class="btn" id="teLogBtn" hidden>转日志</button>
+      <button class="btn" id="teDel" hidden style="color:var(--magenta)">删除</button>
+      <button class="btn" id="teCancel">取消</button>
+      <button class="btn pri" id="teOk">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 追加日志（通用：待办条目 / 工坊条目） -->
+<div class="ov" id="ovTLog" hidden>
+  <div class="box" onclick="event.stopPropagation()">
+    <h3>追加日志<span class="en">LOG</span></h3>
+    <div class="hint" id="tlTarget"></div>
+    <div class="fg"><label>日期</label><input id="tlDate" type="date"></div>
+    <div class="fg"><label>内容</label><input id="tlText" placeholder="例：新增两章； / v1.1，修好了…"></div>
+    <div class="bx-actions">
+      <button class="btn" id="tlCancel">取消</button>
+      <button class="btn pri" id="tlOk">写入</button>
+    </div>
+    <div class="b-msg" id="tlMsg"></div>
+  </div>
+</div>
+
+<!-- 维护（待办 / 工坊） -->
+<div class="ov" id="ovMaint" hidden>
+  <div class="box" onclick="event.stopPropagation()">
+    <h3>维护<span class="en">MAINTENANCE</span></h3>
+    <div class="mtabs">
+      <button id="mtTodo" class="on">待办</button>
+      <button id="mtWork">工坊</button>
+    </div>
+    <div id="mtBody"></div>
+    <div class="bx-actions">
+      <button class="btn pri" id="mtClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- RANK UP 庆祝 -->
+<div class="ov" id="ovRank" hidden>
+  <div class="rankstamp">
+    <div class="r1">RANK UP</div>
+    <div class="r2" id="rkDim"></div>
+    <div class="r3" id="rkName"></div>
+    <div style="margin-top:18px"><button class="btn pri" id="rkOk">收下</button></div>
   </div>
 </div>
 
@@ -794,6 +978,8 @@ function go(p){
   var lbs = document.querySelectorAll('#navL .lnav');
   for (var i=0;i<lbs.length;i++) lbs[i].classList.toggle('on', lbs[i].dataset.go === p);
   if (p === 'budget') { bRender(); bRenderWeekStrip(); }
+  if (p === 'today') { vRenderTime(); }
+  if (p === 'growth') { renderGrowth(); }
   window.scrollTo(0, 0);
 }
 PAGES.forEach(function(x){
@@ -1531,8 +1717,810 @@ if (ghCfg) { ghPull(); }
 /* 运行中轮询：页面可见时每 2 分钟拉一次（手机放着也会自动更新） */
 setInterval(function(){ if (ghCfg && !document.hidden && !ghBusy) ghPull(); }, 120000);
 
+/* ================= v3.1 时光 + 五维 ================= */
+/* ---- 五维定义（等级名冻结，见《格式契约.md》契约二） ---- */
+var DIMS = [
+  { key:'express',   name:'表达', ranks:['初有灵犀','提笔不慌','文思泉涌','落笔成章','笔底生花','读者催更','文名渐扬','笔下有神','文心雕龙','著作等身'] },
+  { key:'craft',     name:'匠心', ranks:['小试牛刀','熟能生巧','得心应手','渐入佳境','技艺精湛','巧夺天工','鬼斧神工','登堂入室','出神入化','点石成金'] },
+  { key:'knowledge', name:'学识', ranks:['开卷有益','勤学好问','博闻强识','见多识广','博学多闻','满腹经纶','学富五车','行走的百科','学贯中西','智周万物'] },
+  { key:'grit',      name:'毅力', ranks:['肯下笨功','日拱一卒','有条不紊','水滴石穿','持之以恒','积土成山','百折不挠','铁杵成针','金石为开','秩序本身'] },
+  { key:'vigor',     name:'活力', ranks:['忙里偷闲','乐在其中','从容不迫','游刃有余','尽情尽兴','玩出名堂','心流常驻','体验人生','游戏人间','超凡脱俗'] }
+];
+var CAT2DIM = { '梦境小说':'express','画画':'craft','模型':'craft','书':'knowledge','笔记整理':'knowledge',
+  '游戏手账':'knowledge','日记扫描':'grit','工作':'grit','游戏':'vigor','日常杂项':'vigor' };
+var ITEM2DIM = { 'ai对话转移成笔记':'grit' };   /* 条目级特例 */
+var RANK_CUM = [0,5,15,30,50,75,105,140,180,225]; /* 到达 R(i+1) 所需累计分：N→N+1 需 5N */
+var RANK_MILESTONE = { 4:1, 7:1, 10:1 };        /* 只在这三档庆祝 */
+var ARCANA = ['THE FOOL','THE MAGICIAN','THE PRIESTESS','THE EMPRESS','THE EMPEROR','THE POPE','THE LOVERS',
+  'THE CHARIOT','THE STRENGTH','THE HERMIT','WHEEL OF FORTUNE','JUSTICE','THE HANGED ONE','DEATH','TEMPERANCE',
+  'THE DEVIL','THE TOWER','THE STAR','THE MOON','THE SUN','JUDGEMENT','THE WORLD'];
+var ARC_NO = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
+var CATS_DEFAULT = ['吃饭','学习','工作','休息','内务','运动','路上','娱乐','其他'];
+
+/* ---- 本地状态（velvet_* 段） ---- */
+var vTl = [], vFeel = {}, vPlans = {}, vCats = CATS_DEFAULT.slice(), vTimer = null;
+var vMdCache = { todo:null, work:null };       /* { text, sha } */
+var vTodoCats = [], vWorkBlocks = [];          /* 解析结果 */
+var vRankSeen = null;
+try { vTl = JSON.parse(localStorage.getItem('velvet_tl_v1') || '[]'); } catch(e){}
+try { vFeel = JSON.parse(localStorage.getItem('velvet_feel_v1') || '{}'); } catch(e){}
+try { vPlans = JSON.parse(localStorage.getItem('velvet_plans_v1') || '{}'); } catch(e){}
+try { vCats = JSON.parse(localStorage.getItem('velvet_cats_v1') || 'null') || CATS_DEFAULT.slice(); } catch(e){}
+try { vTimer = JSON.parse(localStorage.getItem('velvet_timer_v1') || 'null'); } catch(e){}
+try { vMdCache = JSON.parse(localStorage.getItem('velvet_md_v1') || 'null') || { todo:null, work:null }; } catch(e){}
+try { vRankSeen = JSON.parse(localStorage.getItem('velvet_ranks_v1') || 'null'); } catch(e){}
+function vSaveAll(){
+  try {
+    localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
+    localStorage.setItem('velvet_feel_v1', JSON.stringify(vFeel));
+    localStorage.setItem('velvet_plans_v1', JSON.stringify(vPlans));
+    localStorage.setItem('velvet_cats_v1', JSON.stringify(vCats));
+  } catch(e){}
+  vSchedule();
+}
+function vSaveMdCache(){ try { localStorage.setItem('velvet_md_v1', JSON.stringify(vMdCache)); } catch(e){} }
+
+/* ---- 日期：凌晨 4 点切日 ---- */
+var tCur = new Date();
+function vToday(){ return fmtD(new Date(Date.now() - 4*3600000)); }
+tCur = new Date(vToday() + 'T12:00:00');
+function vDayStr(d){ return fmtD(d); }
+
+/* ----  seeded 随机（抽选） ---- */
+function hashStr(s){ var h = 2166136261; for (var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h>>>0; }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+/* ---- md 解析（契约二/四；鲁棒白名单，格式之外跳过） ---- */
+function parseTodoMd(text){
+  var cats = [], cur = null, curItem = null;
+  String(text||'').split('\n').forEach(function(raw, idx){
+    var m;
+    if ((m = /^#\s+(\S.*)$/.exec(raw))) { cur = { name:m[1].trim(), items:[] }; cats.push(cur); curItem = null; return; }
+    if (/^#{2,}\s/.test(raw)) return;
+    if ((m = /^- \[( |x)\]\s*(.+?)\s*$/.exec(raw))) {
+      if (!cur) return;
+      var body = m[2], it = { line:idx, done:m[1]==='x', logs:[], bullet:'-' };
+      var dm = /\[归属::([^\]]+)\]/.exec(body); if (dm) it.dimName = dm[1].trim();
+      var pm = /\[预计::([^\]]+)\]/.exec(body); if (pm) it.total = +pm[1] || 0;
+      it.name = body.replace(/\[(?:归属|开始|预计)::[^\]]*\]/g, '').trim();
+      it.disp = it.name.replace(/^\[\[|\]\]$/g, '');
+      it.datePrefixed = /^\d{4}[-.]\d{1,2}[-.]/.test(it.disp);
+      it.uncertain = /（不确定）|\(不确定\)/.test(it.disp);
+      cur.items.push(it); curItem = it; return;
+    }
+    if ((m = /^\s*([-*])\s*(\d{4})-(\d{1,2})-(\d{1,2})\s*[：:]\s*(.*)$/.exec(raw)) && curItem) {
+      var dt = m[2]+'-'+pad(+m[3])+'-'+pad(+m[4]);
+      curItem.logs.push({ line:idx, date:dt, text:m[5], bullet:m[1] });
+      curItem.bullet = m[1];
+      var pg = /(\d+)\s*\/\s*(\d+)/.exec(m[5]);
+      if (pg) { curItem.prog = +pg[1]; if (!curItem.total) curItem.total = +pg[2]; }
+    }
+  });
+  return cats;
+}
+function parseWorkMd(text){
+  var blocks = [], cur = null, sec = '';
+  String(text||'').split('\n').forEach(function(raw, idx){
+    var m;
+    if ((m = /^#{1,2}\s+\[\[(.+?)\]\]/.exec(raw))) {
+      cur = { name:m[1].trim(), use:'', pos:'', site:'', logs:[], headingLine:idx, logSecLine:-1, lastLine:idx, bullet:'-' };
+      blocks.push(cur); sec = ''; return;
+    }
+    if (!cur) return;
+    if (/^(---|\*\*\*)\s*$/.test(raw)) return;
+    if ((m = /^\*\*用途\*\*[：:]\s*(.*)$/.exec(raw))) { cur.use = m[1].trim(); return; }
+    if ((m = /^\*\*文件位置\*\*[：:]\s*(.*)$/.exec(raw))) { cur.pos = m[1].trim(); return; }
+    if ((m = /^\*\*维护站\*\*[：:]\s*(.*)$/.exec(raw))) { cur.site = m[1].trim(); return; }
+    if (/^###\s*日志/.test(raw)) { cur.logSecLine = idx; sec = 'log'; return; }
+    if (/^#{1,3}\s/.test(raw)) { sec = ''; return; }
+    if (raw.trim()) cur.lastLine = idx;
+    if (sec === 'log' && (m = /^\s*([-*])\s*(\d{4})-(\d{1,2})-(\d{1,2})\s*[：:]\s*(.*)$/.exec(raw))) {
+      cur.logs.push({ line:idx, date:m[2]+'-'+pad(+m[3])+'-'+pad(+m[4]), text:m[5], bullet:m[1] });
+      cur.bullet = m[1];
+    }
+  });
+  return blocks;
+}
+function vParseAll(){
+  if (vMdCache.todo) vTodoCats = parseTodoMd(vMdCache.todo.text);
+  if (vMdCache.work) vWorkBlocks = parseWorkMd(vMdCache.work.text);
+}
+function vDimOf(catName, it){
+  if (it.dimName) {
+    for (var i=0;i<DIMS.length;i++) if (DIMS[i].name === it.dimName || DIMS[i].key === it.dimName) return DIMS[i].key;
+  }
+  if (ITEM2DIM[it.disp]) return ITEM2DIM[it.disp];
+  return CAT2DIM[catName] || 'vigor';
+}
+function vCompBonus(days){
+  if (days >= 16) return 30; if (days >= 13) return 25; if (days >= 10) return 20;
+  if (days >= 7) return 15; if (days >= 4) return 10; return 5;
+}
+/* xp 全部由 md 推导：使用分 = 带日期日志行数（每行 +1）；完成分按有日志天数一次性发 */
+function vComputeXp(){
+  var total = { express:0, craft:0, knowledge:0, grit:0, vigor:0 };
+  var m30 =   { express:0, craft:0, knowledge:0, grit:0, vigor:0 };
+  var cutoff = fmtD(new Date(Date.now() - 29*86400000));
+  vTodoCats.forEach(function(c){
+    c.items.forEach(function(it){
+      var dim = vDimOf(c.name, it);
+      if (it.datePrefixed) {  /* 游离一次性记录 → 每条 +1 */
+        total[dim]++;
+        var dm0 = /^(\d{4})[-.](\d{1,2})[-.](\d{1,2})/.exec(it.disp);
+        if (dm0 && (dm0[1]+'-'+pad(+dm0[2])+'-'+pad(+dm0[3])) >= cutoff) m30[dim]++;
+        return;
+      }
+      var days = {};
+      it.logs.forEach(function(l){
+        days[l.date] = 1; total[dim]++;
+        if (l.date >= cutoff) m30[dim]++;
+      });
+      if (it.done) total[dim] += vCompBonus(Object.keys(days).length);
+    });
+  });
+  vWorkBlocks.forEach(function(b){
+    b.logs.forEach(function(l){ total.craft++; if (l.date >= cutoff) m30.craft++; });
+  });
+  return { total:total, m30:m30 };
+}
+function vRankOf(xp){ var r = 1; for (var i=1;i<10;i++) if (xp >= RANK_CUM[i]) r = i+1; return r; }
+function vCheckRanks(){
+  var xp = vComputeXp().total, first = !vRankSeen;
+  var seen = vRankSeen || {};
+  DIMS.forEach(function(d){
+    var r = vRankOf(xp[d.key]);
+    if (!first && r > (seen[d.key] || 1) && RANK_MILESTONE[r]) {
+      document.getElementById('rkDim').textContent = d.name + ' · R' + r;
+      document.getElementById('rkName').textContent = d.ranks[r-1];
+      document.getElementById('ovRank').hidden = false;
+    }
+    seen[d.key] = r;
+  });
+  vRankSeen = seen;
+  try { localStorage.setItem('velvet_ranks_v1', JSON.stringify(vRankSeen)); } catch(e){}
+}
+document.getElementById('rkOk').onclick = function(){ document.getElementById('ovRank').hidden = true; };
+
+/* ---- velvet 文件 GitHub 读写（sha 纪律：写前必 GET，禁盲写；与冻结的 data.json 同步互不干扰） ---- */
+function vUrl(path){ return 'https://api.github.com/repos/' + ghCfg.user + '/' + ghCfg.repo + '/contents/velvet/' + encodeURIComponent(path); }
+function vGet(path){
+  return fetch(vUrl(path), { headers:{ 'Authorization':'token ' + ghCfg.token } })
+    .then(function(r){
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().then(function(f){ return { text:b64d(f.content), sha:f.sha }; });
+    });
+}
+function vPut(path, text, sha, msg){
+  return fetch(vUrl(path), {
+    method:'PUT',
+    headers:{ 'Authorization':'token ' + ghCfg.token, 'Content-Type':'application/json' },
+    body: JSON.stringify({ message: msg || 'velvet sync', content: b64e(text), branch:'main', sha: sha || undefined })
+  }).then(function(r){
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json().then(function(j){ return j.content && j.content.sha; });
+  });
+}
+/* md 手术刀写回：editFn(lines) 就地改行数组，返回 {ok} 或 {ok:false,msg} */
+function vFileWrite(which, editFn, done){
+  if (!ghCfg) { alert('先在顶栏「设置」里配置 GitHub 同步'); return; }
+  var path = which === 'todo' ? '0-待办事项.md' : '0-工坊.md';
+  syncLine('写入 ' + path + ' …');
+  vGet(path).then(function(f){
+    if (!f) { syncLine(''); alert('仓库里还没有 velvet/' + path + '\n先在电脑 ob 库里跑：python .tools/velvet_sync.py push'); return; }
+    var lines = f.text.split('\n');
+    var r = editFn(lines);
+    if (!r || !r.ok) { syncLine(''); alert((r && r.msg) || '没找到目标行，未改动'); return; }
+    var text = lines.join('\n');
+    if (/ghp_[A-Za-z0-9]|github_pat_|gho_[A-Za-z0-9]|ghu_[A-Za-z0-9]/.test(text)) {
+      syncLine(''); alert('安全红线：内容疑似包含 Token，已拒绝写入'); return;
+    }
+    vPut(path, text, f.sha, 'velvet: ' + path).then(function(nsha){
+      vMdCache[which] = { text:text, sha:nsha };
+      vSaveMdCache(); vParseAll(); vCheckRanks(); vRenderTime(); renderGrowth();
+      syncLine('已写入 ' + new Date().toLocaleTimeString());
+      if (done) done();
+    }).catch(function(e){ syncLine('写入失败：' + e.message); alert('写入失败：' + e.message); });
+  }).catch(function(e){ syncLine('读取失败：' + e.message); alert('读取失败：' + e.message); });
+}
+/* velvet/data.json：拉（合并） / 推（去抖 3 秒） */
+var vGhTimer = null, vGhBusy = false;
+function vCollect(){ return { updatedAt:Date.now(), tl:vTl, feel:vFeel, plans:vPlans, cats:vCats }; }
+function vMergeData(local, remote){
+  if (!remote) return local;
+  var map = {};
+  (remote.tl || []).forEach(function(e){ if (e && e.id) map[e.id] = e; });
+  (local.tl || []).forEach(function(e){ if (e && e.id && (!map[e.id] || (e.mu||0) >= (map[e.id].mu||0))) map[e.id] = e; });
+  local.tl = Object.keys(map).map(function(k){ return map[k]; });
+  for (var k in (remote.feel || {})) if (!local.feel[k] || (remote.feel[k].mu||0) > (local.feel[k].mu||0)) local.feel[k] = remote.feel[k];
+  for (var k2 in (remote.plans || {})) if (!local.plans[k2] || (remote.plans[k2].pu||0) > (local.plans[k2].pu||0)) local.plans[k2] = remote.plans[k2];
+  if (Array.isArray(remote.cats) && (remote.updatedAt||0) > (local.updatedAt||0)) local.cats = remote.cats;
+  return local;
+}
+function vPullData(){
+  if (!ghCfg) return Promise.resolve(false);
+  return vGet('data.json').then(function(f){
+    if (!f) return false;
+    var remote = JSON.parse(f.text);
+    var merged = vMergeData(vCollect(), remote);
+    vTl = merged.tl || []; vFeel = merged.feel || {}; vPlans = merged.plans || {}; vCats = merged.cats || vCats;
+    try {
+      localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
+      localStorage.setItem('velvet_feel_v1', JSON.stringify(vFeel));
+      localStorage.setItem('velvet_plans_v1', JSON.stringify(vPlans));
+      localStorage.setItem('velvet_cats_v1', JSON.stringify(vCats));
+    } catch(e){}
+    vRenderTime(); renderGrowth();
+    return true;
+  }).catch(function(){ return false; });
+}
+function vPushData(){
+  if (!ghCfg || vGhBusy) return Promise.resolve(false);
+  vGhBusy = true;
+  return vGet('data.json').then(function(f){
+    var merged = vMergeData(vCollect(), f ? JSON.parse(f.text) : null);
+    merged.updatedAt = Date.now();
+    return vPut('data.json', JSON.stringify(merged), f ? f.sha : null, 'velvet sync');
+  }).then(function(){ vGhBusy = false; return true; })
+    .catch(function(){ vGhBusy = false; return false; });
+}
+function vSchedule(){ if (!ghCfg) return; clearTimeout(vGhTimer); vGhTimer = setTimeout(vPushData, 3000); }
+function vPullMd(){
+  if (!ghCfg) return Promise.resolve(false);
+  return Promise.all([
+    vGet('0-待办事项.md').catch(function(){ return null; }),
+    vGet('0-工坊.md').catch(function(){ return null; })
+  ]).then(function(rs){
+    var changed = false;
+    if (rs[0] && (!vMdCache.todo || rs[0].sha !== vMdCache.todo.sha)) { vMdCache.todo = rs[0]; changed = true; }
+    if (rs[1] && (!vMdCache.work || rs[1].sha !== vMdCache.work.sha)) { vMdCache.work = rs[1]; changed = true; }
+    if (changed) { vSaveMdCache(); vParseAll(); vCheckRanks(); vRenderTime(); renderGrowth(); }
+    return changed;
+  });
+}
+function vSyncAll(){ return Promise.all([vPullData(), vPushData(), vPullMd()]); }
+
+/* ---- 抽选（契约二：种子 + 权重 1/(1+历史抽中次数)，（不确定）×0.3） ---- */
+function vPool(){
+  var out = [];
+  vTodoCats.forEach(function(c){
+    c.items.forEach(function(it){
+      if (!it.done && !it.datePrefixed) out.push({ key:c.name + '|' + it.name, cat:c.name, name:it.disp, uncertain:it.uncertain, prog:it.prog, total:it.total });
+    });
+  });
+  return out;
+}
+function vDoDraw(d, seed){
+  var pool = vPool();
+  if (!pool.length) return false;
+  var hist = {};
+  Object.keys(vPlans).forEach(function(k){ (vPlans[k].items || []).forEach(function(it){ hist[it.key] = (hist[it.key]||0) + 1; }); });
+  var rnd = mulberry32(seed), picks = [], pl = pool.slice();
+  for (var n = 0; n < 3 && pl.length; n++){
+    var ws = pl.map(function(it){ return (it.uncertain ? 0.3 : 1) / (1 + (hist[it.key]||0)); });
+    var sum = 0, i;
+    for (i=0;i<ws.length;i++) sum += ws[i];
+    var x = rnd() * sum;
+    for (i=0;i<ws.length;i++){ x -= ws[i]; if (x <= 0) break; }
+    if (i >= pl.length) i = pl.length - 1;
+    picks.push(pl[i]); pl.splice(i, 1);
+  }
+  vPlans[d] = { seed:seed, pu:Date.now(), items:picks.map(function(it){
+    return { key:it.key, cat:it.cat, name:it.name, card:Math.floor(rnd()*22), st:'open' };
+  })};
+  vSaveAll();
+  return true;
+}
+function vEnsurePlan(){
+  var d = vToday();
+  if (!vPlans[d] && vPool().length) { vDoDraw(d, hashStr(d)); }
+}
+
+/* ---- 时光页渲染 ---- */
+function vDurText(s, e){
+  var a = s.split(':'), b = e.split(':');
+  var mins = (+b[0]*60 + +b[1]) - (+a[0]*60 + +a[1]);
+  if (mins < 0) mins += 1440;
+  if (mins === 0) return '0秒';
+  if (mins < 60) return mins + '分';
+  return Math.floor(mins/60) + '小时' + (mins%60 ? (mins%60) + '分' : '');
+}
+function vRenderTime(){
+  var d = vDayStr(tCur);
+  var wd = ['周日','周一','周二','周三','周四','周五','周六'][tCur.getDay()];
+  document.getElementById('tDateL').textContent = d;
+  document.getElementById('tWday').textContent = wd + (d === vToday() ? ' · 今天' : '');
+  var feel = vFeel[d];
+  var feelEl = document.getElementById('tFeel');
+  if (feelEl.value !== (feel && feel.text || '')) feelEl.value = (feel && feel.text) || '';
+
+  var hint = document.getElementById('tHint');
+  if (!ghCfg) {
+    hint.innerHTML = '<div class="panel" style="font-size:12.5px;color:var(--tx-2);line-height:1.9;margin-bottom:12px">'
+      + '时光页的待办池与日志写回走 cal-data 仓的 <code>velvet/</code> 镜像。<br>'
+      + '① 顶栏「设置」配好 GitHub 同步；② 在电脑 ob 库里跑一次 <code>python .tools/velvet_sync.py push</code> 初始化两个 md 镜像。'
+      + '</div>';
+  } else hint.innerHTML = '';
+
+  /* 计划块（19:00，塔罗牌背底纹） */
+  var ph = '';
+  var plan = vPlans[d];
+  if (plan && plan.items && plan.items.some(function(it){ return it.st === 'open'; })) {
+    ph += '<div class="tl-sec">今日计划 · 19:00<span style="font-weight:500;color:var(--tx-3);margin-left:8px;letter-spacing:0">点卡片落定实际时段</span></div>';
+    plan.items.forEach(function(it, i){
+      if (it.st !== 'open') return;
+      ph += '<div class="tl-card tl-plan" data-pi="' + i + '">'
+        + '<span class="ptag">计划</span>'
+        + '<div class="r1"><span class="tm">19:00</span><span class="arc">' + ARC_NO[it.card] + ' · ' + ARCANA[it.card] + '</span></div>'
+        + '<div class="nt">' + esc(it.name) + '</div>'
+        + '<div class="lk">' + esc(it.cat) + '</div>'
+        + '</div>';
+    });
+  }
+  document.getElementById('tPlans').innerHTML = ph;
+
+  /* 时间线（按开始时间排序） */
+  var entries = vTl.filter(function(e){ return e.d === d; })
+    .sort(function(a,b){ return a.s < b.s ? -1 : 1; });
+  var h = '';
+  entries.forEach(function(e){
+    h += '<div class="tl-card" data-eid="' + e.id + '">'
+      + '<div class="ops">'
+      + (e.link && !e.lg ? '<button data-op="log">转日志</button>' : '')
+      + '<button data-op="edit">编辑</button><button data-op="del">删除</button></div>'
+      + '<div class="r1"><span class="tm">' + e.s + '–' + e.e + '</span>'
+      + '<span class="ct">' + esc(e.c) + '</span><span class="du">' + vDurText(e.s, e.e) + '</span></div>'
+      + (e.note ? '<div class="nt">' + esc(e.note) + '</div>' : '')
+      + (e.link ? '<div class="lk">⚑ ' + esc(e.link.name) + (e.lg ? ' · 已转日志' : '') + '</div>' : '')
+      + '</div>';
+  });
+  if (!h && !ph) h = '<div class="empty">' + (d > vToday() ? '未来还是一片空白' : '这一天还没有记录') + '</div>';
+  document.getElementById('tLine').innerHTML = h;
+
+  /* 绑定 */
+  document.querySelectorAll('#tLine .tl-card').forEach(function(card){
+    var eid = card.dataset.eid;
+    card.querySelectorAll('.ops button').forEach(function(btn){
+      btn.onclick = function(ev){
+        ev.stopPropagation();
+        var e = null;
+        for (var i=0;i<vTl.length;i++) if (vTl[i].id === eid) e = vTl[i];
+        if (!e) return;
+        var op = btn.dataset.op;
+        if (op === 'del') { if (confirm('删除这个时段？')) { vTl = vTl.filter(function(x){ return x.id !== eid; }); vSaveAll(); vRenderTime(); } }
+        if (op === 'edit') vOpenEntry('edit', e);
+        if (op === 'log') vOpenLog({ t:e.link.t, cat:e.link.cat, name:e.link.name }, e.note, function(){ e.lg = true; e.mu = Date.now(); vSaveAll(); vRenderTime(); });
+      };
+    });
+  });
+  document.querySelectorAll('#tPlans .tl-plan').forEach(function(card){
+    card.onclick = function(){ vOpenEntry('plan', null, +card.dataset.pi); };
+  });
+}
+document.getElementById('tPrev').onclick = function(){ tCur.setDate(tCur.getDate()-1); vRenderTime(); };
+document.getElementById('tNext').onclick = function(){ tCur.setDate(tCur.getDate()+1); vRenderTime(); };
+document.getElementById('tFeel').addEventListener('change', function(){
+  var d = vDayStr(tCur);
+  vFeel[d] = { text:this.value.trim(), mu:Date.now() };
+  vSaveAll();
+});
+document.getElementById('tRedraw').onclick = function(){
+  var d = vDayStr(tCur);
+  if (!vPool().length) { alert('待办池是空的：先去「维护」或初始化 md 镜像'); return; }
+  var rd = '';
+  try { rd = localStorage.getItem('velvet_redraw_v1') || ''; } catch(e){}
+  if (rd === vToday()) { alert('今天的重新抽取已经用过了，明天再来。'); return; }
+  try { localStorage.setItem('velvet_redraw_v1', vToday()); } catch(e){}
+  vDoDraw(d, (Math.random()*0xffffffff)>>>0);
+  vRenderTime();
+};
+document.getElementById('tAddBtn').onclick = function(){ vOpenEntry('new', null); };
+
+/* ---- 时段弹窗（补录 / 编辑 / 计划落定 / 计时开始 四态） ---- */
+var teMode = 'new', teEntry = null, tePlanIdx = -1, teLink = null;
+function vFillCats(sel){
+  var h = '';
+  vCats.forEach(function(c){ h += '<option' + (c === sel ? ' selected' : '') + '>' + esc(c) + '</option>'; });
+  document.getElementById('teCat').innerHTML = h;
+}
+function vLinkLabel(l){ return l ? ('⚑ ' + l.name + '（' + (l.t === 'work' ? '工坊' : l.cat) + '）') : ''; }
+function vOpenEntry(mode, entry, planIdx){
+  teMode = mode; teEntry = entry || null; tePlanIdx = (planIdx == null ? -1 : planIdx);
+  teLink = entry && entry.link ? entry.link : null;
+  var ov = document.getElementById('ovTEntry');
+  var now = new Date();
+  var nowHM = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  var PLAN2CAT = { '工作':'工作', '游戏':'娱乐', '日常杂项':'其他' };
+  document.getElementById('teTitle').innerHTML =
+    (mode === 'edit' ? '编辑时段' : mode === 'plan' ? '落定计划' : mode === 'timer' ? '开始计时' : '补录时段')
+    + '<span class="en">TIME ENTRY</span>';
+  document.getElementById('teS').parentNode.style.display = (mode === 'timer') ? 'none' : '';
+  document.getElementById('teE').parentNode.style.display = (mode === 'timer') ? 'none' : '';
+  var cat = '其他', s = nowHM, e = nowHM, note = '';
+  if (mode === 'edit' && entry) { cat = entry.c; s = entry.s; e = entry.e; note = entry.note || ''; }
+  if (mode === 'plan') {
+    var it = vPlans[vDayStr(tCur)].items[tePlanIdx];
+    cat = PLAN2CAT[it.cat] || '学习'; s = '19:00';
+    teLink = { t:'todo', cat:it.cat, name:it.name };
+  }
+  vFillCats(cat);
+  document.getElementById('teS').value = s;
+  document.getElementById('teE').value = e;
+  document.getElementById('teNote').value = note;
+  document.getElementById('teLinkQ').value = '';
+  document.getElementById('teLinkList').hidden = true;
+  document.getElementById('teLinkCur').textContent = vLinkLabel(teLink);
+  document.getElementById('teDel').hidden = (mode !== 'edit');
+  document.getElementById('teLogBtn').hidden = !(mode === 'edit' && entry && entry.link && !entry.lg);
+  document.getElementById('teOk').textContent = (mode === 'timer') ? '开始' : '保存';
+  /* 历史备注快捷复用 */
+  var seen = {}, hh = '';
+  vTl.slice().reverse().forEach(function(x){
+    if (x.note && !seen[x.note]) { seen[x.note] = 1; hh += '<option value="' + esc(x.note) + '">'; }
+  });
+  document.getElementById('noteHist').innerHTML = hh;
+  ov.hidden = false;
+}
+document.getElementById('teLinkQ').addEventListener('input', function(){
+  var q = this.value.trim(), box = document.getElementById('teLinkList');
+  if (!q) { box.hidden = true; box.innerHTML = ''; return; }
+  var res = [];
+  vPool().forEach(function(it){ if (it.name.indexOf(q) >= 0) res.push({ t:'todo', cat:it.cat, name:it.name }); });
+  vWorkBlocks.forEach(function(b){ if (b.name.indexOf(q) >= 0) res.push({ t:'work', cat:'工坊', name:b.name }); });
+  res = res.slice(0, 8);
+  box.innerHTML = res.map(function(r, i){
+    return '<div data-li="' + i + '">' + esc(r.name) + '<span class="t">' + (r.t === 'work' ? '工坊' : esc(r.cat)) + '</span></div>';
+  }).join('') || '<div style="color:var(--tx-3)">无匹配</div>';
+  box.hidden = false;
+  box.querySelectorAll('div[data-li]').forEach(function(div){
+    div.onclick = function(){
+      teLink = res[+div.dataset.li];
+      document.getElementById('teLinkCur').textContent = vLinkLabel(teLink);
+      box.hidden = true;
+      document.getElementById('teLinkQ').value = '';
+    };
+  });
+});
+document.getElementById('teCancel').onclick = function(){ document.getElementById('ovTEntry').hidden = true; };
+document.getElementById('ovTEntry').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('teDel').onclick = function(){
+  if (!teEntry || !confirm('删除这个时段？')) return;
+  vTl = vTl.filter(function(x){ return x.id !== teEntry.id; });
+  vSaveAll(); vRenderTime();
+  document.getElementById('ovTEntry').hidden = true;
+};
+document.getElementById('teLogBtn').onclick = function(){
+  if (!teEntry || !teEntry.link) return;
+  document.getElementById('ovTEntry').hidden = true;
+  vOpenLog(teEntry.link, teEntry.note, function(){ teEntry.lg = true; teEntry.mu = Date.now(); vSaveAll(); vRenderTime(); });
+};
+document.getElementById('teOk').onclick = function(){
+  var cat = document.getElementById('teCat').value;
+  var note = document.getElementById('teNote').value.trim();
+  if (teMode === 'timer') {
+    vTimer = { c:cat, note:note, link:teLink, ts:Date.now() };
+    try { localStorage.setItem('velvet_timer_v1', JSON.stringify(vTimer)); } catch(e){}
+    vFabTick();
+    document.getElementById('ovTEntry').hidden = true;
+    return;
+  }
+  var s = document.getElementById('teS').value, e = document.getElementById('teE').value;
+  if (!s || !e) { alert('起止时间必填'); return; }
+  if (teMode === 'edit' && teEntry) {
+    teEntry.c = cat; teEntry.s = s; teEntry.e = e; teEntry.note = note; teEntry.link = teLink; teEntry.mu = Date.now();
+    vSaveAll(); vRenderTime();
+    document.getElementById('ovTEntry').hidden = true;
+    return;
+  }
+  var entry = { id:'e' + Date.now().toString(36) + Math.floor(Math.random()*36).toString(36),
+    d:vDayStr(tCur), c:cat, s:s, e:e, note:note, link:teLink, mu:Date.now() };
+  vTl.push(entry);
+  if (teMode === 'plan') {
+    var d = vDayStr(tCur);
+    vPlans[d].items[tePlanIdx].st = 'done';
+    if (note) {  /* 日志回流 md（计使用分） */
+      var it = vPlans[d].items[tePlanIdx];
+      vFileWrite('todo', vEditAppendLog(it.cat, it.name, d, note), null);
+    }
+  }
+  vSaveAll(); vRenderTime();
+  document.getElementById('ovTEntry').hidden = true;
+};
+
+/* ---- 计时 FAB（时间戳差值，锁屏/切后台不计时差） ---- */
+function vFabTick(){
+  var fab = document.getElementById('tFab'), ft = document.getElementById('tFabT');
+  if (!vTimer) { fab.classList.remove('run'); ft.textContent = ''; return; }
+  fab.classList.add('run');
+  var sec = Math.floor((Date.now() - vTimer.ts) / 1000);
+  var hh = Math.floor(sec/3600), mm = Math.floor(sec%3600/60), ss = sec%60;
+  ft.textContent = (hh ? hh + ':' : '') + pad(mm) + ':' + pad(ss);
+}
+setInterval(vFabTick, 1000);
+document.getElementById('tFab').onclick = function(){
+  if (!vTimer) { vOpenEntry('timer', null); return; }
+  if (!confirm('结束计时并记入时间线？（' + vTimer.c + (vTimer.note ? ' · ' + vTimer.note : '') + '）')) return;
+  var st = new Date(vTimer.ts), en = new Date();
+  var d = fmtD(new Date(vTimer.ts - 4*3600000));   /* 4 点切日：按开始时间归日 */
+  vTl.push({ id:'e' + Date.now().toString(36), d:d, c:vTimer.c,
+    s:pad(st.getHours()) + ':' + pad(st.getMinutes()), e:pad(en.getHours()) + ':' + pad(en.getMinutes()),
+    note:vTimer.note || '', link:vTimer.link || null, mu:Date.now() });
+  vTimer = null;
+  try { localStorage.removeItem('velvet_timer_v1'); } catch(e){}
+  vSaveAll(); vRenderTime(); vFabTick();
+};
+
+/* ---- 通用追加日志弹窗 ---- */
+var tlTarget = null, tlDone = null;
+function vOpenLog(target, prefill, done){
+  tlTarget = target; tlDone = done || null;
+  document.getElementById('tlTarget').textContent =
+    (target.t === 'work' ? '工坊 · ' : (target.cat + ' · ')) + target.name;
+  document.getElementById('tlDate').value = vToday();
+  document.getElementById('tlText').value = prefill || '';
+  document.getElementById('tlMsg').textContent = '';
+  document.getElementById('ovTLog').hidden = false;
+}
+document.getElementById('tlCancel').onclick = function(){ document.getElementById('ovTLog').hidden = true; };
+document.getElementById('tlOk').onclick = function(){
+  var date = document.getElementById('tlDate').value;
+  var text = document.getElementById('tlText').value.trim();
+  if (!date || !text) { document.getElementById('tlMsg').textContent = '日期和内容必填'; return; }
+  if (!tlTarget) return;
+  var which = tlTarget.t === 'work' ? 'work' : 'todo';
+  var edit = which === 'work'
+    ? vEditWorkLog(tlTarget.name, date, text)
+    : vEditAppendLog(tlTarget.cat, tlTarget.name, date, text);
+  vFileWrite(which, edit, function(){
+    document.getElementById('ovTLog').hidden = true;
+    if (tlDone) tlDone();
+  });
+};
+
+/* ---- md 手术刀（editFn(lines)：就地改，返回 {ok}） ---- */
+function vFindItem(cats, cat, name){
+  for (var i=0;i<cats.length;i++) if (cats[i].name === cat)
+    for (var j=0;j<cats[i].items.length;j++) if (cats[i].items[j].name === name || cats[i].items[j].disp === name)
+      return cats[i].items[j];
+  return null;
+}
+function vEditAppendLog(cat, name, date, text){
+  return function(lines){
+    var it = vFindItem(parseTodoMd(lines.join('\n')), cat, name);
+    if (!it) return { ok:false, msg:'找不到条目：' + name };
+    if (!/；\s*$/.test(text)) text += '；';
+    var at = it.line;
+    it.logs.forEach(function(l){ if (l.line > at) at = l.line; });
+    lines.splice(at + 1, 0, '  ' + it.bullet + ' ' + date + '：' + text);
+    return { ok:true };
+  };
+}
+function vEditComplete(cat, name){
+  return function(lines){
+    var it = vFindItem(parseTodoMd(lines.join('\n')), cat, name);
+    if (!it) return { ok:false, msg:'找不到条目：' + name };
+    lines[it.line] = lines[it.line].replace('- [ ]', '- [x]');
+    return { ok:true };
+  };
+}
+function vEditDeleteItem(cat, name){
+  return function(lines){
+    var it = vFindItem(parseTodoMd(lines.join('\n')), cat, name);
+    if (!it) return { ok:false, msg:'找不到条目：' + name };
+    var end = it.line;
+    it.logs.forEach(function(l){ if (l.line > end) end = l.line; });
+    lines.splice(it.line, end - it.line + 1);
+    return { ok:true };
+  };
+}
+function vEditAddItem(cat, name, dimName, start, total){
+  return function(lines){
+    var cats = parseTodoMd(lines.join('\n'));
+    if (vFindItem(cats, cat, name)) return { ok:false, msg:'同名条目已存在' };
+    var line = '- [ ] ' + name
+      + (dimName ? '[归属::' + dimName + ']' : '')
+      + (start ? '[开始::' + start + ']' : '')
+      + (total ? '[预计::' + total + ']' : '');
+    var catLine = -1;
+    for (var i=0;i<lines.length;i++){
+      if (/^#\s+/.test(lines[i]) && lines[i].replace(/^#\s+/, '').trim() === cat) { catLine = i; break; }
+    }
+    if (catLine < 0) {  /* 分类不存在：文件末尾新建分区 */
+      lines.push('', '# ' + cat, line);
+      return { ok:true };
+    }
+    /* 找分区内最后一个内容行（`***`/`---` 装饰分隔线不算内容，插到它前面） */
+    var last = catLine;
+    for (var j = catLine + 1; j < lines.length; j++){
+      if (/^#\s+/.test(lines[j])) break;
+      if (lines[j].trim() && !/^(---|\*\*\*)$/.test(lines[j].trim())) last = j;
+    }
+    lines.splice(last + 1, 0, line);
+    return { ok:true };
+  };
+}
+function vFindBlock(blocks, name){
+  for (var i=0;i<blocks.length;i++) if (blocks[i].name === name) return blocks[i];
+  return null;
+}
+function vEditWorkLog(name, date, text){
+  return function(lines){
+    var b = vFindBlock(parseWorkMd(lines.join('\n')), name);
+    if (!b) return { ok:false, msg:'找不到工坊条目：' + name };
+    if (!/；\s*$/.test(text)) text += '；';
+    var newline = '  ' + b.bullet + ' ' + date + '：' + text;
+    if (b.logSecLine >= 0) {
+      var at = b.logSecLine;
+      b.logs.forEach(function(l){ if (l.line > at) at = l.line; });
+      lines.splice(at + 1, 0, newline);
+    } else {
+      lines.splice(b.lastLine + 1, 0, '### 日志', newline);
+    }
+    return { ok:true };
+  };
+}
+function vEditWorkAdd(name, use, pos, site){
+  return function(lines){
+    if (vFindBlock(parseWorkMd(lines.join('\n')), name)) return { ok:false, msg:'同名工坊条目已存在' };
+    lines.push('', '---', '## [[' + name + ']]', '**用途**：' + use, '**文件位置**：' + pos);
+    if (site) lines.push('**维护站**：' + site);
+    lines.push('### 日志');
+    return { ok:true };
+  };
+}
+function vEditWorkDelete(name){
+  return function(lines){
+    var b = vFindBlock(parseWorkMd(lines.join('\n')), name);
+    if (!b) return { ok:false, msg:'找不到工坊条目：' + name };
+    var from = b.headingLine;
+    if (from > 0 && /^(---|\*\*\*)\s*$/.test(lines[from-1].trim())) from--;  /* 连同前置分隔线 */
+    var to = b.headingLine + 1;
+    while (to < lines.length && !/^(---|\*\*\*)\s*$/.test(lines[to].trim()) && !/^#{1,2}\s+\[\[/.test(lines[to])) to++;
+    lines.splice(from, to - from);
+    return { ok:true };
+  };
+}
+
+/* ---- 维护弹出页 ---- */
+var mtTab = 'todo';
+function vRenderMaint(){
+  var body = document.getElementById('mtBody');
+  document.getElementById('mtTodo').classList.toggle('on', mtTab === 'todo');
+  document.getElementById('mtWork').classList.toggle('on', mtTab === 'work');
+  var dimOpts = DIMS.map(function(d){ return '<option>' + d.name + '</option>'; }).join('');
+  var h = '';
+  if (mtTab === 'todo') {
+    if (!vMdCache.todo) { body.innerHTML = '<div class="hint">还没有待办镜像。配好同步后，在电脑 ob 库跑 <code>python .tools/velvet_sync.py push</code> 初始化。</div>'; return; }
+    h += '<div class="panel" style="margin-bottom:12px"><div class="fg" style="margin-bottom:8px"><label>新增项目</label>'
+      + '<input id="maName" placeholder="项目名称"></div>'
+      + '<div class="frow"><div class="fg"><label>分类</label><select id="maCat">'
+      + vTodoCats.map(function(c){ return '<option>' + esc(c.name) + '</option>'; }).join('')
+      + '</select></div><div class="fg"><label>五维归属</label><select id="maDim">' + dimOpts + '</select></div></div>'
+      + '<div class="frow"><div class="fg"><label>开始（可选）</label><input id="maStart" type="date"></div>'
+      + '<div class="fg"><label>预计总量（可选）</label><input id="maTotal" type="number" min="1" placeholder="如 187"></div></div>'
+      + '<div class="bx-actions" style="margin-top:4px"><button class="btn pri" id="maAdd">新增</button></div></div>';
+    vTodoCats.forEach(function(c){
+      if (!c.items.length) return;
+      h += '<div class="mgrp">' + esc(c.name) + '</div>';
+      c.items.forEach(function(it){
+        if (it.datePrefixed) return;
+        h += '<div class="mrow' + (it.done ? ' done' : '') + '" data-cat="' + esc(c.name) + '" data-name="' + esc(it.name) + '">'
+          + '<span class="mn">' + esc(it.disp) + '</span>'
+          + '<span class="dim">' + esc(DIMS.filter(function(d){ return d.key === vDimOf(c.name, it); })[0].name) + '</span>'
+          + (it.done ? '' : '<button data-op="done">完成</button>')
+          + '<button data-op="log">日志</button>'
+          + '<button class="del" data-op="del">删</button></div>';
+      });
+    });
+    body.innerHTML = h;
+    document.getElementById('maAdd').onclick = function(){
+      var name = document.getElementById('maName').value.trim();
+      if (!name) { alert('名称必填'); return; }
+      var cat = document.getElementById('maCat').value;
+      var dim = document.getElementById('maDim').value;
+      var start = document.getElementById('maStart').value;
+      var total = document.getElementById('maTotal').value.trim();
+      vFileWrite('todo', vEditAddItem(cat, name, dim, start, total), function(){ vRenderMaint(); });
+    };
+    body.querySelectorAll('.mrow').forEach(function(row){
+      var cat = row.dataset.cat, name = row.dataset.name;
+      row.querySelectorAll('button').forEach(function(btn){
+        btn.onclick = function(){
+          var op = btn.dataset.op;
+          if (op === 'done') vFileWrite('todo', vEditComplete(cat, name), function(){ vRenderMaint(); });
+          if (op === 'del') { if (confirm('删除「' + name + '」及其日志？')) vFileWrite('todo', vEditDeleteItem(cat, name), function(){ vRenderMaint(); }); }
+          if (op === 'log') vOpenLog({ t:'todo', cat:cat, name:name }, '', function(){ vRenderMaint(); });
+        };
+      });
+    });
+  } else {
+    if (!vMdCache.work) { body.innerHTML = '<div class="hint">还没有工坊镜像。配好同步后跑 <code>python .tools/velvet_sync.py push</code> 初始化。</div>'; return; }
+    h += '<div class="panel" style="margin-bottom:12px"><div class="fg" style="margin-bottom:8px"><label>新增工坊项目</label>'
+      + '<input id="mbName" placeholder="项目名（会做成 [[双链]] 标题）"></div>'
+      + '<div class="fg" style="margin-bottom:8px"><label>用途</label><input id="mbUse"></div>'
+      + '<div class="frow"><div class="fg"><label>文件位置</label><input id="mbPos" placeholder="路径或 URL"></div>'
+      + '<div class="fg"><label>维护站（可选）</label><input id="mbSite" placeholder="URL"></div></div>'
+      + '<div class="bx-actions" style="margin-top:4px"><button class="btn pri" id="mbAdd">新增</button></div></div>';
+    vWorkBlocks.forEach(function(b){
+      h += '<div class="mrow" data-name="' + esc(b.name) + '">'
+        + '<span class="mn">' + esc(b.name) + '</span>'
+        + '<span class="dim">匠心</span>'
+        + '<button data-op="log">日志</button>'
+        + '<button class="del" data-op="del">删</button></div>'
+        + '<div style="font-size:11px;color:var(--tx-3);margin:-2px 0 6px 10px">' + esc(b.use || '') + '</div>';
+    });
+    body.innerHTML = h;
+    document.getElementById('mbAdd').onclick = function(){
+      var name = document.getElementById('mbName').value.trim();
+      if (!name) { alert('项目名必填'); return; }
+      vFileWrite('work', vEditWorkAdd(name,
+        document.getElementById('mbUse').value.trim(),
+        document.getElementById('mbPos').value.trim(),
+        document.getElementById('mbSite').value.trim()), function(){ vRenderMaint(); });
+    };
+    body.querySelectorAll('.mrow').forEach(function(row){
+      var name = row.dataset.name;
+      row.querySelectorAll('button').forEach(function(btn){
+        btn.onclick = function(){
+          if (btn.dataset.op === 'del') { if (confirm('删除工坊条目「' + name + '」？')) vFileWrite('work', vEditWorkDelete(name), function(){ vRenderMaint(); }); }
+          if (btn.dataset.op === 'log') vOpenLog({ t:'work', name:name }, '', function(){ vRenderMaint(); });
+        };
+      });
+    });
+  }
+}
+document.getElementById('tMaint').onclick = function(){ mtTab = 'todo'; vRenderMaint(); document.getElementById('ovMaint').hidden = false; };
+document.getElementById('mtTodo').onclick = function(){ mtTab = 'todo'; vRenderMaint(); };
+document.getElementById('mtWork').onclick = function(){ mtTab = 'work'; vRenderMaint(); };
+document.getElementById('mtClose').onclick = function(){ document.getElementById('ovMaint').hidden = true; };
+document.getElementById('ovMaint').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+
+/* ---- 成长页：雷达（近 30 天占比）+ Rank 列表 ---- */
+function renderGrowth(){
+  var xp = vComputeXp();
+  var max = 1;
+  DIMS.forEach(function(d){ if (xp.m30[d.key] > max) max = xp.m30[d.key]; });
+  var cx = 130, cy = 112, R = 82, i, d;
+  var pt = function(k, f){
+    var ang = -Math.PI/2 + k * 2*Math.PI/5;
+    return (cx + Math.cos(ang)*R*f).toFixed(1) + ',' + (cy + Math.sin(ang)*R*f).toFixed(1);
+  };
+  var svg = '<svg width="260" height="224" viewBox="0 0 260 224">';
+  [1, 0.66, 0.33].forEach(function(f){
+    svg += '<polygon points="' + DIMS.map(function(_, k){ return pt(k, f); }).join(' ') + '" fill="none" stroke="#7a6844" stroke-width="1"/>';
+  });
+  for (i=0;i<5;i++) svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + pt(i,1).split(',')[0] + '" y2="' + pt(i,1).split(',')[1] + '" stroke="rgba(0,216,255,.25)"/>';
+  svg += '<polygon points="' + DIMS.map(function(dd, k){ return pt(k, Math.max(xp.m30[dd.key]/max, 0.04)); }).join(' ')
+    + '" fill="rgba(0,216,255,.14)" stroke="#00d8ff" stroke-width="1.5"/>';
+  for (i=0;i<5;i++){
+    d = DIMS[i];
+    var ang = -Math.PI/2 + i * 2*Math.PI/5;
+    var lx = cx + Math.cos(ang)*(R+20), ly = cy + Math.sin(ang)*(R+16);
+    var anchor = Math.abs(Math.cos(ang)) < 0.3 ? 'middle' : (Math.cos(ang) > 0 ? 'start' : 'end');
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" fill="#f6fbff" font-size="12" font-weight="900" font-style="italic">' + d.name + '</text>';
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly+13).toFixed(1) + '" text-anchor="' + anchor + '" fill="#c9a86a" font-size="10">R' + vRankOf(xp.total[d.key]) + '</text>';
+  }
+  svg += '</svg>';
+  document.getElementById('radarBox').innerHTML = svg;
+  document.getElementById('dimList').innerHTML = DIMS.map(function(dd){
+    var total = xp.total[dd.key], r = vRankOf(total);
+    var cur0 = RANK_CUM[r-1], nxt = r >= 10 ? null : RANK_CUM[r];
+    var pct = nxt == null ? 100 : Math.round((total - cur0) / (nxt - cur0) * 100);
+    return '<div class="dimrow"><span class="dn">' + dd.name + '</span>'
+      + '<span class="rk">R' + r + '</span><span class="rn">' + dd.ranks[r-1] + '</span>'
+      + '<div class="pbar"><i style="width:' + pct + '%"></i></div>'
+      + '<span class="nx">' + (nxt == null ? 'MAX' : ('下一级 ??? · ' + total + '/' + nxt)) + '</span></div>';
+  }).join('');
+}
+
+/* ---- 启动 velvet 数据 ---- */
+vParseAll();
+if (ghCfg) { vPullData(); vPullMd(); }
+setInterval(function(){ if (ghCfg && !document.hidden && !vGhBusy) { vPullData(); vPullMd(); } }, 120000);
+document.getElementById('ghBtnNow').addEventListener('click', function(){ vSyncAll(); });
+
 render();
-go('cal');
+go('today');
 </script>
 </body>
 </html>
