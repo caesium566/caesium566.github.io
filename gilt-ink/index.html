@@ -3,138 +3,451 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>彩墨管理与抽取</title>
+<meta name="app-version" content="v3.0 · 2026-10-09">
+<title>彩墨管理与抽取 · GILT INK</title>
 <style>
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
-    margin: 0; padding: 16px;
-    background: #f5f5f5;
-    color: #1a1a1a;
-    line-height: 1.5;
-  }
-  .container { max-width: 640px; margin: 0 auto; }
-  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #ddd; margin-bottom: 16px; background: #fff; padding: 0 16px; border-radius: 10px 10px 0 0; position: sticky; top: 0; z-index: 100; }
-  .tab { padding: 12px 20px; cursor: pointer; border: none; background: transparent; color: #666; font-size: 15px; border-bottom: 2px solid transparent; transition: all 0.15s; }
-  .tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
-  .tab:hover:not(.active) { color: #1a1a1a; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px; border-radius: 8px; border: 1px solid #ddd;
-    background: #fff; color: #1a1a1a; cursor: pointer; font-size: 14px;
-    transition: all 0.15s; height: 36px; box-sizing: border-box;
-  }
-  .btn:hover { background: #f0f0f0; }
-  .btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-  .btn-primary:hover { opacity: 0.9; }
-  .btn-danger { color: #c0392b; border-color: #c0392b; }
-  .btn-danger:hover { background: #fdf2f2; }
-  .btn-sm { padding: 5px 10px; font-size: 13px; }
-  .btn-icon { padding: 6px; }
-  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; position: sticky; top: 48px; z-index: 50; background: #f5f5f5; padding: 8px 0; }
-  .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; cursor: pointer; }
-  .card:hover { border-color: #bbb; }
-  .ink-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eee; }
-  .ink-row:last-child { border-bottom: none; }
-  .ink-color-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
-  .ink-info { flex: 1; min-width: 0; }
-  .ink-brand { font-size: 14px; font-weight: 500; cursor: pointer; }
-  .ink-brand:hover { text-decoration: underline; }
-  .ink-meta { font-size: 12px; color: #888; margin-top: 2px; }
-  .ink-status { font-size: 12px; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
-  .status-active { background: #e8f5e9; color: #2e7d32; }
-  .status-used { background: #f5f5f5; color: #888; }
-  .row-actions { display: flex; gap: 4px; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-  .modal-overlay.show { display: flex; }
-  .modal { background: #fff; border-radius: 12px; padding: 24px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; }
-  .modal-title { font-size: 17px; font-weight: 500; margin-bottom: 16px; }
-  .form-group { margin-bottom: 14px; }
-  .form-label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
-  .form-input { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; font-size: 14px; }
-  .form-input:focus { outline: none; border-color: #1a1a1a; }
-  .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-  .draw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .draw-card-title { font-size: 15px; font-weight: 500; }
-  .draw-card-meta { font-size: 12px; color: #888; }
-  .progress-bar { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; margin-top: 8px; }
-  .progress-fill { height: 100%; background: #1a1a1a; border-radius: 2px; transition: width 0.3s; }
-  .draw-list-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 8px; cursor: pointer; background: #fff; transition: all 0.15s; }
-  .draw-list-item:hover { border-color: #ccc; }
-  .draw-list-item.checked { opacity: 0.5; background: #f9f9f9; }
-  .draw-list-item.checked .ink-brand { text-decoration: line-through; color: #888; }
-  .checkbox { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 16px; font-weight: 500; }
-  .draw-list-item.checked .checkbox { color: #2e7d32; }
-  .empty-state { text-align: center; padding: 40px 20px; color: #888; }
-  .ink-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; max-height: 200px; overflow-y: auto; padding: 4px; }
-  .ink-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; cursor: pointer; background: #fff; transition: all 0.15s; }
-  .ink-chip.selected { border-color: #1a1a1a; background: #f0f0f0; }
-  .ink-chip:hover { border-color: #999; }
-  .back-btn { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; color: #666; cursor: pointer; font-size: 14px; border: none; background: none; padding: 4px 0; }
-  .back-btn:hover { color: #1a1a1a; }
-  .stats { display: flex; gap: 16px; font-size: 14px; color: #888; align-items: center; }
-  .hidden { display: none !important; }
-  .panel { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #ddd; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 640px; margin: 0 auto; }
-  .grid-2 .card { margin-bottom: 0; }
-  @media (max-width: 640px) {
-    .grid-2 { grid-template-columns: 1fr; }
-  }
-  .version-tag { font-size: 11px; color: #bbb; margin-left: 8px; }
-  h2 { font-size: 18px; font-weight: 500; margin: 0 0 12px 0; }
-  .note-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1a1a1a; margin-left: 6px; vertical-align: middle; }
-  .note-display { margin-top: 8px; padding: 10px 12px; background: #f9f9f9; border-radius: 8px; font-size: 13px; color: #555; border-left: 3px solid #1a1a1a; }
-  .note-display:empty { display: none; }
-  .data-actions { display: flex; gap: 8px; margin-bottom: 16px; }
-  .import-input { display: none; }
-  .date-row { display: flex; gap: 8px; }
-  .date-row .form-input { flex: 1; }
-  .filter-sort-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-  .filter-sort-bar .form-input { width: auto; min-width: 100px; flex: 1; }
-  .option-group { border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-  .option-group-title { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500; }
-  .option-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; cursor: pointer; }
-  .option-item:last-child { margin-bottom: 0; }
-  .option-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
-  @media (max-width: 480px) {
-    body { padding: 8px; }
-    .card, .panel { padding: 12px; }
-    .tab { padding: 10px 14px; font-size: 14px; }
-    .filter-sort-bar { flex-direction: column; }
-    .filter-sort-bar .form-input { width: 100%; }
-  }
+/* ============ 天鹅绒房间 · 家族皮肤（gilt-ink 鎏金墨台） ============ */
+:root {
+  --sea-0:#0000a8; --sea-1:#003fb9; --sea-2:#0d8be2;
+  --bar:#05070d; --bar-2:#0d1424;
+  --line:rgba(0,216,255,.30);
+  --cyan:#00d8ff; --cyan-dim:#0a7f99;
+  --yellow:#f5d84a;
+  --magenta:#ff3daa;
+  --gold:#c9a86a; --gold-dim:#7a6844;
+  --tx:#f6fbff; --tx-2:#8da0b8; --tx-3:#54637e;
+  --ok:#3ddc97; --warn:#e8b93e;
+  --panel:rgba(5,7,13,.88);
+  --cut:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+  --cut-sm:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  --slant:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  --slant-sm:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%);
+  --shadow-panel:drop-shadow(0 0 1px rgba(0,216,255,.45)) drop-shadow(4px 4px 0 rgba(0,4,16,.45));
+  --shadow-btn:drop-shadow(0 0 1px rgba(0,216,255,.5)) drop-shadow(3px 3px 0 rgba(0,4,16,.5));
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-weight: 500;
+  color: var(--tx);
+  line-height: 1.5;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0d8be2 0%, #0262c3 30%, #003fb9 55%, #0018b0 80%, #0000a0 100%);
+  background-attachment: fixed;
+  font-variant-numeric: tabular-nums;
+  padding-bottom: 90px;
+}
+/* CRT 扫描线（天鹅绒房间的老显示器味） */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.5) 0 1px, transparent 1px 3px);
+  opacity: .045;
+}
+/* 纸纤维噪纹（极淡，铺全页） */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+/* 纸页上浮（海面漂起的纸页） */
+#seaBubbles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#seaBubbles span {
+  position: absolute; bottom: -40px;
+  background: rgba(238,244,250,.85); border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0,10,40,.35);
+  animation: paperUp linear infinite;
+}
+@keyframes paperUp {
+  0% { transform: translate(0,0) rotate(var(--rot,0deg)); opacity: 0; }
+  10% { opacity: var(--bo,.22); }
+  90% { opacity: var(--bo,.22); }
+  100% { transform: translate(var(--bx,0px), -108vh) rotate(calc(var(--rot,0deg) + 28deg)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #seaBubbles span { animation: none; opacity: 0; }
+  * { animation-duration: .001s !important; transition-duration: .001s !important; }
+}
+
+.container { max-width: 720px; margin: 0 auto; padding: 12px 14px 0; position: relative; z-index: 5; }
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 30; height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px;
+  background: rgba(5,7,13,.92);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .brand { display: flex; align-items: center; gap: 8px; color: var(--cyan); }
+.topbar .brand svg { flex-shrink: 0; }
+.topbar .brand .en {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: .18em; font-size: 13px; color: var(--tx);
+}
+.ver-badge {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11px; letter-spacing: .08em;
+  color: var(--gold); border: 1px solid var(--gold-dim);
+  padding: 3px 10px; background: rgba(5,7,13,.8);
+  clip-path: var(--slant-sm);
+  white-space: nowrap;
+}
+.top-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- 页签（电脑端） ---------- */
+.tabs {
+  display: flex; gap: 6px; padding: 8px 0 10px;
+  position: sticky; top: 48px; z-index: 29;
+  background: transparent;
+  overflow-x: auto;
+}
+.tab {
+  border: none; cursor: pointer; flex-shrink: 0;
+  background: var(--bar); color: var(--tx-2);
+  clip-path: var(--slant);
+  padding: 9px 16px 9px 12px;
+  font-size: 14px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: color .15s, filter .15s;
+  filter: drop-shadow(2px 2px 0 rgba(0,4,16,.4));
+}
+.tab .no { font-family: Georgia, serif; font-size: 10px; color: #4fc3dd; letter-spacing: .1em; }
+.tab .en { font-family: Georgia, serif; font-size: 10px; letter-spacing: .14em; opacity: .7; }
+.tab:hover { color: var(--tx); }
+.tab.active {
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(0,216,255,.6);
+  filter: drop-shadow(0 0 6px rgba(0,216,255,.45)) drop-shadow(2px 2px 0 rgba(0,4,16,.4));
+}
+.tab.active::after {
+  content: ""; display: block; width: 22px; height: 3px; background: var(--yellow);
+  margin-left: 2px; transform: skewX(-24deg);
+}
+
+/* ---------- 底部导航（手机端） ---------- */
+.bnav {
+  display: none;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  height: 62px; background: var(--bar);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bnav button {
+  flex: 1; border: none; background: none; cursor: pointer;
+  color: var(--tx-3); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  font-size: 10px; font-weight: 600; position: relative;
+}
+.bnav button.active { color: var(--cyan); text-shadow: 0 0 8px rgba(0,216,255,.6); }
+.bnav button.active::before {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-top: 5px solid var(--yellow);
+}
+
+/* ---------- 通用控件 ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 16px; border: none; cursor: pointer;
+  background: var(--bar); color: var(--tx);
+  clip-path: var(--slant-sm);
+  font-size: 13px; font-weight: 700; height: 36px;
+  transition: filter .15s, color .15s;
+  filter: var(--shadow-btn);
+  white-space: nowrap;
+}
+.btn:hover { color: var(--cyan); filter: drop-shadow(0 0 6px rgba(0,216,255,.5)) drop-shadow(3px 3px 0 rgba(0,4,16,.5)); }
+.btn svg { flex-shrink: 0; }
+.btn-primary { background: var(--cyan); color: #021018; font-weight: 900; }
+.btn-primary:hover { color: #021018; filter: drop-shadow(0 0 10px rgba(0,216,255,.8)) drop-shadow(3px 3px 0 rgba(0,4,16,.5)); }
+.btn-danger { color: var(--tx-2); }
+.btn-danger:hover { color: var(--magenta); filter: drop-shadow(0 0 6px rgba(255,61,170,.5)) drop-shadow(3px 3px 0 rgba(0,4,16,.5)); }
+.btn-gold { color: var(--gold); }
+.btn-gold:hover { color: var(--gold); filter: drop-shadow(0 0 6px rgba(201,168,106,.6)) drop-shadow(3px 3px 0 rgba(0,4,16,.5)); }
+.btn-sm { padding: 5px 10px; font-size: 12px; height: 30px; }
+.btn-icon { padding: 6px; width: 32px; height: 32px; }
+
+.toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+  position: sticky; z-index: 25;
+  top: 110px; padding: 8px 0;
+}
+.stats { display: flex; gap: 16px; font-size: 13px; color: #c2d4e8; font-weight: 600; align-items: baseline; flex-wrap: wrap; }
+.stats b { color: var(--cyan); font-style: italic; font-weight: 900; font-size: 17px; }
+.stats .en { font-family: Georgia, serif; font-size: 10px; letter-spacing: .16em; color: #7f93ad; margin-right: -10px; }
+
+.card, .panel {
+  background: var(--panel);
+  clip-path: var(--cut);
+  filter: var(--shadow-panel);
+  padding: 16px; margin-bottom: 12px;
+  position: relative;
+}
+.card { cursor: pointer; transition: filter .15s; }
+.card:hover { filter: drop-shadow(0 0 8px rgba(0,216,255,.55)) drop-shadow(4px 4px 0 rgba(0,4,16,.45)); }
+
+.form-label { display: block; font-size: 12px; color: var(--tx-2); margin-bottom: 4px; font-weight: 600; letter-spacing: .04em; }
+.form-input {
+  width: 100%; padding: 8px 12px;
+  background: rgba(13,20,36,.85); color: var(--tx);
+  border: 1px solid var(--line);
+  clip-path: var(--cut-sm);
+  font-size: 14px; font-family: inherit; font-weight: 500;
+}
+.form-input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,216,255,.35); }
+select.form-input { appearance: none; -webkit-appearance: none; padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2300d8ff' fill='none' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+select.form-input option { background: var(--bar-2); color: var(--tx); }
+textarea.form-input { resize: vertical; min-height: 32px; }
+.form-group { margin-bottom: 14px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(3,8,26,.72);
+  display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--panel); clip-path: var(--cut);
+  filter: drop-shadow(0 0 20px rgba(0,216,255,.25)) drop-shadow(5px 5px 0 rgba(0,4,16,.5));
+  padding: 0; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
+  border-top: 3px solid var(--cyan);
+}
+.modal-title {
+  font-size: 16px; font-weight: 900; font-style: italic; letter-spacing: .02em;
+  padding: 14px 20px 12px; color: var(--tx);
+  background: var(--bar); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 8px;
+}
+.modal-title::before { content: ""; width: 8px; height: 16px; background: var(--cyan); transform: skewX(-24deg); }
+.modal .modal-body { padding: 16px 20px 20px; }
 </style>
+<style>
+/* ---------- 墨卡 ---------- */
+.ink-card { display: flex; gap: 0; padding: 0; overflow: hidden; }
+.ink-ribbon {
+  flex: 0 0 14px; align-self: stretch;
+  box-shadow: inset -3px 0 6px rgba(0,0,0,.35), 0 0 10px rgba(0,216,255,.15);
+}
+.ink-card-main { flex: 1; min-width: 0; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.ink-title-row { display: flex; align-items: center; gap: 8px; }
+.ink-title-row .ink-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px rgba(255,255,255,.25); }
+.ink-name { font-size: 15px; font-weight: 700; }
+.ink-meta { font-size: 12px; color: var(--tx-2); margin-top: 3px; }
+.ink-review-star {
+  font-size: 12px; color: var(--gold); margin-top: 5px; padding-left: 12px;
+  border-left: 2px solid var(--gold-dim); line-height: 1.5;
+}
+.ink-status {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  padding: 3px 9px; flex-shrink: 0;
+  clip-path: var(--slant-sm);
+  white-space: nowrap;
+}
+.status-active { background: rgba(0,216,255,.14); color: var(--cyan); border: 1px solid var(--cyan-dim); text-shadow: 0 0 6px rgba(0,216,255,.5); }
+.status-used { background: rgba(201,168,106,.12); color: var(--gold); border: 1px solid var(--gold-dim); }
+.row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.row-actions.col { flex-direction: column; }
+
+.empty-state {
+  text-align: center; padding: 40px 20px; color: #a9bdd4;
+  border: 1px dashed rgba(0,216,255,.3); background: rgba(5,7,13,.55);
+  clip-path: var(--cut-sm); font-size: 13px;
+}
+
+/* ---------- 筛选条 ---------- */
+.filter-sort-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.filter-sort-bar .form-input { width: auto; min-width: 110px; flex: 1; font-size: 13px; }
+.import-input { display: none; }
+
+/* ---------- 抽取中心 ---------- */
+.draw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
+.draw-card-title { font-size: 15px; font-weight: 700; }
+.draw-card-meta { font-size: 12px; color: var(--tx-2); margin-top: 2px; }
+.draw-count { font-size: 22px; font-weight: 900; font-style: italic; color: var(--cyan); white-space: nowrap; }
+.draw-count.done { color: var(--gold); }
+.progress-bar { height: 5px; background: rgba(13,20,36,.9); overflow: hidden; margin-top: 10px; clip-path: var(--slant-sm); }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)); transition: width .3s; box-shadow: 0 0 8px rgba(0,216,255,.7); }
+.progress-fill.gold { background: linear-gradient(90deg, var(--gold-dim), var(--gold)); box-shadow: 0 0 10px rgba(201,168,106,.8); }
+
+/* 抽取明细 = 塔罗同族小牌 */
+.draw-list-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin-bottom: 9px; cursor: pointer;
+  background: var(--panel);
+  clip-path: var(--cut-sm);
+  filter: var(--shadow-panel);
+  transition: filter .15s;
+  position: relative; overflow: hidden;
+}
+.draw-list-item::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--inkc, var(--cyan-dim)); box-shadow: 0 0 8px var(--inkc, transparent);
+}
+.draw-list-item:hover { filter: drop-shadow(0 0 8px rgba(0,216,255,.55)) drop-shadow(4px 4px 0 rgba(0,4,16,.45)); }
+.draw-list-item .idx { font-size: 14px; font-weight: 900; font-style: italic; color: var(--cyan); min-width: 24px; text-align: right; }
+.draw-list-item.checked { opacity: .62; background: rgba(5,7,13,.7); }
+.draw-list-item.checked::before { background: var(--gold); box-shadow: 0 0 10px rgba(201,168,106,.8); }
+.draw-list-item.checked .idx { color: var(--gold); }
+.draw-list-item.checked .ink-brand { text-decoration: line-through; color: var(--tx-2); }
+.checkbox { width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--tx-3); font-size: 15px; font-weight: 700; }
+.draw-list-item.checked .checkbox { color: var(--gold); text-shadow: 0 0 8px rgba(201,168,106,.8); }
+.draw-list-item .ink-info { flex: 1; min-width: 0; }
+
+/* ALL CLEAR 金印 */
+.allclear-stamp {
+  position: fixed; left: 50%; top: 42%; transform: translate(-50%,-50%) rotate(-8deg) scale(3);
+  z-index: 55; pointer-events: none; opacity: 0;
+  font-size: 34px; font-weight: 900; font-style: italic; letter-spacing: .1em;
+  color: var(--gold); border: 3px solid var(--gold); padding: 8px 26px;
+  background: rgba(5,7,13,.85); text-shadow: 0 0 16px rgba(201,168,106,.8);
+  clip-path: var(--slant);
+}
+.allclear-stamp.show { animation: stampIn .9s ease-out forwards; }
+@keyframes stampIn {
+  0% { opacity: 0; transform: translate(-50%,-50%) rotate(-8deg) scale(3); }
+  35% { opacity: 1; transform: translate(-50%,-50%) rotate(-8deg) scale(1); }
+  55% { transform: translate(-50%,-50%) rotate(-8deg) scale(1.06); }
+  100% { opacity: 0; transform: translate(-50%,-50%) rotate(-8deg) scale(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .allclear-stamp.show { animation: none; opacity: 1; transition: opacity .3s; }
+}
+
+/* ---------- 选择器 chips ---------- */
+.ink-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; max-height: 200px; overflow-y: auto; padding: 4px; }
+.ink-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; cursor: pointer;
+  background: var(--bar-2); color: var(--tx-2);
+  clip-path: var(--slant-sm);
+  border: 1px solid transparent; font-size: 13px; font-weight: 600;
+  transition: all .15s;
+}
+.ink-chip:hover { color: var(--tx); border-color: var(--line); }
+.ink-chip.selected {
+  background: rgba(0,216,255,.16); color: var(--cyan);
+  border-color: var(--cyan); text-shadow: 0 0 6px rgba(0,216,255,.5);
+  filter: drop-shadow(0 0 5px rgba(0,216,255,.4));
+}
+.ink-chip .ink-color-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+/* ---------- 选项组 / 历史记录行 ---------- */
+.option-group { background: rgba(13,20,36,.6); clip-path: var(--cut-sm); padding: 12px; margin-bottom: 12px; border: 1px solid rgba(0,216,255,.14); }
+.option-group-title { font-size: 12px; color: var(--tx-2); margin-bottom: 8px; font-weight: 600; letter-spacing: .04em; }
+.option-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; cursor: pointer; color: var(--tx); }
+.option-item:last-child { margin-bottom: 0; }
+.option-item input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--cyan); }
+.history-row { background: rgba(13,20,36,.7); border: 1px solid rgba(0,216,255,.14); clip-path: var(--cut-sm); }
+
+.nb-chip {
+  display: inline-block; padding: 4px 10px; cursor: pointer;
+  background: var(--bar-2); color: var(--tx-2);
+  clip-path: var(--slant-sm); font-size: 12px; font-weight: 600;
+  border: 1px solid transparent; margin: 0 6px 4px 0; transition: all .15s;
+}
+.nb-chip:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px;
+  color: var(--tx-2); cursor: pointer; font-size: 13px; font-weight: 600;
+  border: none; background: none; padding: 4px 0;
+}
+.back-btn:hover { color: var(--cyan); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-2 .card { margin-bottom: 0; }
+
+.hidden { display: none !important; }
+.en-label { font-family: Georgia, "Times New Roman", serif; font-size: 10px; letter-spacing: .18em; color: var(--tx-3); text-transform: uppercase; }
+h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; letter-spacing: .02em; }
+.page-foot { text-align: center; padding: 22px 16px 12px; color: #b99c68; font-family: Georgia, serif; font-size: 11px; letter-spacing: .14em; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .tabs { display: none; }
+  .bnav { display: flex; }
+  body { padding-bottom: 76px; }
+  .toolbar { top: 48px; }
+}
+@media (max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .container { padding: 8px 8px 0; }
+  .card, .panel { padding: 12px; }
+  .ink-card-main { padding: 10px; }
+  .filter-sort-bar { flex-direction: column; align-items: stretch; }
+  .filter-sort-bar .form-input { width: 100%; }
+  .draw-count { font-size: 18px; }
+}
+</style>
+<base target="_blank">
 </head>
 <body>
+<div id="seaBubbles"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l5.2 7L12 21.5 6.8 9.5z"/><path d="M6.8 9.5h10.4"/><circle cx="12" cy="6.4" r=".9" fill="currentColor" stroke="none"/></svg>
+    <span class="en">GILT INK</span>
+  </div>
+  <div class="top-actions">
+    <button class="btn btn-sm btn-icon" id="btn-export" title="导出数据">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0L8 8m4-4l4 4M5 20h14"/></svg>
+    </button>
+    <button class="btn btn-sm btn-icon" id="btn-import" title="导入数据">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+    </button>
+    <input type="file" class="import-input" id="import-file" accept=".json">
+    <span class="ver-badge">v3.0 · 2026-10-09</span>
+  </div>
+</header>
+
 <div class="container">
   <div class="tabs">
-    <button class="tab active" id="tab-draws" data-tab="draws">抽取中心</button>
-    <button class="tab" id="tab-inventory" data-tab="inventory">彩墨管理</button>
-    <button class="tab" id="tab-pens" data-tab="pens">钢笔管理</button>
-    <button class="tab" id="tab-papers" data-tab="papers">纸张管理</button>
-    <button class="tab" id="tab-notebooks" data-tab="notebooks">本子管理</button>
+    <button class="tab active" id="tab-draws" data-tab="draws"><span class="no">01</span>抽取中心<span class="en">DRAWS</span></button>
+    <button class="tab" id="tab-inventory" data-tab="inventory"><span class="no">02</span>彩墨管理<span class="en">INKS</span></button>
+    <button class="tab" id="tab-pens" data-tab="pens"><span class="no">03</span>钢笔管理<span class="en">PENS</span></button>
+    <button class="tab" id="tab-papers" data-tab="papers"><span class="no">04</span>纸张管理<span class="en">PAPERS</span></button>
+    <button class="tab" id="tab-notebooks" data-tab="notebooks"><span class="no">05</span>本子管理<span class="en">BOOKS</span></button>
   </div>
 
   <div id="view-draws" class="hidden">
     <div class="toolbar">
       <div class="stats" id="draw-stats"></div>
-      <button class="btn btn-primary" id="btn-add-draw">+ 新建抽取</button>
+      <button class="btn btn-primary" id="btn-add-draw">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        新建抽取</button>
     </div>
     <div id="draw-list"></div>
   </div>
 
   <div id="view-draw-detail" class="hidden">
-    <button class="back-btn" id="btn-back">&larr; 返回抽取列表</button>
-    <div class="draw-card-header" style="margin-bottom: 16px;">
+    <button class="back-btn" id="btn-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      返回抽取列表</button>
+    <div class="draw-card-header" style="margin-bottom: 14px;">
       <div>
         <div class="draw-card-title" id="detail-title"></div>
         <div class="draw-card-meta" id="detail-meta"></div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-sm" id="btn-refresh">&#8634; 刷新排序</button>
-        <button class="btn btn-sm" id="btn-reset">&#8635; 重置进度</button>
-        <button class="btn btn-sm" id="btn-export-draw">&#11015; 导出记录</button>
-        <button class="btn btn-sm btn-danger" id="btn-delete-draw">删除</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-sm" id="btn-refresh">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 0-2.3-5.6M20 3v5h-5"/></svg>
+          刷新排序</button>
+        <button class="btn btn-sm" id="btn-reset">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3 5.6M4 21v-5h5"/></svg>
+          重置进度</button>
+        <button class="btn btn-sm" id="btn-export-draw">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+          导出记录</button>
+        <button class="btn btn-sm btn-danger" id="btn-delete-draw">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          删除</button>
       </div>
     </div>
     <div class="progress-bar" style="margin-bottom: 16px;">
@@ -143,19 +456,16 @@
     <div id="detail-list"></div>
   </div>
 
-  <div id="view-inventory">
+  <div id="view-inventory" class="hidden">
     <div class="toolbar">
       <div class="stats">
-        <span id="stat-total">共 0 瓶</span>
-        <span id="stat-active">在用 0</span>
-        <span id="stat-used">用完 0</span>
+        <span>共 <b id="stat-total">0</b> 瓶</span>
+        <span>在用 <b id="stat-active" style="color:var(--cyan)">0</b></span>
+        <span class="en">ARCHIVE</span><span>用完 <b id="stat-used" style="color:var(--gold)">0</b></span>
       </div>
-      <button class="btn btn-primary" id="btn-add-ink">+ 添加彩墨</button>
-    </div>
-    <div class="data-actions">
-      <button class="btn btn-sm" id="btn-export">&#11015; 导出数据</button>
-      <button class="btn btn-sm" id="btn-import">&#11014; 导入数据</button>
-      <input type="file" class="import-input" id="import-file" accept=".json">
+      <button class="btn btn-primary" id="btn-add-ink">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加彩墨</button>
     </div>
     <div class="filter-sort-bar">
       <select class="form-input" id="filter-family">
@@ -173,9 +483,9 @@
         <option value="">全部品牌</option>
       </select>
       <select class="form-input" id="sort-mode">
-        <option value="default">默认</option>
-        <option value="date-desc">购买日期 &darr; 最新</option>
-        <option value="date-asc">购买日期 &uarr; 最早</option>
+        <option value="default">默认排序</option>
+        <option value="date-desc">购买日期 ↓ 最新</option>
+        <option value="date-asc">购买日期 ↑ 最早</option>
       </select>
     </div>
     <div id="ink-list"></div>
@@ -184,7 +494,9 @@
   <div id="view-papers" class="hidden">
     <div class="toolbar">
       <div class="stats" id="paper-stats"></div>
-      <button class="btn btn-primary" id="btn-add-paper">+ 添加纸张</button>
+      <button class="btn btn-primary" id="btn-add-paper">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加纸张</button>
     </div>
     <div id="paper-list"></div>
   </div>
@@ -192,7 +504,9 @@
   <div id="view-pens" class="hidden">
     <div class="toolbar">
       <div class="stats" id="pen-stats"></div>
-      <button class="btn btn-primary" id="btn-add-pen">+ 添加钢笔</button>
+      <button class="btn btn-primary" id="btn-add-pen">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加钢笔</button>
     </div>
     <div id="pen-list"></div>
   </div>
@@ -200,19 +514,38 @@
   <div id="view-notebooks" class="hidden">
     <div class="toolbar">
       <div class="stats" id="notebook-stats"></div>
-      <button class="btn btn-primary" id="btn-add-notebook">+ 添加本子</button>
+      <button class="btn btn-primary" id="btn-add-notebook">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加本子</button>
     </div>
     <div id="notebook-list" class="grid-2"></div>
   </div>
 </div>
 
-<div style="text-align:center;padding:20px 16px;color:#bbb;font-size:12px;">
-  彩墨管理与抽取工具 v2.3
-</div>
+<nav class="bnav">
+  <button data-btab="draws" class="active">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="11" height="15" rx="1.5"/><path d="M9 3h11a1 1 0 0 1 1 1v14"/></svg>
+    <span>抽取</span></button>
+  <button data-btab="inventory">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h5V6l2.2 3.2V19a2.5 2.5 0 0 1-2.5 2.5H9.8A2.5 2.5 0 0 1 7.3 19V9.2L9.5 6z"/><path d="M7.3 14.5h9.4"/></svg>
+    <span>彩墨</span></button>
+  <button data-btab="pens">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l5 6.5L12 21l-5-11.5z"/><path d="M7.5 12.5h9"/></svg>
+    <span>钢笔</span></button>
+  <button data-btab="papers">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>
+    <span>纸张</span></button>
+  <button data-btab="notebooks">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17V4v13zM9 8h6"/></svg>
+    <span>本子</span></button>
+</nav>
+
+<div class="page-foot">GILT INK · VELVET ROOM FAMILY SKIN · v3.0 · 2026-10-09</div>
 
 <div id="modal-ink" class="modal-overlay">
   <div class="modal">
     <div class="modal-title" id="ink-modal-title">添加彩墨</div>
+    <div class="modal-body">
     <div class="form-group">
       <label class="form-label">颜色系</label>
       <select class="form-input" id="ink-family">
@@ -242,24 +575,28 @@
     <div class="form-group">
       <label class="form-label">日期与存量记录</label>
       <div id="ink-history-list"></div>
-      <button class="btn btn-sm" type="button" id="btn-add-history" style="margin-top:8px;">+ 添加记录</button>
+      <button class="btn btn-sm" type="button" id="btn-add-history" style="margin-top:8px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加记录</button>
     </div>
     <div class="form-group">
       <label class="form-label">评价条目</label>
       <div id="ink-reviews-list"></div>
-      <button class="btn btn-sm" type="button" id="btn-add-ink-review" style="margin-top:8px;">+ 添加评价</button>
+      <button class="btn btn-sm" type="button" id="btn-add-ink-review" style="margin-top:8px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加评价</button>
     </div>
-
     <div class="form-group">
       <label class="form-label">当前状态</label>
       <select class="form-input" id="ink-status">
         <option value="active">在用</option>
-        <option value="used">用完</option>
+        <option value="used">用完（金印归档）</option>
       </select>
     </div>
     <div class="form-actions">
       <button class="btn" id="btn-cancel-ink">取消</button>
       <button class="btn btn-primary" id="btn-save-ink">保存</button>
+    </div>
     </div>
   </div>
 </div>
@@ -267,6 +604,7 @@
 <div id="modal-notebook" class="modal-overlay">
   <div class="modal">
     <div class="modal-title" id="notebook-modal-title">添加本子</div>
+    <div class="modal-body">
     <div class="form-group">
       <label class="form-label">本子代号</label>
       <input class="form-input" id="notebook-code" placeholder="例如：D-A5-001">
@@ -291,17 +629,17 @@
       <label class="form-label">使用起止时间</label>
       <div style="display:flex;gap:8px;align-items:center;">
         <input class="form-input" id="notebook-start" placeholder="2025-06-01" style="flex:1;">
-        <span style="color:#888;">~</span>
+        <span style="color:var(--tx-3);">~</span>
         <input class="form-input" id="notebook-end" placeholder="2026-08-06" style="flex:1;">
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">照片</label>
       <input type="file" class="form-input" id="notebook-photo" accept="image/*" style="padding:6px 12px;">
-      <div id="notebook-photo-preview" style="margin-top:8px;max-width:200px;max-height:150px;overflow:hidden;border-radius:8px;display:none;">
-        <img id="notebook-photo-img" style="width:100%;height:auto;display:block;">
+      <div id="notebook-photo-preview" style="margin-top:8px;max-width:200px;max-height:150px;overflow:hidden;display:none;">
+        <img id="notebook-photo-img" style="width:100%;height:auto;display:block;border-radius:8px;">
       </div>
-      <div style="font-size:12px;color:#888;margin-top:4px;">提示：照片转base64存本地，容量有限建议只存缩略图</div>
+      <div style="font-size:11px;color:var(--tx-3);margin-top:4px;">提示：照片转 base64 存本地，容量有限建议只存缩略图</div>
     </div>
     <div class="form-group">
       <label class="form-label">备注</label>
@@ -311,12 +649,14 @@
       <button class="btn" id="btn-cancel-notebook">取消</button>
       <button class="btn btn-primary" id="btn-save-notebook">保存</button>
     </div>
+    </div>
   </div>
 </div>
 
 <div id="modal-paper" class="modal-overlay">
   <div class="modal">
     <div class="modal-title" id="paper-modal-title">添加纸张</div>
+    <div class="modal-body">
     <div class="form-group">
       <label class="form-label">品牌</label>
       <input class="form-input" id="paper-brand" placeholder="例如：巴川、国誉、道林">
@@ -329,17 +669,19 @@
       <label class="form-label">克重</label>
       <div style="display:flex;align-items:center;gap:8px;">
         <input class="form-input" type="number" id="paper-weight" placeholder="52" style="flex:1;">
-        <span style="color:#888;font-size:14px;">g/m²</span>
+        <span style="color:var(--tx-3);font-size:13px;">g/m²</span>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">使用的本子（自动关联）</label>
-      <div id="paper-notebooks-display" style="font-size:13px;color:#555;padding:8px 0;">未关联本子</div>
+      <div id="paper-notebooks-display" style="font-size:13px;color:var(--tx-2);padding:8px 0;">未关联本子</div>
     </div>
     <div class="form-group">
       <label class="form-label">评价条目</label>
       <div id="paper-reviews-list"></div>
-      <button class="btn btn-sm" type="button" id="btn-add-review" style="margin-top:8px;">+ 添加评价</button>
+      <button class="btn btn-sm" type="button" id="btn-add-review" style="margin-top:8px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加评价</button>
     </div>
     <div class="form-group">
       <label class="form-label">备注</label>
@@ -349,12 +691,14 @@
       <button class="btn" id="btn-cancel-paper">取消</button>
       <button class="btn btn-primary" id="btn-save-paper">保存</button>
     </div>
+    </div>
   </div>
 </div>
 
 <div id="modal-pen" class="modal-overlay">
   <div class="modal">
     <div class="modal-title" id="pen-modal-title">添加钢笔</div>
+    <div class="modal-body">
     <div class="form-group">
       <label class="form-label">品牌</label>
       <input class="form-input" id="pen-brand" placeholder="例如：百乐、凌美、写乐">
@@ -371,7 +715,7 @@
       <label class="form-label">价格</label>
       <div style="display:flex;align-items:center;gap:8px;">
         <input class="form-input" type="number" id="pen-price" placeholder="150" style="flex:1;">
-        <span style="color:#888;font-size:14px;">元</span>
+        <span style="color:var(--tx-3);font-size:13px;">元</span>
       </div>
     </div>
     <div class="form-group">
@@ -383,7 +727,9 @@
     <div class="form-group">
       <label class="form-label">评价条目</label>
       <div id="pen-reviews-list"></div>
-      <button class="btn btn-sm" type="button" id="btn-add-pen-review" style="margin-top:8px;">+ 添加评价</button>
+      <button class="btn btn-sm" type="button" id="btn-add-pen-review" style="margin-top:8px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加评价</button>
     </div>
     <div class="form-group">
       <label class="form-label">备注</label>
@@ -393,30 +739,47 @@
       <button class="btn" id="btn-cancel-pen">取消</button>
       <button class="btn btn-primary" id="btn-save-pen">保存</button>
     </div>
+    </div>
   </div>
 </div>
 
 <div id="modal-draw" class="modal-overlay">
   <div class="modal">
     <div class="modal-title">新建抽取排序</div>
+    <div class="modal-body">
     <div class="form-group">
       <label class="form-label">抽取名称</label>
       <input class="form-input" id="draw-name" placeholder="例如：2025年夏季绘画">
     </div>
     <div class="form-group">
-      <label class="form-label">选择参与抽取的彩墨（<span id="selected-count">0</span> 瓶已选）</label>
+      <label class="form-label">选择参与抽取的彩墨（<span id="selected-count" style="color:var(--cyan);font-weight:900;">0</span> 瓶已选）</label>
       <div class="ink-selector" id="draw-ink-selector"></div>
     </div>
-
     <div class="form-actions">
       <button class="btn" id="btn-cancel-draw">取消</button>
       <button class="btn btn-primary" id="btn-create-draw">创建并智能排序</button>
     </div>
+    </div>
   </div>
 </div>
 
+<div id="modal-refresh" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">发现新墨水</div>
+    <div class="modal-body">
+    <div id="refresh-new-inks-list"></div>
+    <div class="form-actions">
+      <button class="btn" id="btn-skip-refresh">跳过，直接刷新</button>
+      <button class="btn btn-primary" id="btn-confirm-add-refresh">确认加入并刷新</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div id="allclear-stamp" class="allclear-stamp">ALL CLEAR</div>
+
 <script>
-/* 彩墨管理与抽取应用 */
+/* 彩墨管理与抽取应用 · v3.0 天鹅绒房间家族皮肤（逻辑与 v2.3 完全一致，仅换皮） */
 (function() {
   "use strict";
 
@@ -446,11 +809,16 @@
   var COOL_FAMILIES = ["blue", "green", "purple"];
   var NEUTRAL_FAMILIES = ["brown", "bw"];
 
+  /* SVG 线条图标（UI 骨架禁 emoji） */
+  var ICON = {
+    pencil: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
+    x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw) data = JSON.parse(raw);
-      // 数据迁移：为旧抽取补充 checkedAt 字段
       if (data.draws) {
         for (var i = 0; i < data.draws.length; i++) {
           var d = data.draws[i];
@@ -461,7 +829,6 @@
           }
         }
       }
-      // 数据迁移：旧墨水单条 purchaseDate/capacity 转为 history 数组
       if (data.inks) {
         for (var i = 0; i < data.inks.length; i++) {
           var ink = data.inks[i];
@@ -541,7 +908,7 @@
     var toast = document.createElement("div");
     toast.id = "app-toast";
     toast.textContent = msg;
-    toast.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:8px;font-size:14px;z-index:200;transition:opacity 0.3s;" + (isError ? "background:#c0392b;color:#fff;" : "background:#1a1a1a;color:#fff;");
+    toast.style.cssText = "position:fixed;bottom:76px;left:50%;transform:translateX(-50%);padding:9px 22px;font-size:13px;font-weight:700;z-index:200;transition:opacity 0.3s;color:#f6fbff;background:#05070d;border:1px solid rgba(0,216,255,.5);clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%);box-shadow:0 0 10px rgba(0,216,255,.4);" + (isError ? "border-color:rgba(255,61,170,.6);box-shadow:0 0 10px rgba(255,61,170,.4);" : "");
     document.body.appendChild(toast);
     setTimeout(function() {
       toast.style.opacity = "0";
@@ -633,10 +1000,6 @@
     return a;
   }
 
-  
-
-
-
   function getFamily(id) {
     var ink = data.inks.find(function(i) { return i.id === id; });
     return ink ? ink.colorFamily : "";
@@ -649,15 +1012,12 @@
   }
 
   function smartSort(inkIds) {
-    // 按色系分组
     var groups = {};
     for (var i = 0; i < inkIds.length; i++) {
       var f = getFamily(inkIds[i]);
       if (!groups[f]) groups[f] = [];
       groups[f].push(inkIds[i]);
     }
-
-    // 每个色系内随机打乱
     for (var f in groups) {
       var arr = groups[f];
       for (var i = arr.length - 1; i > 0; i--) {
@@ -665,19 +1025,14 @@
         var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
       }
     }
-
-    // 获取所有有墨水的色系，随机确定初始循环顺序
     var families = Object.keys(groups);
     for (var i = families.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = families[i]; families[i] = families[j]; families[j] = tmp;
     }
-
     var result = [];
-
     while (families.length > 0) {
       var nextFamilies = [];
-      // 按当前色系顺序一轮循环
       for (var i = 0; i < families.length; i++) {
         var f = families[i];
         if (groups[f] && groups[f].length > 0) {
@@ -686,13 +1041,11 @@
         }
       }
       families = nextFamilies;
-      // 轮换：把第一个色系移到最后
       if (families.length > 1) {
         var first = families.shift();
         families.push(first);
       }
     }
-
     return result;
   }
 
@@ -707,14 +1060,32 @@
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   }
-
+  window.autoResize = autoResize;
 
   function $(id) { return document.getElementById(id); }
-
   function show(el) { el.classList.remove("hidden"); }
   function hide(el) { el.classList.add("hidden"); }
   function showModal(id) { $(id).classList.add("show"); }
   function hideModal(id) { $(id).classList.remove("show"); }
+
+  /* 纸页上浮背景 */
+  function initSea() {
+    var container = $("seaBubbles");
+    if (!container) return;
+    for (var i = 0; i < 16; i++) {
+      var b = document.createElement("span");
+      var w = 8 + Math.random() * 14;
+      b.style.width = w.toFixed(0) + "px";
+      b.style.height = (w * 1.35).toFixed(0) + "px";
+      b.style.left = (Math.random() * 100) + "%";
+      b.style.setProperty("--rot", ((Math.random() * 44 - 22) | 0) + "deg");
+      b.style.setProperty("--bo", (0.10 + Math.random() * 0.14).toFixed(2));
+      b.style.setProperty("--bx", ((Math.random() * 90 - 45) | 0) + "px");
+      b.style.animationDuration = (11 + Math.random() * 14).toFixed(1) + "s";
+      b.style.animationDelay = (-Math.random() * 22).toFixed(1) + "s";
+      container.appendChild(b);
+    }
+  }
 
   function isLeapYear(y) {
     return (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
@@ -729,11 +1100,6 @@
     return days[m - 1];
   }
 
-  
-  
-  
-  
-  
   function getUniqueBrands() {
     var brands = [];
     var seen = {};
@@ -785,31 +1151,32 @@
     var familyFilter = $("filter-family").value;
     var brandFilter = $("filter-brand").value;
     var sortMode = $("sort-mode").value;
-
     var result = data.inks.slice();
-
     if (familyFilter) {
       result = result.filter(function(ink) { return ink.colorFamily === familyFilter; });
     }
     if (brandFilter) {
       result = result.filter(function(ink) { return ink.brand === brandFilter; });
     }
-
     if (sortMode === "date-desc") {
       result.sort(function(a, b) { return parseDateToNum((getLatestPurchaseHistory(b) || {}).date) - parseDateToNum((getLatestPurchaseHistory(a) || {}).date); });
     } else if (sortMode === "date-asc") {
       result.sort(function(a, b) { return parseDateToNum((getLatestPurchaseHistory(a) || {}).date) - parseDateToNum((getLatestPurchaseHistory(b) || {}).date); });
     }
-
     return result;
   }
 
-  // ===== 视图切换 =====
+  /* ===== 视图切换 ===== */
   function switchTab(tab) {
     currentTab = tab;
     var tabs = document.querySelectorAll(".tab");
     for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
-    $("tab-" + tab).classList.add("active");
+    var activeTab = $("tab-" + tab);
+    if (activeTab) activeTab.classList.add("active");
+    var btns = document.querySelectorAll(".bnav button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-btab") === tab);
+    }
     if (tab === "draws") {
       hide($("view-inventory"));
       show($("view-draws"));
@@ -853,7 +1220,7 @@
     }
   }
 
-  // ===== 库存管理 =====
+  /* ===== 库存管理 ===== */
   function renderInventory() {
     var list = $("ink-list");
     var active = 0, used = 0;
@@ -861,9 +1228,9 @@
       if (data.inks[i].status === "active") active++;
       else used++;
     }
-    $("stat-total").textContent = "共 " + data.inks.length + " 瓶";
-    $("stat-active").textContent = "在用 " + active;
-    $("stat-used").textContent = "用完 " + used;
+    $("stat-total").textContent = data.inks.length;
+    $("stat-active").textContent = active;
+    $("stat-used").textContent = used;
 
     updateBrandFilter();
 
@@ -879,11 +1246,13 @@
       var ink = inks[i];
       var statusClass = ink.status === "active" ? "status-active" : "status-used";
       var statusText = ink.status === "active" ? "在用" : "用完";
-      html += '<div class="card" data-ink-id="' + ink.id + '" data-drag-id="' + ink.id + '" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">' +
+      html += '<div class="card ink-card" data-ink-id="' + ink.id + '" data-drag-id="' + ink.id + '">' +
+        '<div class="ink-ribbon" style="background:linear-gradient(180deg,' + getInkColor(ink) + ',' + getInkColor(ink) + 'cc);"></div>' +
+        '<div class="ink-card-main">' +
         '<div style="flex:1;min-width:0;">' +
-          '<div style="display:flex;align-items:center;gap:8px;">' +
-            '<div class="ink-color-dot" style="background:' + getInkColor(ink) + ';width:12px;height:12px;"></div>' +
-            '<div style="font-size:15px;font-weight:500;">' + escapeHtml(ink.brand) + ' · ' + escapeHtml(ink.color) + '</div>' +
+          '<div class="ink-title-row">' +
+            '<div class="ink-color-dot" style="background:' + getInkColor(ink) + ';"></div>' +
+            '<div class="ink-name">' + escapeHtml(ink.brand) + ' · ' + escapeHtml(ink.color) + '</div>' +
           '</div>' +
           (function() {
             var histHtml = "";
@@ -893,7 +1262,7 @@
               for (var h = 0; h < ink.history.length; h++) {
                 if (ink.history[h].label === "购买") repurchaseCount++;
               }
-              var repurchaseTag = repurchaseCount > 1 ? ' <span style="color:#888;font-size:11px;">复购' + (repurchaseCount - 1) + '次</span>' : "";
+              var repurchaseTag = repurchaseCount > 1 ? ' <span style="color:var(--gold);font-size:11px;">复购' + (repurchaseCount - 1) + '次</span>' : "";
               histHtml += '<div class="ink-meta">' + escapeHtml(latest.label || "") + " · " + formatDate(latest.date) + " · " + escapeHtml(formatCapacity(latest.capacity)) + repurchaseTag + '</div>';
             }
             return histHtml;
@@ -906,19 +1275,20 @@
                 var text = typeof rec === "string" ? rec : (rec ? rec.text : "");
                 var starred = typeof rec === "object" && rec && rec.starred;
                 if (starred) {
-                  revHtml += '<div style="font-size:13px;color:#555;margin-top:4px;padding-left:12px;border-left:2px solid #e67e22;">&#9733; ' + escapeHtml(text || "") + '</div>';
+                  revHtml += '<div class="ink-review-star">&#9733; ' + escapeHtml(text || "") + '</div>';
                 }
               }
             }
             return revHtml;
           })() +
         '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">' +
+        '<div style="display:flex;align-items:flex-start;gap:8px;flex-shrink:0;">' +
           '<span class="ink-status ' + statusClass + '">' + statusText + '</span>' +
-          '<div class="row-actions">' +
-            '<button class="btn btn-icon btn-sm btn-edit" data-id="' + ink.id + '" title="编辑">&#9998;</button>' +
-            '<button class="btn btn-icon btn-sm btn-danger btn-delete-ink" data-id="' + ink.id + '" title="删除">&#10005;</button>' +
+          '<div class="row-actions col">' +
+            '<button class="btn btn-icon btn-sm btn-edit" data-id="' + ink.id + '" title="编辑">' + ICON.pencil + '</button>' +
+            '<button class="btn btn-icon btn-sm btn-danger btn-delete-ink" data-id="' + ink.id + '" title="删除">' + ICON.x + '</button>' +
           '</div>' +
+        '</div>' +
         '</div>' +
       '</div>';
     }
@@ -946,14 +1316,14 @@
     var colorInput = $("ink-color");
     if (family && FAMILY_COLORS[family]) {
       colorInput.style.color = FAMILY_COLORS[family];
-      colorInput.style.fontWeight = "500";
+      colorInput.style.fontWeight = "700";
     } else {
       colorInput.style.color = "";
       colorInput.style.fontWeight = "";
     }
   }
 
-    var inkHistoryRecords = [];
+  var inkHistoryRecords = [];
 
   function renderHistoryList() {
     var container = $("ink-history-list");
@@ -961,21 +1331,21 @@
     var html = "";
     for (var i = 0; i < inkHistoryRecords.length; i++) {
       var rec = inkHistoryRecords[i];
-      html += '<div class="history-row" data-hidx="' + i + '" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;padding:10px;border:1px solid #eee;border-radius:8px;background:#fafafa;">' +
-        '<div style="flex:0 0 70px;">' +
-          '<select class="form-input history-label" style="font-size:13px;padding:6px 8px;">' +
+      html += '<div class="history-row" data-hidx="' + i + '" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;padding:10px;">' +
+        '<div style="flex:0 0 76px;">' +
+          '<select class="form-input history-label" style="font-size:12px;padding:6px 8px;">' +
             '<option value="购买"' + (rec.label === "购买" ? " selected" : "") + '>购买</option>' +
             '<option value="用完"' + (rec.label === "用完" ? " selected" : "") + '>用完</option>' +
           '</select>' +
         '</div>' +
         '<div style="flex:1;">' +
-          '<input class="form-input history-date" placeholder="2025-06-01" value="' + escapeHtml(rec.date || "") + '" style="font-size:13px;padding:6px 8px;">' +
+          '<input class="form-input history-date" placeholder="2025-06-01" value="' + escapeHtml(rec.date || "") + '" style="font-size:12px;padding:6px 8px;">' +
         '</div>' +
-        '<div style="flex:0 0 80px;display:flex;align-items:center;gap:4px;">' +
-          '<input class="form-input history-capacity" type="number" placeholder="15" value="' + escapeHtml(rec.capacity || "") + '" style="font-size:13px;padding:6px 8px;">' +
-          '<span style="color:#888;font-size:12px;">ml</span>' +
+        '<div style="flex:0 0 86px;display:flex;align-items:center;gap:4px;">' +
+          '<input class="form-input history-capacity" type="number" placeholder="15" value="' + escapeHtml(rec.capacity || "") + '" style="font-size:12px;padding:6px 8px;">' +
+          '<span style="color:var(--tx-3);font-size:11px;">ml</span>' +
         '</div>' +
-        '<button class="btn btn-icon btn-sm btn-danger btn-del-history" data-hidx="' + i + '" title="删除">&#10005;</button>' +
+        '<button class="btn btn-icon btn-sm btn-danger btn-del-history" data-hidx="' + i + '" title="删除">' + ICON.x + '</button>' +
       '</div>';
     }
     container.innerHTML = html;
@@ -1027,12 +1397,11 @@
     if (!ink.history || ink.history.length === 0) return { label: "", date: "", capacity: "" };
     var purchaseRecs = ink.history.filter(function(r) { return r.label === "购买"; });
     if (purchaseRecs.length === 0) return { label: "", date: "", capacity: "" };
-    // 按日期排序，取最新
     purchaseRecs.sort(function(a, b) { return parseDateToNum(b.date) - parseDateToNum(a.date); });
     return purchaseRecs[0];
   }
 
-function openInkModal(id) {
+  function openInkModal(id) {
     editingInkId = id || null;
     updateBrandSelect();
     $("ink-modal-title").textContent = id ? "编辑彩墨" : "添加彩墨";
@@ -1093,7 +1462,6 @@ function openInkModal(id) {
     var brand = getBrandValue();
     var status = $("ink-status").value;
     var history = collectHistoryRecords();
-    // 收集评价
     var reviewContainer = $("ink-reviews-list");
     if (reviewContainer) {
       var reviewInputs = reviewContainer.querySelectorAll(".ink-review-text");
@@ -1144,7 +1512,7 @@ function openInkModal(id) {
     saveData(); renderInventory();
   }
 
-  // ===== 拖拽排序 =====
+  /* ===== 拖拽排序 ===== */
   function setupDragSort(container, dataArray, idField, onReorder) {
     if (!container) return;
     var draggedId = null;
@@ -1177,11 +1545,11 @@ function openInkModal(id) {
         var rect = this.getBoundingClientRect();
         var midY = rect.top + rect.height / 2;
         if (e.clientY < midY) {
-          this.style.borderTop = "2px solid #1a1a1a";
+          this.style.borderTop = "2px solid #00d8ff";
           this.style.borderBottom = "";
         } else {
           this.style.borderTop = "";
-          this.style.borderBottom = "2px solid #1a1a1a";
+          this.style.borderBottom = "2px solid #00d8ff";
         }
       });
 
@@ -1219,9 +1587,7 @@ function openInkModal(id) {
     }
   }
 
-
-
-    // ===== 彩墨评价 =====
+  /* ===== 彩墨评价 ===== */
   var inkReviewRecords = [];
 
   function renderInkReviews() {
@@ -1241,9 +1607,9 @@ function openInkModal(id) {
       var text = typeof rec === "string" ? rec : (rec ? rec.text : "");
       var starred = typeof rec === "object" && rec && rec.starred;
       html += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
-        '<button class="btn btn-icon btn-sm btn-star" data-ridx="' + i + '" title="标记重点" style="color:' + (starred ? '#e67e22' : '#bbb') + ';font-size:16px;">' + (starred ? '&#9733;' : '&#9734;') + '</button>' +
+        '<button class="btn btn-icon btn-sm btn-star" data-ridx="' + i + '" title="标记重点" style="color:' + (starred ? '#c9a86a' : '#54637e') + ';font-size:15px;">' + (starred ? '&#9733;' : '&#9734;') + '</button>' +
         '<textarea class="form-input ink-review-text" placeholder="例如：洇墨严重、显色优秀" rows="1" style="flex:1;font-size:13px;padding:6px 8px;resize:vertical;min-height:32px;" oninput="autoResize(this)">' + escapeHtml(text || "") + '</textarea>' +
-        '<button class="btn btn-icon btn-sm btn-danger btn-del-ink-review" data-ridx="' + i + '" title="删除">&#10005;</button>' +
+        '<button class="btn btn-icon btn-sm btn-danger btn-del-ink-review" data-ridx="' + i + '" title="删除">' + ICON.x + '</button>' +
       '</div>';
     }
     container.innerHTML = html;
@@ -1274,13 +1640,13 @@ function openInkModal(id) {
     }
   }
 
-  // ===== 钢笔管理 =====
+  /* ===== 钢笔管理 ===== */
   var penReviewRecords = [];
   var editingPenId = null;
 
   function renderPens() {
     var list = $("pen-list");
-    $("pen-stats").innerHTML = "<span>共 " + data.pens.length + " 支</span>";
+    $("pen-stats").innerHTML = "<span>共 <b>" + data.pens.length + "</b> 支</span>";
     if (data.pens.length === 0) {
       list.innerHTML = '<div class="empty-state">还没有钢笔记录，点击上方按钮添加吧</div>';
       return;
@@ -1300,21 +1666,21 @@ function openInkModal(id) {
           var text = typeof rec === "string" ? rec : (rec ? rec.text : "");
           var starred = typeof rec === "object" && rec && rec.starred;
           if (starred) {
-            reviewsHtml += '<div style="font-size:13px;color:#555;margin-top:4px;padding-left:12px;border-left:2px solid #e67e22;">&#9733; ' + escapeHtml(text || "") + '</div>';
+            reviewsHtml += '<div class="ink-review-star">&#9733; ' + escapeHtml(text || "") + '</div>';
           }
         }
       }
       html += '<div class="card" data-pen-id="' + pen.id + '" data-drag-id="' + pen.id + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
           '<div style="flex:1;">' +
-            '<div style="font-size:15px;font-weight:500;">' + escapeHtml(pen.brand) + ' · ' + escapeHtml(pen.name) + '</div>' +
+            '<div class="ink-name">' + escapeHtml(pen.brand) + ' · ' + escapeHtml(pen.name) + '</div>' +
             '<div class="ink-meta">' + escapeHtml(pen.nib || "-") + ' · ' + (pen.price ? pen.price + '元' : '-') + (inkInfo ? ' · 灌墨：' + inkInfo : '') + '</div>' +
             reviewsHtml +
-            (pen.note ? '<div style="font-size:12px;color:#888;margin-top:6px;">' + escapeHtml(pen.note) + '</div>' : "") +
+            (pen.note ? '<div style="font-size:12px;color:var(--tx-3);margin-top:6px;">' + escapeHtml(pen.note) + '</div>' : "") +
           '</div>' +
           '<div class="row-actions" style="flex-shrink:0;margin-left:12px;">' +
-            '<button class="btn btn-icon btn-sm btn-edit-pen" data-id="' + pen.id + '" title="编辑">&#9998;</button>' +
-            '<button class="btn btn-icon btn-sm btn-danger btn-delete-pen" data-id="' + pen.id + '" title="删除">&#10005;</button>' +
+            '<button class="btn btn-icon btn-sm btn-edit-pen" data-id="' + pen.id + '" title="编辑">' + ICON.pencil + '</button>' +
+            '<button class="btn btn-icon btn-sm btn-danger btn-delete-pen" data-id="' + pen.id + '" title="删除">' + ICON.x + '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -1355,9 +1721,9 @@ function openInkModal(id) {
       var text = typeof rec === "string" ? rec : (rec ? rec.text : "");
       var starred = typeof rec === "object" && rec && rec.starred;
       html += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
-        '<button class="btn btn-icon btn-sm btn-star" data-ridx="' + i + '" title="标记重点" style="color:' + (starred ? '#e67e22' : '#bbb') + ';font-size:16px;">' + (starred ? '&#9733;' : '&#9734;') + '</button>' +
+        '<button class="btn btn-icon btn-sm btn-star" data-ridx="' + i + '" title="标记重点" style="color:' + (starred ? '#c9a86a' : '#54637e') + ';font-size:15px;">' + (starred ? '&#9733;' : '&#9734;') + '</button>' +
         '<textarea class="form-input pen-review-text" placeholder="例如：笔尖顺滑、握感舒适、适合日用" rows="1" style="flex:1;font-size:13px;padding:6px 8px;resize:vertical;min-height:32px;" oninput="autoResize(this)">' + escapeHtml(text || "") + '</textarea>' +
-        '<button class="btn btn-icon btn-sm btn-danger btn-del-pen-review" data-ridx="' + i + '" title="删除">&#10005;</button>' +
+        '<button class="btn btn-icon btn-sm btn-danger btn-del-pen-review" data-ridx="' + i + '" title="删除">' + ICON.x + '</button>' +
       '</div>';
     }
     container.innerHTML = html;
@@ -1452,7 +1818,6 @@ function openInkModal(id) {
     var price = $("pen-price").value.trim();
     var inkId = $("pen-ink-select").value;
     var note = $("pen-note").value.trim();
-    // 收集评价
     var reviewContainer = $("pen-reviews-list");
     if (reviewContainer) {
       var reviewInputs = reviewContainer.querySelectorAll(".pen-review-text");
@@ -1495,16 +1860,16 @@ function openInkModal(id) {
     saveData(); renderPens();
   }
 
-  // ===== 本子管理 =====
+  /* ===== 本子管理 ===== */
   var editingNotebookId = null;
   var selectedNotebookPaperIds = [];
   var notebookPhotoBase64 = "";
 
   function renderNotebooks() {
     var list = $("notebook-list");
-    $("notebook-stats").innerHTML = "<span>共 " + data.notebooks.length + " 本</span>";
+    $("notebook-stats").innerHTML = "<span>共 <b>" + data.notebooks.length + "</b> 本</span>";
     if (data.notebooks.length === 0) {
-      list.innerHTML = '<div class="empty-state">还没有本子记录，点击上方按钮添加吧</div>';
+      list.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">还没有本子记录，点击上方按钮添加吧</div>';
       return;
     }
     var html = "";
@@ -1525,19 +1890,19 @@ function openInkModal(id) {
       }
       var photoHtml = "";
       if (nb.photos && nb.photos.length > 0) {
-        photoHtml = '<img src="' + nb.photos[0] + '" style="width:80px;height:100px;object-fit:cover;border-radius:8px;max-width:100%;">';
+        photoHtml = '<img src="' + nb.photos[0] + '" style="width:80px;height:100px;object-fit:cover;border-radius:8px;max-width:100%;border:1px solid rgba(0,216,255,.3);">';
       }
       html += '<div class="card" data-nb-id="' + nb.id + '" data-drag-id="' + nb.id + '" style="display:flex;gap:10px;align-items:flex-start;">' +
         (photoHtml ? '<div style="flex-shrink:0;">' + photoHtml + '</div>' : "") +
         '<div style="flex:1;min-width:0;">' +
-          '<div style="font-size:14px;font-weight:500;word-break:break-all;">' + escapeHtml(nb.code) + '</div>' +
+          '<div style="font-size:14px;font-weight:700;word-break:break-all;">' + escapeHtml(nb.code) + '</div>' +
           '<div class="ink-meta" style="word-break:break-all;">' + escapeHtml(nb.brand) + " · " + escapeHtml(nb.name) + " · " + escapeHtml(nb.model || "-") + '</div>' +
           papersHtml + dateHtml +
-          (nb.note ? '<div style="font-size:12px;color:#888;margin-top:4px;word-break:break-all;">' + escapeHtml(nb.note) + '</div>' : "") +
+          (nb.note ? '<div style="font-size:12px;color:var(--tx-3);margin-top:4px;word-break:break-all;">' + escapeHtml(nb.note) + '</div>' : "") +
         '</div>' +
-        '<div class="row-actions" style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">' +
-          '<button class="btn btn-icon btn-sm btn-edit-notebook" data-id="' + nb.id + '" title="编辑">&#9998;</button>' +
-          '<button class="btn btn-icon btn-sm btn-danger btn-delete-notebook" data-id="' + nb.id + '" title="删除">&#10005;</button>' +
+        '<div class="row-actions col" style="flex-shrink:0;">' +
+          '<button class="btn btn-icon btn-sm btn-edit-notebook" data-id="' + nb.id + '" title="编辑">' + ICON.pencil + '</button>' +
+          '<button class="btn btn-icon btn-sm btn-danger btn-delete-notebook" data-id="' + nb.id + '" title="删除">' + ICON.x + '</button>' +
         '</div>' +
       '</div>';
     }
@@ -1698,16 +2063,14 @@ function openInkModal(id) {
     saveData(); renderNotebooks();
   }
 
-
-
-// ===== 纸张评价 =====
+  /* ===== 纸张管理 ===== */
   var paperReviewRecords = [];
   var paperNotebookRecords = [];
   var editingPaperId = null;
 
   function renderPapers() {
     var list = $("paper-list");
-    $("paper-stats").innerHTML = "<span>共 " + data.papers.length + " 种</span>";
+    $("paper-stats").innerHTML = "<span>共 <b>" + data.papers.length + "</b> 种</span>";
     if (data.papers.length === 0) {
       list.innerHTML = '<div class="empty-state">还没有纸张记录，点击上方按钮添加吧</div>';
       return;
@@ -1722,15 +2085,15 @@ function openInkModal(id) {
           var text = typeof rec === "string" ? rec : (rec ? rec.text : "");
           var starred = typeof rec === "object" && rec && rec.starred;
           if (starred) {
-            reviewsHtml += '<div style="font-size:13px;color:#555;margin-top:4px;padding-left:12px;border-left:2px solid #e67e22;">&#9733; ' + escapeHtml(text || "") + '</div>';
+            reviewsHtml += '<div class="ink-review-star">&#9733; ' + escapeHtml(text || "") + '</div>';
           }
         }
       }
       html += '<div class="card" data-paper-id="' + p.id + '" data-drag-id="' + p.id + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
           '<div style="flex:1;">' +
-            '<div style="font-size:15px;font-weight:500;">' + escapeHtml(p.brand) + ' · ' + escapeHtml(p.type) + '</div>' +
-(function() {
+            '<div class="ink-name">' + escapeHtml(p.brand) + ' · ' + escapeHtml(p.type) + '</div>' +
+            (function() {
               var nbHtml = "";
               var linkedNotebooks = [];
               for (var n = 0; n < data.notebooks.length; n++) {
@@ -1747,11 +2110,11 @@ function openInkModal(id) {
               return '<div class="ink-meta">' + (p.weight ? p.weight + 'g/m²' : '-') + ' · ' + nbHtml + '</div>';
             })() +
             reviewsHtml +
-            (p.note ? '<div style="font-size:12px;color:#888;margin-top:6px;">' + escapeHtml(p.note) + '</div>' : "") +
+            (p.note ? '<div style="font-size:12px;color:var(--tx-3);margin-top:6px;">' + escapeHtml(p.note) + '</div>' : "") +
           '</div>' +
           '<div class="row-actions" style="flex-shrink:0;margin-left:12px;">' +
-            '<button class="btn btn-icon btn-sm btn-edit-paper" data-id="' + p.id + '" title="编辑">&#9998;</button>' +
-            '<button class="btn btn-icon btn-sm btn-danger btn-delete-paper" data-id="' + p.id + '" title="删除">&#10005;</button>' +
+            '<button class="btn btn-icon btn-sm btn-edit-paper" data-id="' + p.id + '" title="编辑">' + ICON.pencil + '</button>' +
+            '<button class="btn btn-icon btn-sm btn-danger btn-delete-paper" data-id="' + p.id + '" title="删除">' + ICON.x + '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -1778,7 +2141,6 @@ function openInkModal(id) {
   function renderPaperReviews() {
     var container = $("paper-reviews-list");
     if (!container) return;
-    // 先收集当前输入框的值，避免重新渲染时丢失
     var inputs = container.querySelectorAll(".review-text");
     for (var i = 0; i < inputs.length && i < paperReviewRecords.length; i++) {
       if (typeof paperReviewRecords[i] === "string") {
@@ -1793,9 +2155,9 @@ function openInkModal(id) {
       var text = typeof rec === "string" ? rec : (rec ? rec.text : "");
       var starred = typeof rec === "object" && rec && rec.starred;
       html += '<div class="review-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
-        '<button class="btn btn-icon btn-sm btn-star" data-ridx="' + i + '" title="标记重点" style="color:' + (starred ? '#e67e22' : '#bbb') + ';font-size:16px;">' + (starred ? '&#9733;' : '&#9734;') + '</button>' +
+        '<button class="btn btn-icon btn-sm btn-star" data-ridx="' + i + '" title="标记重点" style="color:' + (starred ? '#c9a86a' : '#54637e') + ';font-size:15px;">' + (starred ? '&#9733;' : '&#9734;') + '</button>' +
         '<textarea class="form-input review-text" placeholder="例如：洇墨严重、显色优秀、适合彩墨" rows="1" style="flex:1;font-size:13px;padding:6px 8px;resize:vertical;min-height:32px;" oninput="autoResize(this)">' + escapeHtml(text || "") + '</textarea>' +
-        '<button class="btn btn-icon btn-sm btn-danger btn-del-review" data-ridx="' + i + '" title="删除">&#10005;</button>' +
+        '<button class="btn btn-icon btn-sm btn-danger btn-del-review" data-ridx="' + i + '" title="删除">' + ICON.x + '</button>' +
       '</div>';
     }
     container.innerHTML = html;
@@ -1826,8 +2188,6 @@ function openInkModal(id) {
     }
   }
 
-  
-
   function openPaperModal(id) {
     editingPaperId = id || null;
     $("paper-modal-title").textContent = id ? "编辑纸张" : "添加纸张";
@@ -1848,7 +2208,6 @@ function openInkModal(id) {
           }
         }
       }
-      // 派生显示关联的本子
       var linkedNbs = [];
       for (var n = 0; n < data.notebooks.length; n++) {
         var nb = data.notebooks[n];
@@ -1860,7 +2219,7 @@ function openInkModal(id) {
       if (linkedNbs.length > 0) {
         var nbHtml = "";
         for (var i = 0; i < linkedNbs.length; i++) {
-          nbHtml += '<span class="nb-chip" data-nb-jump-id="' + linkedNbs[i].id + '" style="display:inline-block;padding:4px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;background:#fff;cursor:pointer;margin-right:6px;margin-bottom:4px;transition:all 0.15s;">' + escapeHtml(linkedNbs[i].code) + '</span>';
+          nbHtml += '<span class="nb-chip" data-nb-jump-id="' + linkedNbs[i].id + '">' + escapeHtml(linkedNbs[i].code) + '</span>';
         }
         displayEl.innerHTML = nbHtml;
         var chips = displayEl.querySelectorAll(".nb-chip");
@@ -1899,7 +2258,6 @@ function openInkModal(id) {
     var type = $("paper-type").value.trim();
     var weight = $("paper-weight").value.trim();
     var note = $("paper-note").value.trim();
-    // 先同步当前输入框的值到数组
     var reviewContainer = $("paper-reviews-list");
     if (reviewContainer) {
       var reviewInputs = reviewContainer.querySelectorAll(".review-text");
@@ -1941,9 +2299,7 @@ function openInkModal(id) {
     saveData(); renderPapers();
   }
 
-
-
-  // ===== 数据导出/导入 =====
+  /* ===== 数据导出/导入 ===== */
   function exportData() {
     var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
@@ -1967,7 +2323,6 @@ function openInkModal(id) {
         }
         if (!confirm("导入将覆盖当前所有数据，确定继续吗？")) return;
         data = imported;
-        // 数据迁移：旧数据兼容
         if (data.draws) {
           for (var i = 0; i < data.draws.length; i++) {
             var d = data.draws[i];
@@ -2006,7 +2361,6 @@ function openInkModal(id) {
         }
         if (!data.papers) data.papers = [];
         if (!data.notebooks) data.notebooks = [];
-      if (!data.notebooks) data.notebooks = [];
         for (var i = 0; i < data.papers.length; i++) {
           var p = data.papers[i];
           if (p.notebook && !p.notebooks) {
@@ -2037,6 +2391,7 @@ function openInkModal(id) {
         if (currentTab === "inventory") renderInventory();
         else if (currentTab === "papers") renderPapers();
         else if (currentTab === "pens") renderPens();
+        else if (currentTab === "notebooks") renderNotebooks();
         else renderDraws();
         alert("导入成功！");
       } catch(err) {
@@ -2046,10 +2401,10 @@ function openInkModal(id) {
     reader.readAsText(file);
   }
 
-  // ===== 抽取中心 =====
+  /* ===== 抽取中心 ===== */
   function renderDraws() {
     var list = $("draw-list");
-    $("draw-stats").innerHTML = "<span>共 " + data.draws.length + " 个抽取</span>";
+    $("draw-stats").innerHTML = "<span>共 <b>" + data.draws.length + "</b> 个抽取</span>";
     if (data.draws.length === 0) {
       list.innerHTML = '<div class="empty-state">还没有抽取排序，点击上方按钮创建一个吧</div>';
       return;
@@ -2066,16 +2421,15 @@ function openInkModal(id) {
         if (ink) { if (inkNames) inkNames += "、"; inkNames += ink.color; }
       }
       var more = draw.order.length > 3 ? " 等 " + draw.order.length + " 瓶" : "";
-      var optText = "";
       html += '<div class="card draw-card" data-draw-id="' + draw.id + '">' +
         '<div class="draw-card-header">' +
           '<div>' +
             '<div class="draw-card-title">' + escapeHtml(draw.name) + '</div>' +
-            '<div class="draw-card-meta">' + inkNames + more + " · " + formatDate(draw.createdAt) + "创建" + optText + '</div>' +
+            '<div class="draw-card-meta">' + inkNames + more + " · " + formatDate(draw.createdAt) + "创建" + '</div>' +
           '</div>' +
-          '<div style="font-size:20px;font-weight:500;">' + done + "/" + total + '</div>' +
+          '<div class="draw-count' + (pct === 100 && total > 0 ? " done" : "") + '">' + done + '<span style="font-size:13px;font-style:normal;color:var(--tx-3);">/' + total + '</span>' + '</div>' +
         '</div>' +
-        '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="progress-bar"><div class="progress-fill' + (pct === 100 && total > 0 ? " gold" : "") + '" style="width:' + pct + '%"></div></div>' +
       '</div>';
     }
     list.innerHTML = html;
@@ -2110,7 +2464,9 @@ function openInkModal(id) {
     var done = draw.checked.length;
     var pct = total > 0 ? Math.round(done / total * 100) : 0;
     $("detail-meta").textContent = "共 " + total + " 瓶 · 已完成 " + done + " 瓶 · " + formatDate(draw.createdAt) + "创建";
-    $("detail-progress").style.width = pct + "%";
+    var fill = $("detail-progress");
+    fill.style.width = pct + "%";
+    fill.classList.toggle("gold", pct === 100 && total > 0);
     var container = $("detail-list");
     if (total === 0) { container.innerHTML = '<div class="empty-state">该抽取没有彩墨</div>'; return; }
 
@@ -2120,13 +2476,13 @@ function openInkModal(id) {
       var ink = data.inks.find(function(i) { return i.id === id; });
       if (!ink) continue;
       var isChecked = draw.checked.indexOf(id) !== -1;
-      var checkMark = isChecked ? "&#10003;" : "&#9675;";
+      var checkMark = isChecked ? "&#10003;" : "";
       var checkedClass = isChecked ? " checked" : "";
-      html += '<div class="draw-list-item' + checkedClass + '" data-check-id="' + id + '">' +
+      html += '<div class="draw-list-item' + checkedClass + '" data-check-id="' + id + '" style="--inkc:' + getInkColor(ink) + ';">' +
+        '<div class="idx">' + (idx + 1) + '</div>' +
         '<div class="checkbox">' + checkMark + '</div>' +
-        '<div class="ink-color-dot" style="background:' + getInkColor(ink) + ';"></div>' +
         '<div class="ink-info">' +
-          '<div class="ink-brand">' + (idx + 1) + ". " + escapeHtml(ink.brand) + " · " + escapeHtml(ink.color) + '</div>' +
+          '<div class="ink-brand" style="font-size:14px;font-weight:700;">' + escapeHtml(ink.brand) + " · " + escapeHtml(ink.color) + '</div>' +
           '<div class="ink-meta">' + escapeHtml(formatCapacity((getLatestHistory(ink) || {}).capacity)) + " · " + (isChecked && draw.checkedAt[id] ? formatDate(draw.checkedAt[id]) : formatDate((getLatestHistory(ink) || {}).date)) + '</div>' +
         '</div>' +
         '<span class="ink-status ' + (ink.status === "active" ? "status-active" : "status-used") + '">' + (ink.status === "active" ? "在用" : "用完") + '</span>' +
@@ -2145,13 +2501,12 @@ function openInkModal(id) {
   function toggleCheck(inkId) {
     var draw = data.draws.find(function(d) { return d.id === currentDrawId; });
     if (!draw) return;
+    var wasComplete = draw.order.length > 0 && draw.checked.length === draw.order.length;
     var idx = draw.checked.indexOf(inkId);
     if (idx >= 0) {
-      // 取消勾选：移除标记和日期，保持顺序位置
       draw.checked.splice(idx, 1);
       delete draw.checkedAt[inkId];
     } else {
-      // 勾选：标记为已使用，记录使用日期，并移到列表末尾
       draw.checked.push(inkId);
       draw.checkedAt[inkId] = new Date().toISOString().split("T")[0];
       var orderIdx = draw.order.indexOf(inkId);
@@ -2161,6 +2516,18 @@ function openInkModal(id) {
       }
     }
     saveData(); renderDrawDetail();
+    var nowComplete = draw.order.length > 0 && draw.checked.length === draw.order.length;
+    if (nowComplete && !wasComplete) showAllClear();
+  }
+
+  /* 全列抽完：金色 ALL CLEAR 印章 */
+  function showAllClear() {
+    var stamp = $("allclear-stamp");
+    if (!stamp) return;
+    stamp.classList.remove("show");
+    void stamp.offsetWidth;
+    stamp.classList.add("show");
+    setTimeout(function() { stamp.classList.remove("show"); }, 1000);
   }
 
   function resetDraw() {
@@ -2222,7 +2589,6 @@ function openInkModal(id) {
     var removedCount = 0;
     var removedNames = [];
 
-    // 过滤：保留"在用"的墨水，以及"已勾选（本次已使用）即使状态变为用完"的墨水
     var validOrder = [];
     for (var i = 0; i < draw.order.length; i++) {
       var id = draw.order[i];
@@ -2236,7 +2602,6 @@ function openInkModal(id) {
       }
     }
 
-    // 同步 checked：只要墨水还在 validOrder 中就保留勾选状态
     var validChecked = [];
     for (var i = 0; i < draw.checked.length; i++) {
       var id = draw.checked[i];
@@ -2245,7 +2610,6 @@ function openInkModal(id) {
       }
     }
 
-    // 找出所有在用但不在当前抽取中的墨水
     var newInks = [];
     for (var i = 0; i < data.inks.length; i++) {
       var ink = data.inks[i];
@@ -2269,7 +2633,7 @@ function openInkModal(id) {
 
   function renderRefreshNewInks(newInks) {
     var container = $("refresh-new-inks-list");
-    var html = '<div style="font-size:13px;color:#666;margin-bottom:12px;">以下在用墨水不在当前抽取中，是否加入本次刷新？</div>';
+    var html = '<div style="font-size:13px;color:var(--tx-2);margin-bottom:12px;">以下在用墨水不在当前抽取中，是否加入本次刷新？</div>';
     for (var i = 0; i < newInks.length; i++) {
       var ink = newInks[i];
       html += '<label class="option-item" style="cursor:pointer;">' +
@@ -2320,11 +2684,9 @@ function openInkModal(id) {
         unusedIds.push(id);
       }
     }
-
     for (var i = 0; i < newAddedIds.length; i++) {
       unusedIds.push(newAddedIds[i]);
     }
-
     var newUnusedOrder = smartSort(unusedIds);
     draw.order = newUnusedOrder.concat(usedIds);
     draw.checked = validChecked;
@@ -2344,7 +2706,7 @@ function openInkModal(id) {
     alert(msg);
   }
 
-  // ===== 新建抽取 =====
+  /* ===== 新建抽取 ===== */
   function openDrawModal() {
     var activeInks = data.inks.filter(function(i) { return i.status === "active"; });
     if (activeInks.length === 0) { alert("没有在用状态的彩墨，无法创建抽取"); return; }
@@ -2363,7 +2725,7 @@ function openInkModal(id) {
       var ink = data.inks[i];
       var isSelected = selectedInkIds.indexOf(ink.id) !== -1;
       html += '<div class="ink-chip ' + (isSelected ? "selected" : "") + '" data-chip-id="' + ink.id + '">' +
-        '<div class="ink-color-dot" style="width:12px;height:12px;background:' + getInkColor(ink) + ';"></div>' +
+        '<div class="ink-color-dot" style="background:' + getInkColor(ink) + ';"></div>' +
         escapeHtml(ink.brand) + " " + escapeHtml(ink.color) +
       '</div>';
     }
@@ -2408,8 +2770,15 @@ function openInkModal(id) {
     if (currentTab === "draws") renderDraws(); else switchTab("draws");
   }
 
-  // ===== 全局事件绑定 =====
+  /* ===== 全局事件绑定 ===== */
   document.addEventListener("DOMContentLoaded", function() {
+    var btabs = document.querySelectorAll(".bnav button");
+    for (var i = 0; i < btabs.length; i++) {
+      btabs[i].addEventListener("click", function() {
+        switchTab(this.getAttribute("data-btab"));
+      });
+    }
+
     $("tab-draws").addEventListener("click", function() { switchTab("draws"); });
     $("tab-inventory").addEventListener("click", function() { switchTab("inventory"); });
     $("tab-pens").addEventListener("click", function() { switchTab("pens"); });
@@ -2505,6 +2874,7 @@ function openInkModal(id) {
       }
     });
 
+    initSea();
     loadData();
     switchTab("draws");
   });
@@ -2521,16 +2891,5 @@ function openInkModal(id) {
   });
 })();
 </script>
-<div id="modal-refresh" class="modal-overlay">
-  <div class="modal">
-    <div class="modal-title">发现新墨水</div>
-    <div id="refresh-new-inks-list"></div>
-    <div class="form-actions">
-      <button class="btn" id="btn-skip-refresh">跳过，直接刷新</button>
-      <button class="btn btn-primary" id="btn-confirm-add-refresh">确认加入并刷新</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
