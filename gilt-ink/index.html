@@ -49,19 +49,19 @@ body::before {
   content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)'/%3E%3C/svg%3E");
 }
-/* 纸页上浮（海面漂起的纸页） */
+/* 墨滴坠入（自顶部落入，下沉晕开） */
 #seaBubbles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 #seaBubbles span {
-  position: absolute; bottom: -40px;
-  background: rgba(238,244,250,.85); border-radius: 2px;
-  box-shadow: 0 1px 4px rgba(0,10,40,.35);
-  animation: paperUp linear infinite;
+  position: absolute; top: -40px;
+  background: rgba(8,16,44,.5);
+  border-radius: 46% 54% 52% 48%;
+  animation: inkDrop linear infinite;
 }
-@keyframes paperUp {
-  0% { transform: translate(0,0) rotate(var(--rot,0deg)); opacity: 0; }
-  10% { opacity: var(--bo,.22); }
-  90% { opacity: var(--bo,.22); }
-  100% { transform: translate(var(--bx,0px), -108vh) rotate(calc(var(--rot,0deg) + 28deg)); opacity: 0; }
+@keyframes inkDrop {
+  0% { transform: translate(var(--bx,0px), -6vh) scale(.55); opacity: 0; filter: blur(0px); }
+  8% { opacity: var(--bo,.3); }
+  55% { opacity: var(--bo,.3); filter: blur(2px); }
+  100% { transform: translate(var(--bx2,0px), 106vh) scale(2); opacity: 0; filter: blur(7px); }
 }
 @media (prefers-reduced-motion: reduce) {
   #seaBubbles span { animation: none; opacity: 0; }
@@ -94,34 +94,43 @@ body::before {
 }
 .top-actions { display: flex; align-items: center; gap: 8px; }
 
-/* ---------- 页签（电脑端） ---------- */
-.tabs {
-  display: flex; gap: 6px; padding: 8px 0 10px;
-  position: sticky; top: 48px; z-index: 29;
-  background: transparent;
-  overflow-x: auto;
+/* ---------- 侧边栏（电脑端选项卡） ---------- */
+#brand-btn { cursor: pointer; }
+.side-overlay {
+  position: fixed; inset: 0; z-index: 45; background: rgba(3,8,26,.55);
+  display: none;
 }
-.tab {
-  border: none; cursor: pointer; flex-shrink: 0;
-  background: var(--bar); color: var(--tx-2);
+.side-overlay.show { display: block; }
+.sidebar {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 264px;
+  background: var(--bar); border-right: 1px solid var(--line);
+  padding: 60px 14px 14px; overflow-y: auto;
+  box-shadow: 8px 0 24px rgba(0,4,16,.5);
+}
+.side-title {
+  font-family: Georgia, serif; letter-spacing: .18em; font-size: 11px;
+  color: var(--tx-3); padding: 0 6px 10px;
+}
+.side-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  border: none; cursor: pointer; margin-bottom: 8px;
+  background: var(--bar-2); color: var(--tx-2);
   clip-path: var(--slant);
-  padding: 9px 16px 9px 12px;
-  font-size: 14px; font-weight: 700;
-  display: inline-flex; align-items: center; gap: 7px;
-  transition: color .15s, filter .15s;
+  padding: 13px 16px 13px 12px;
+  font-size: 15px; font-weight: 700; text-align: left;
   filter: drop-shadow(2px 2px 0 rgba(0,4,16,.4));
+  transition: color .15s, filter .15s;
 }
-.tab .no { font-family: Georgia, serif; font-size: 10px; color: #4fc3dd; letter-spacing: .1em; }
-.tab .en { font-family: Georgia, serif; font-size: 10px; letter-spacing: .14em; opacity: .7; }
-.tab:hover { color: var(--tx); }
-.tab.active {
-  color: var(--cyan);
-  text-shadow: 0 0 8px rgba(0,216,255,.6);
+.side-item .no { font-family: Georgia, serif; font-size: 11px; color: #4fc3dd; letter-spacing: .1em; }
+.side-item .en { margin-left: auto; font-family: Georgia, serif; font-size: 10px; letter-spacing: .16em; opacity: .7; }
+.side-item:hover { color: var(--tx); }
+.side-item.active {
+  color: var(--cyan); text-shadow: 0 0 8px rgba(0,216,255,.6);
   filter: drop-shadow(0 0 6px rgba(0,216,255,.45)) drop-shadow(2px 2px 0 rgba(0,4,16,.4));
 }
-.tab.active::after {
-  content: ""; display: block; width: 22px; height: 3px; background: var(--yellow);
-  margin-left: 2px; transform: skewX(-24deg);
+.side-item.active::after {
+  content: ""; width: 20px; height: 3px; background: var(--yellow);
+  transform: skewX(-24deg); margin-left: 4px; flex-shrink: 0;
 }
 
 /* ---------- 底部导航（手机端） ---------- */
@@ -391,7 +400,7 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
 <div id="seaBubbles"></div>
 
 <header class="topbar">
-  <div class="brand">
+  <div class="brand" id="brand-btn" title="打开菜单">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l5.2 7L12 21.5 6.8 9.5z"/><path d="M6.8 9.5h10.4"/><circle cx="12" cy="6.4" r=".9" fill="currentColor" stroke="none"/></svg>
     <span class="en">GILT INK</span>
   </div>
@@ -408,12 +417,15 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
 </header>
 
 <div class="container">
-  <div class="tabs">
-    <button class="tab active" id="tab-draws" data-tab="draws"><span class="no">01</span>抽取中心<span class="en">DRAWS</span></button>
-    <button class="tab" id="tab-inventory" data-tab="inventory"><span class="no">02</span>彩墨管理<span class="en">INKS</span></button>
-    <button class="tab" id="tab-pens" data-tab="pens"><span class="no">03</span>钢笔管理<span class="en">PENS</span></button>
-    <button class="tab" id="tab-papers" data-tab="papers"><span class="no">04</span>纸张管理<span class="en">PAPERS</span></button>
-    <button class="tab" id="tab-notebooks" data-tab="notebooks"><span class="no">05</span>本子管理<span class="en">BOOKS</span></button>
+  <div class="side-overlay" id="side-overlay">
+    <aside class="sidebar">
+      <div class="side-title">GILT INK · MENU</div>
+      <button class="side-item" data-stab="draws"><span class="no">01</span>抽取中心<span class="en">DRAWS</span></button>
+      <button class="side-item" data-stab="inventory"><span class="no">02</span>彩墨管理<span class="en">INKS</span></button>
+      <button class="side-item" data-stab="pens"><span class="no">03</span>钢笔管理<span class="en">PENS</span></button>
+      <button class="side-item" data-stab="papers"><span class="no">04</span>纸张管理<span class="en">PAPERS</span></button>
+      <button class="side-item" data-stab="notebooks"><span class="no">05</span>本子管理<span class="en">BOOKS</span></button>
+    </aside>
   </div>
 
   <div id="view-draws" class="hidden">
@@ -815,10 +827,10 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
     x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
   };
 
-  function loadData() {
+  function loadData(raw) {
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) data = JSON.parse(raw);
+      if (!raw) return;
+      data = JSON.parse(raw);
       if (data.draws) {
         for (var i = 0; i < data.draws.length; i++) {
           var d = data.draws[i];
@@ -892,15 +904,111 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
     } catch(e) {}
   }
 
-  function saveData() {
+  var slimming = false;
+  /* 容量不足时：压缩本子照片后重试保存 */
+  function slimPhotosAndRetry() {
+    if (slimming) return;
+    var photos = [];
+    for (var i = 0; i < data.notebooks.length; i++) {
+      var nb = data.notebooks[i];
+      if (nb.photos) {
+        for (var j = 0; j < nb.photos.length; j++) {
+          if (nb.photos[j] && nb.photos[j].indexOf("data:image") === 0) photos.push({ nb: nb, idx: j });
+        }
+      }
+    }
+    if (!photos.length) return;
+    slimming = true;
+    showToast("容量不足，正在压缩照片…");
+    var done = 0;
+    function next() {
+      if (done >= photos.length) {
+        slimming = false;
+        writeData();
+        return;
+      }
+      var item = photos[done++];
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        var w = img.width, h = img.height, max = 480;
+        if (w > max) { h = Math.round(h * max / w); w = max; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        item.nb.photos[item.idx] = canvas.toDataURL("image/jpeg", 0.45);
+        next();
+      };
+      img.onerror = function() { next(); };
+      img.src = item.nb.photos[item.idx];
+    }
+    next();
+  }
+
+  /* ===== IndexedDB 主存储（容量约为 localStorage 数十倍） ===== */
+  var idb = null, idbOk = false;
+  function idbPut(str, okCb, errCb) {
+    if (!idbOk) return false;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      var tx = idb.transaction("kv", "readwrite");
+      tx.objectStore("kv").put(str, STORAGE_KEY);
+      tx.oncomplete = function() { if (okCb) okCb(); };
+      tx.onerror = function() { if (errCb) errCb(); };
+      tx.onabort = function() { if (errCb) errCb(); };
+      return true;
+    } catch(e) { return false; }
+  }
+  function legacyLoad() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) loadData(raw); } catch(e) {}
+  }
+  function initStorage(done) {
+    if (!("indexedDB" in window)) { legacyLoad(); done(); return; }
+    try {
+      var req = indexedDB.open("gilt_ink_db", 1);
+      req.onupgradeneeded = function(e) { e.target.result.createObjectStore("kv"); };
+      req.onsuccess = function(e) {
+        idb = e.target.result; idbOk = true;
+        try {
+          var getReq = idb.transaction("kv").objectStore("kv").get(STORAGE_KEY);
+          getReq.onsuccess = function() {
+            if (getReq.result !== undefined && getReq.result !== null) {
+              loadData(getReq.result);
+            } else {
+              var raw = null;
+              try { raw = localStorage.getItem(STORAGE_KEY); } catch(e2) {}
+              if (raw) { loadData(raw); saveData(); }
+            }
+            done();
+          };
+          getReq.onerror = function() { legacyLoad(); done(); };
+        } catch(e3) { legacyLoad(); done(); }
+      };
+      req.onerror = function() { legacyLoad(); done(); };
+    } catch(e4) { legacyLoad(); done(); }
+  }
+
+  function writeData() {
+    var str;
+    try { str = JSON.stringify(data); } catch(e) { showToast("保存失败：" + e.message, true); return; }
+    if (idbOk) {
+      if (!idbPut(str, function() { showToast("已保存"); }, function() { tryLocal(str); })) tryLocal(str);
+    } else {
+      tryLocal(str);
+    }
+  }
+  function tryLocal(str) {
+    try {
+      localStorage.setItem(STORAGE_KEY, str);
       showToast("已保存");
     } catch(e) {
       console.warn("无法保存到本地存储:", e);
-      showToast("保存失败：" + e.message, true);
+      if (String(e.name).indexOf("Quota") !== -1 || String(e.message).indexOf("quota") !== -1) {
+        slimPhotosAndRetry();
+      } else {
+        showToast("保存失败：" + e.message, true);
+      }
     }
   }
+  function saveData() { writeData(); }
 
   function showToast(msg, isError) {
     var existing = document.getElementById("app-toast");
@@ -1068,21 +1176,21 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
   function showModal(id) { $(id).classList.add("show"); }
   function hideModal(id) { $(id).classList.remove("show"); }
 
-  /* 纸页上浮背景 */
+  /* 墨滴坠入背景 */
   function initSea() {
     var container = $("seaBubbles");
     if (!container) return;
     for (var i = 0; i < 16; i++) {
       var b = document.createElement("span");
-      var w = 8 + Math.random() * 14;
+      var w = 5 + Math.random() * 13;
       b.style.width = w.toFixed(0) + "px";
-      b.style.height = (w * 1.35).toFixed(0) + "px";
+      b.style.height = (w * 1.2).toFixed(0) + "px";
       b.style.left = (Math.random() * 100) + "%";
-      b.style.setProperty("--rot", ((Math.random() * 44 - 22) | 0) + "deg");
-      b.style.setProperty("--bo", (0.10 + Math.random() * 0.14).toFixed(2));
-      b.style.setProperty("--bx", ((Math.random() * 90 - 45) | 0) + "px");
-      b.style.animationDuration = (11 + Math.random() * 14).toFixed(1) + "s";
-      b.style.animationDelay = (-Math.random() * 22).toFixed(1) + "s";
+      b.style.setProperty("--bo", (0.14 + Math.random() * 0.18).toFixed(2));
+      b.style.setProperty("--bx", ((Math.random() * 60 - 30) | 0) + "px");
+      b.style.setProperty("--bx2", ((Math.random() * 140 - 70) | 0) + "px");
+      b.style.animationDuration = (9 + Math.random() * 12).toFixed(1) + "s";
+      b.style.animationDelay = (-Math.random() * 20).toFixed(1) + "s";
       container.appendChild(b);
     }
   }
@@ -1166,6 +1274,10 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
     return result;
   }
 
+  /* ===== 侧边栏 ===== */
+  function openSide() { $("side-overlay").classList.add("show"); }
+  function closeSide() { $("side-overlay").classList.remove("show"); }
+
   /* ===== 视图切换 ===== */
   function switchTab(tab) {
     currentTab = tab;
@@ -1176,6 +1288,10 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
     var btns = document.querySelectorAll(".bnav button");
     for (var i = 0; i < btns.length; i++) {
       btns[i].classList.toggle("active", btns[i].getAttribute("data-btab") === tab);
+    }
+    var sitems = document.querySelectorAll(".side-item");
+    for (var i = 0; i < sitems.length; i++) {
+      sitems[i].classList.toggle("active", sitems[i].getAttribute("data-stab") === tab);
     }
     if (tab === "draws") {
       hide($("view-inventory"));
@@ -1967,7 +2083,7 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
       var ctx = canvas.getContext("2d");
       var image = new Image();
       image.onload = function() {
-        var maxWidth = 800;
+        var maxWidth = 640;
         var w = image.width;
         var h = image.height;
         if (w > maxWidth) {
@@ -1977,7 +2093,7 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
         canvas.width = w;
         canvas.height = h;
         ctx.drawImage(image, 0, 0, w, h);
-        notebookPhotoBase64 = canvas.toDataURL("image/jpeg", 0.6);
+        notebookPhotoBase64 = canvas.toDataURL("image/jpeg", 0.5);
         img.src = notebookPhotoBase64;
         preview.style.display = "block";
       };
@@ -2409,9 +2525,14 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
       list.innerHTML = '<div class="empty-state">还没有抽取排序，点击上方按钮创建一个吧</div>';
       return;
     }
+    var sortedDraws = data.draws.slice().sort(function(a, b) {
+      var ca = (a.order.length > 0 && a.checked.length === a.order.length) ? 1 : 0;
+      var cb = (b.order.length > 0 && b.checked.length === b.order.length) ? 1 : 0;
+      return ca - cb;
+    });
     var html = "";
-    for (var i = 0; i < data.draws.length; i++) {
-      var draw = data.draws[i];
+    for (var i = 0; i < sortedDraws.length; i++) {
+      var draw = sortedDraws[i];
       var total = draw.order.length;
       var done = draw.checked.length;
       var pct = total > 0 ? Math.round(done / total * 100) : 0;
@@ -2778,12 +2899,23 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
         switchTab(this.getAttribute("data-btab"));
       });
     }
+    var sitems = document.querySelectorAll(".side-item");
+    for (var i = 0; i < sitems.length; i++) {
+      sitems[i].addEventListener("click", function() {
+        closeSide();
+        switchTab(this.getAttribute("data-stab"));
+      });
+    }
+    $("brand-btn").addEventListener("click", function() {
+      $("side-overlay").classList.toggle("show");
+    });
+    $("side-overlay").addEventListener("click", function(e) {
+      if (e.target === this) closeSide();
+    });
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") closeSide();
+    });
 
-    $("tab-draws").addEventListener("click", function() { switchTab("draws"); });
-    $("tab-inventory").addEventListener("click", function() { switchTab("inventory"); });
-    $("tab-pens").addEventListener("click", function() { switchTab("pens"); });
-    $("tab-papers").addEventListener("click", function() { switchTab("papers"); });
-    $("tab-notebooks").addEventListener("click", function() { switchTab("notebooks"); });
 
     $("btn-add-ink").addEventListener("click", function() { openInkModal(); });
     $("btn-cancel-ink").addEventListener("click", closeInkModal);
@@ -2875,8 +3007,7 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
     });
 
     initSea();
-    loadData();
-    switchTab("draws");
+    initStorage(function() { switchTab("draws"); });
   });
 
   window.onerror = function(msg, url, line) {
@@ -2885,9 +3016,13 @@ h2 { font-size: 17px; font-weight: 900; font-style: italic; margin: 0 0 12px 0; 
   };
 
   window.addEventListener("beforeunload", function() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch(e) {}
+    try { if (idbOk) idbPut(JSON.stringify(data)); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  });
+  document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "hidden") {
+      try { if (idbOk) idbPut(JSON.stringify(data)); } catch(e) {}
+    }
   });
 })();
 </script>
