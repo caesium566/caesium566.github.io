@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="3.3">
+<meta name="app-version" content="3.5">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -447,19 +447,19 @@ nav button.on::before {
   cursor:pointer; overflow:hidden;
 }
 .tl-plan .arcBg {
-  position:absolute; right:0; top:0; bottom:0; width:60%; z-index:0;
+  position:absolute; left:0; right:0; top:0; bottom:0; z-index:0;
   overflow:hidden; pointer-events:none;
-  -webkit-mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,.5) 38%, #000 72%);
-  mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,.5) 38%, #000 72%);
+  -webkit-mask-image:linear-gradient(90deg, rgba(0,0,0,.25) 0, rgba(0,0,0,.55) 42%, #000 78%);
+  mask-image:linear-gradient(90deg, rgba(0,0,0,.25) 0, rgba(0,0,0,.55) 42%, #000 78%);
 }
-/* 底层：同一张卡放大压暗加微糊，当卡面底纹铺在整个形状底下 */
+/* 底层：卡面（碎片符号区）放大铺满整张计划块，压暗当底纹 */
 .tl-plan .arcBg img.bg {
-  position:absolute; right:6px; top:50%; height:430%; width:auto; display:block;
-  transform:translateY(-50%); opacity:.34; filter:brightness(.66) saturate(.9) blur(1.5px);
+  position:absolute; left:56%; top:50%; height:760px; width:auto; display:block;
+  transform:translate(-50%,-50%); opacity:.3; filter:brightness(.75) saturate(.95);
 }
 /* 上层：右侧摆一张旋转 15° 的实体卡，露出顶部序号圆弧与左侧一段卡面 */
 .tl-plan .arcBg img.fg {
-  position:absolute; right:-4px; top:2px; height:600%; width:auto; display:block;
+  position:absolute; right:-4px; top:2px; height:360px; width:auto; display:block;
   transform:rotate(15deg);
   opacity:.97; filter:drop-shadow(0 5px 12px rgba(0,0,0,.6));
 }
@@ -477,10 +477,18 @@ nav button.on::before {
 .tl-plan .ct { color:var(--gold); }
 .tl-plan .ops { right:10px; z-index:2; }
 .tl-plan .ops button { background:rgba(10,15,30,.88); }
+/* 备注默认一行，点一下展开完整内容（塔罗尺寸固定 px，不再随卡高缩放） */
+.tl-plan .nt { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
+.tl-plan.xopen .nt { display:block; -webkit-line-clamp:unset; }
+@media (max-width:640px){ .tl-plan .arcBg img.fg { height:260px; } .tl-plan .arcBg img.bg { height:560px; } }
 .tl-sec { font-size:12px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--gold); margin:14px 0 8px; border-left:3px solid var(--gold-dim); padding-left:8px; }
 
 /* 日志弹窗要压住维护层（70） */
 #ovTLog { z-index:75; }
+#ovCats { z-index:76; }
+.cmrow { display:flex; align-items:center; gap:10px; padding:7px 2px; border-bottom:1px solid var(--line); }
+.cmrow .cmn { flex:1; font-size:14px; font-weight:700; }
+.cmrow input[type=color] { width:40px; height:28px; padding:1px; background:var(--bar-2); border:1px solid var(--line); }
 
 /* 维护页条目展开 */
 .mrow { cursor:pointer; }
@@ -515,8 +523,8 @@ nav button.on::before {
 }
 .dcard3 .bface .fi .fc { display:block; font-size:9px; font-family:Georgia,serif; color:var(--gold); letter-spacing:2px; margin-bottom:2px; }
 #drawHint { margin-top:18px; color:var(--gold); font-size:12px; letter-spacing:3px; font-weight:600; }
-@media (max-width:420px){ .dcard3 { width:150px; height:196px; margin:0 -22px; } }
-@media (max-width:640px){ .tl-plan .arcBg { width:78%; } }
+@media (max-width:420px){ .dcard3 { width:128px; height:168px; margin:0 -28px; } }
+
 
 /* 计时 FAB */
 #tFab {
@@ -586,7 +594,7 @@ nav button.on::before {
 #xpBar .xb-bar { margin-top:5px; height:6px; background:#060a18; border:1px solid var(--gold-dim); }
 #xpBar .xb-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#7a6844,var(--gold)); box-shadow:0 0 8px rgba(201,168,106,.6); }
 #xpBar .xb-sub { margin-top:4px; font-size:9px; color:var(--tx-3); text-align:right; letter-spacing:1px; }
-.xnote { position:fixed; z-index:95; color:var(--gold); font-size:20px; pointer-events:none; text-shadow:0 0 8px rgba(201,168,106,.8); }
+.xnote { position:fixed; z-index:95; pointer-events:none; filter:drop-shadow(0 0 7px rgba(65,199,255,.6)); }
 #ovXp { z-index:85; }
 #ovXp .xpradar { display:flex; justify-content:center; }
 #ovXp .xprank { text-align:center; margin-top:6px; font-family:Georgia,serif; font-size:26px; font-weight:900; font-style:italic; letter-spacing:4px; color:var(--gold); text-shadow:0 0 18px rgba(201,168,106,.5); }
@@ -635,7 +643,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v3.3 · 2026-10-09</span>
+  <span class="ver">v3.5 · 2026-10-09</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -769,6 +777,21 @@ nav button.on::before {
   <div id="dlist"></div>
 </aside>
 
+<!-- 分类维护：增删 + 文字颜色（仅时光页显示，不写 md） -->
+<div class="ov" id="ovCats" hidden>
+  <div class="box" style="max-width:420px" onclick="event.stopPropagation()">
+    <h3>分类维护<span class="en">CATEGORIES</span></h3>
+    <div class="hint">补录时段用的分类列表；颜色只影响时光页里的分类文字。删除分类不影响已有日志。</div>
+    <div id="cmList"></div>
+    <div class="frow" style="margin-top:10px;align-items:flex-end">
+      <div class="fg" style="flex:1"><input id="cmName" placeholder="新分类名"></div>
+      <div class="fg" style="flex:none"><input id="cmColor" type="color" value="#41c7ff" style="width:44px;height:34px;padding:2px;background:var(--bar-2);border:1px solid var(--line)"></div>
+      <button class="btn pri" id="cmAdd">添加</button>
+    </div>
+    <div class="bx-actions"><button class="btn" id="cmClose">完成</button></div>
+  </div>
+</div>
+
 <!-- 设置（后台功能集中：同步 / 导入 / 手册） -->
 <div class="ov" id="ovSettings" hidden>
   <div class="box" style="max-width:520px" onclick="event.stopPropagation()">
@@ -790,6 +813,15 @@ nav button.on::before {
         <button class="btn pri" id="ghBtnSave">保存并同步</button>
       </div>
       <div class="b-msg" id="syncLine" style="text-align:right"></div>
+    </div>
+
+    <div class="set-sec">
+      <div class="st">时光页</div>
+      <div class="hint">分类维护在「补录时段」弹窗的分类旁也有入口。经验由 md 日志推导，「从头开始」不删日志，只把当前累计记为零点（里程碑会重新庆祝）。</div>
+      <div class="bx-actions" style="margin-top:4px">
+        <button class="btn" id="btnCats">分类维护</button>
+        <button class="btn" id="btnXpReset">经验从头开始</button>
+      </div>
     </div>
 
     <div class="set-sec">
@@ -830,6 +862,8 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v3.5（2026-10-09）补录分类可手动维护并自定义文字颜色（补录弹窗/设置页均有入口，随 data.json 同步）；经验曲线放缓至 8N 并支持「从头开始」（记零点不清日志，随同步）；计划块塔罗改固定尺寸不再随卡高缩放，备注默认一行、点按展开；修复抽选画面小屏溢出裁切。</p>
+      <p>v3.4（2026-10-09）计划块底纹改为整张卡面铺满（压暗，右深左浅渐隐）；经验音符改 P3 风黑底蓝边双音符并放大；卡背按 P3 实卡重绘（浅蓝外框、深蓝晶面、中央垂直晶柱、四角圆钉）。</p>
       <p>v3.3（2026-10-09）卡面全面重制：真·月行水上式边框（四角圆洞月牙、顶部黑圆弧序号、底部黑条牌名）+ 代码生成碎片符号牌面，图层合成出 22 张成卡；计划块右侧摆旋转 15° 实体卡（露序号与左侧卡面），底下叠一层压暗卡面底纹。</p>
       <p>v3.2（2026-10-09）卡面换 P3 实卡（22 张大阿尔卡纳），计划块卡面放大到右侧六成 + 渐隐，按钮摆到最右；抽选画面卡面加大；写入日志 / 完成条目触发经验动效（音符 → 右上经验条 → 升级时中央五维图对应轴变长）。</p>
       <p>v3.1（2026-10-08）时光页启封：时间线 + 计划块 + 计时 + 维护弹出页；五维 Rank 系统（10 级 × 5 维，xp 由 md 日志推导）；成长页雷达启封；velvet/ 镜像与 data.json 同步上线。v3.0（2026-10-05）换皮迁移。流水账看 git log。</p>
@@ -866,7 +900,7 @@ nav button.on::before {
   <div class="box" onclick="event.stopPropagation()">
     <h3 id="teTitle">补录时段<span class="en">TIME ENTRY</span></h3>
     <div class="frow">
-      <div class="fg"><label>分类</label><select id="teCat"></select></div>
+      <div class="fg"><label>分类 <span id="teCatMgr" style="color:var(--cyan);cursor:pointer;font-size:10px;letter-spacing:1px">[维护]</span></label><select id="teCat"></select></div>
       <div class="fg"><label>开始</label><input id="teS" type="time"></div>
       <div class="fg"><label>结束</label><input id="teE" type="time"></div>
     </div>
@@ -1828,7 +1862,7 @@ var DIMS = [
 var CAT2DIM = { '梦境小说':'express','画画':'craft','模型':'craft','书':'knowledge','笔记整理':'knowledge',
   '游戏手账':'knowledge','日记扫描':'grit','工作':'grit','游戏':'vigor','日常杂项':'vigor' };
 var ITEM2DIM = { 'ai对话转移成笔记':'grit' };   /* 条目级特例 */
-var RANK_CUM = [0,5,15,30,50,75,105,140,180,225]; /* 到达 R(i+1) 所需累计分：N→N+1 需 5N */
+var RANK_CUM = [0,8,24,48,80,120,168,224,288,360]; /* 到达 R(i+1) 所需累计分：N→N+1 需 8N（v3.5 放缓） */
 var RANK_MILESTONE = { 4:1, 7:1, 10:1 };        /* 只在这三档庆祝 */
 var ARCANA = ['THE FOOL','THE MAGICIAN','THE PRIESTESS','THE EMPRESS','THE EMPEROR','THE POPE','THE LOVERS',
   'THE CHARIOT','THE STRENGTH','THE HERMIT','WHEEL OF FORTUNE','JUSTICE','THE HANGED ONE','DEATH','TEMPERANCE',
@@ -1933,15 +1967,49 @@ function arcanaSVG(idx){
     + '<text x="100" y="318" text-anchor="middle" fill="#c9a86a" font-family="Georgia,serif" font-size="' + tsz + '" letter-spacing="1.5">' + ARCANA[idx] + '</text>'
     + '</svg>';
 }
-var CARD_BACK = '<svg viewBox="0 0 200 350"><rect x="5" y="5" width="190" height="340" rx="10" fill="#0a0f1e" stroke="#c9a86a" stroke-width="2"/>'
-  + '<rect x="13" y="13" width="174" height="324" rx="6" fill="none" stroke="#7a6844"/>'
-  + '<circle cx="100" cy="160" r="46" fill="none" stroke="#c9a86a" stroke-width="1.5"/>'
-  + '<circle cx="100" cy="160" r="58" fill="none" stroke="#7a6844" stroke-dasharray="3 5"/>'
-  + '<circle cx="100" cy="160" r="20" fill="#c9a86a"/><circle cx="107" cy="160" r="18" fill="#0a0f1e"/>'
-  + '<text x="100" y="322" text-anchor="middle" fill="#c9a86a" font-family="Georgia,serif" font-size="13" letter-spacing="4">VELVET</text></svg>';
+/* P3 风音符：黑底 + 青色描边双音符（经验动效用） */
+function vNoteSVG(i){
+  var rot = (i - 2) * 9;
+  return '<svg viewBox="0 0 28 28" width="34" height="34" style="display:block;transform:rotate(' + rot + 'deg)">'
+    + '<path d="M10.6 22 L10.6 6.2 L22 2.6 L22 16.4 L19.4 16.4 L19.4 5.8 L13.2 8.4 L13.2 22 Z" fill="#070b18" stroke="#41c7ff" stroke-width="1.8" stroke-linejoin="round"/>'
+    + '<ellipse cx="8.6" cy="20.6" rx="4.7" ry="3.5" transform="rotate(-18 8.6 20.6)" fill="#070b18" stroke="#41c7ff" stroke-width="2.1"/>'
+    + '<ellipse cx="17.6" cy="15.6" rx="4.7" ry="3.5" transform="rotate(-18 17.6 15.6)" fill="#070b18" stroke="#41c7ff" stroke-width="2.1"/></svg>';
+}
+var CARD_BACK = '<svg viewBox="0 0 200 350">'
+  + '<rect x="4" y="4" width="192" height="342" rx="14" fill="#8fc3f2"/>'
+  + '<rect x="9" y="9" width="182" height="332" rx="11" fill="#2e62a8"/>'
+  + '<rect x="15" y="15" width="170" height="320" rx="8" fill="#0a1c40"/>'
+  /* 晶面碎块（左右镜像，中轴对称） */
+  + '<g stroke="none">'
+  + '<polygon points="34,66 62,48 82,84 66,124 38,118" fill="#3d78c4" opacity=".85"/>'
+  + '<polygon points="166,66 138,48 118,84 134,124 162,118" fill="#3d78c4" opacity=".85"/>'
+  + '<polygon points="30,140 56,128 72,158 52,190 30,182" fill="#2a5da6" opacity=".8"/>'
+  + '<polygon points="170,140 144,128 128,158 148,190 170,182" fill="#2a5da6" opacity=".8"/>'
+  + '<polygon points="38,232 66,222 80,258 58,292 36,278" fill="#3d78c4" opacity=".85"/>'
+  + '<polygon points="162,232 134,222 120,258 142,292 164,278" fill="#3d78c4" opacity=".85"/>'
+  + '<polygon points="76,296 100,306 124,296 118,322 82,322" fill="#2a5da6" opacity=".7"/>'
+  + '<polygon points="76,54 100,44 124,54 118,30 82,30" fill="#2a5da6" opacity=".7"/>'
+  + '</g>'
+  /* 中央垂直晶柱：上下梭形 + 中心菱环 */
+  + '<g fill="#cfeaff">'
+  + '<polygon points="100,52 107,134 100,158 93,134"/>'
+  + '<polygon points="100,192 107,216 100,298 93,216"/>'
+  + '<polygon points="100,152 110,175 100,198 90,175"/>'
+  + '</g>'
+  + '<circle cx="100" cy="175" r="5" fill="#0a1c40" stroke="#cfeaff" stroke-width="2.5"/>'
+  /* 小装饰：左菱 + 右月 */
+  + '<polygon points="46,196 53,205 46,214 39,205" fill="#8fc3f2"/>'
+  + '<path d="M152 200 A11 11 0 1 0 152 222 A14 14 0 1 1 152 200 Z" fill="#8fc3f2"/>'
+  /* 四角圆钉 */
+  + '<g fill="#071222" stroke="#8fc3f2" stroke-width="2.5">'
+  + '<circle cx="30" cy="30" r="8"/><circle cx="170" cy="30" r="8"/>'
+  + '<circle cx="30" cy="320" r="8"/><circle cx="170" cy="320" r="8"/></g>'
+  + '</svg>';
 
 /* ---- 本地状态（velvet_* 段） ---- */
 var vTl = [], vFeel = {}, vPlans = {}, vCats = CATS_DEFAULT.slice(), vTimer = null;
+var vCatColor = {};                                   /* 分类 → 文字颜色（仅显示，不写 md） */
+var vXpOff = { express:0, craft:0, knowledge:0, grit:0, vigor:0 };  /* 经验零点偏移（归零用） */
 var vMdCache = { todo:null, work:null };       /* { text, sha } */
 var vTodoCats = [], vWorkBlocks = [];          /* 解析结果 */
 var vRankSeen = null;
@@ -1949,6 +2017,8 @@ try { vTl = JSON.parse(localStorage.getItem('velvet_tl_v1') || '[]'); } catch(e)
 try { vFeel = JSON.parse(localStorage.getItem('velvet_feel_v1') || '{}'); } catch(e){}
 try { vPlans = JSON.parse(localStorage.getItem('velvet_plans_v1') || '{}'); } catch(e){}
 try { vCats = JSON.parse(localStorage.getItem('velvet_cats_v1') || 'null') || CATS_DEFAULT.slice(); } catch(e){}
+try { vCatColor = JSON.parse(localStorage.getItem('velvet_catcol_v1') || '{}') || {}; } catch(e){}
+try { vXpOff = JSON.parse(localStorage.getItem('velvet_xpoff_v1') || 'null') || vXpOff; } catch(e){}
 try { vTimer = JSON.parse(localStorage.getItem('velvet_timer_v1') || 'null'); } catch(e){}
 try { vMdCache = JSON.parse(localStorage.getItem('velvet_md_v1') || 'null') || { todo:null, work:null }; } catch(e){}
 try { vRankSeen = JSON.parse(localStorage.getItem('velvet_ranks_v1') || 'null'); } catch(e){}
@@ -1958,6 +2028,8 @@ function vSaveAll(){
     localStorage.setItem('velvet_feel_v1', JSON.stringify(vFeel));
     localStorage.setItem('velvet_plans_v1', JSON.stringify(vPlans));
     localStorage.setItem('velvet_cats_v1', JSON.stringify(vCats));
+    localStorage.setItem('velvet_catcol_v1', JSON.stringify(vCatColor));
+    localStorage.setItem('velvet_xpoff_v1', JSON.stringify(vXpOff));
   } catch(e){}
   vSchedule();
 }
@@ -2065,6 +2137,7 @@ function vComputeXp(){
   vWorkBlocks.forEach(function(b){
     b.logs.forEach(function(l){ total.craft++; if (l.date >= cutoff) m30.craft++; });
   });
+  for (var dk in total) total[dk] = Math.max(0, total[dk] - (vXpOff[dk] || 0));  /* 零点偏移：归零不清日志 */
   return { total:total, m30:m30 };
 }
 function vRankOf(xp){ var r = 1; for (var i=1;i<10;i++) if (xp >= RANK_CUM[i]) r = i+1; return r; }
@@ -2129,7 +2202,7 @@ function vFileWrite(which, editFn, done){
 }
 /* velvet/data.json：拉（合并） / 推（去抖 3 秒） */
 var vGhTimer = null, vGhBusy = false;
-function vCollect(){ return { updatedAt:Date.now(), tl:vTl, feel:vFeel, plans:vPlans, cats:vCats }; }
+function vCollect(){ return { updatedAt:Date.now(), tl:vTl, feel:vFeel, plans:vPlans, cats:vCats, ccol:vCatColor, xpo:vXpOff }; }
 function vMergeData(local, remote){
   if (!remote) return local;
   var map = {};
@@ -2139,6 +2212,8 @@ function vMergeData(local, remote){
   for (var k in (remote.feel || {})) if (!local.feel[k] || (remote.feel[k].mu||0) > (local.feel[k].mu||0)) local.feel[k] = remote.feel[k];
   for (var k2 in (remote.plans || {})) if (!local.plans[k2] || (remote.plans[k2].pu||0) > (local.plans[k2].pu||0)) local.plans[k2] = remote.plans[k2];
   if (Array.isArray(remote.cats) && (remote.updatedAt||0) > (local.updatedAt||0)) local.cats = remote.cats;
+  if (remote.ccol && (remote.updatedAt||0) > (local.updatedAt||0)) local.ccol = remote.ccol;
+  if (remote.xpo && (remote.updatedAt||0) > (local.updatedAt||0)) local.xpo = remote.xpo;
   return local;
 }
 function vPullData(){
@@ -2148,11 +2223,14 @@ function vPullData(){
     var remote = JSON.parse(f.text);
     var merged = vMergeData(vCollect(), remote);
     vTl = merged.tl || []; vFeel = merged.feel || {}; vPlans = merged.plans || {}; vCats = merged.cats || vCats;
+    vCatColor = merged.ccol || vCatColor; vXpOff = merged.xpo || vXpOff;
     try {
       localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
       localStorage.setItem('velvet_feel_v1', JSON.stringify(vFeel));
       localStorage.setItem('velvet_plans_v1', JSON.stringify(vPlans));
       localStorage.setItem('velvet_cats_v1', JSON.stringify(vCats));
+      localStorage.setItem('velvet_catcol_v1', JSON.stringify(vCatColor));
+      localStorage.setItem('velvet_xpoff_v1', JSON.stringify(vXpOff));
     } catch(e){}
     vRenderTime(); renderGrowth();
     return true;
@@ -2321,7 +2399,7 @@ function vRenderTime(){
           + '<div class="ops">'
           + '<button data-op="edit">编辑</button><button data-op="del">删除</button></div>'
           + '<div class="r1"><span class="tm">' + e.s + '–' + e.e + '</span>'
-          + '<span class="ct">' + esc(e.c) + '</span><span class="du">' + vDurText(e.s, e.e) + '</span></div>'
+          + '<span class="ct"' + (vCatColor[e.c] ? ' style="color:' + vCatColor[e.c] + '"' : '') + '>' + esc(e.c) + '</span><span class="du">' + vDurText(e.s, e.e) + '</span></div>'
           + (e.note ? '<div class="nt">' + esc(e.note) + '</div>' : '')
           + '</div>';
       }
@@ -2333,6 +2411,7 @@ function vRenderTime(){
   /* 绑定：时段卡操作 */
   document.querySelectorAll('#tLine .tl-card[data-eid]').forEach(function(card){
     var eid = card.dataset.eid;
+    var nt0 = card.querySelector('.nt'); if (nt0) nt0.onclick = function(ev){ ev.stopPropagation(); card.classList.toggle('xopen'); };
     card.querySelectorAll('.ops button').forEach(function(btn){
       btn.onclick = function(ev){
         ev.stopPropagation();
@@ -2348,6 +2427,7 @@ function vRenderTime(){
   /* 绑定：计划块（点卡落定，移除不留痕） */
   document.querySelectorAll('#tLine .tl-plan[data-pi]').forEach(function(card){
     card.onclick = function(){ vOpenEntry('plan', null, +card.dataset.pi); };
+    var nt1 = card.querySelector('.nt'); if (nt1) nt1.onclick = function(ev){ ev.stopPropagation(); card.classList.toggle('xopen'); };
     card.querySelectorAll('.ops button').forEach(function(btn){
       btn.onclick = function(ev){
         ev.stopPropagation();
@@ -2384,7 +2464,34 @@ function vFillCats(sel){
   var h = '';
   vCats.forEach(function(c){ h += '<option' + (c === sel ? ' selected' : '') + '>' + esc(c) + '</option>'; });
   document.getElementById('teCat').innerHTML = h;
+  Array.prototype.forEach.call(document.getElementById('teCat').options, function(o){
+    if (vCatColor[o.value]) o.style.color = vCatColor[o.value];
+  });
 }
+/* ---- 分类维护：增删 + 文字颜色（存 localStorage + data.json 同步，不写 md） ---- */
+function vRenderCatsMgr(){
+  var h = '';
+  vCats.forEach(function(c, i){
+    var col = vCatColor[c] || '';
+    h += '<div class="cmrow">'
+      + '<input type="color" class="cmcol" data-ci="' + i + '" value="' + (col || '#a8c7fa') + '" title="文字颜色">'
+      + '<span class="cmn"' + (col ? ' style="color:' + col + '"' : '') + '>' + esc(c) + '</span>'
+      + '<button class="btn cmdel" data-ci="' + i + '">删除</button></div>';
+  });
+  document.getElementById('cmList').innerHTML = h;
+  document.querySelectorAll('#cmList .cmcol').forEach(function(inp){
+    inp.onchange = function(){ vCatColor[vCats[+inp.dataset.ci]] = inp.value; vSaveAll(); vRenderCatsMgr(); vRenderTime(); };
+  });
+  document.querySelectorAll('#cmList .cmdel').forEach(function(btn){
+    btn.onclick = function(){
+      var nm = vCats[+btn.dataset.ci];
+      if (!confirm('删除分类「' + nm + '」？已有日志不受影响。')) return;
+      vCats.splice(+btn.dataset.ci, 1); delete vCatColor[nm];
+      vSaveAll(); vRenderCatsMgr(); vRenderTime();
+    };
+  });
+}
+function vOpenCats(){ vRenderCatsMgr(); document.getElementById('ovCats').hidden = false; }
 function vLinkLabel(l){ return l ? ('⚑ ' + l.name + '（' + (l.t === 'work' ? '工坊' : l.cat) + '）') : ''; }
 function vOpenEntry(mode, entry, planIdx){
   teMode = mode; teEntry = entry || null; tePlanIdx = (planIdx == null ? -1 : planIdx);
@@ -2444,6 +2551,27 @@ document.getElementById('teLinkQ').addEventListener('input', function(){
   });
 });
 document.getElementById('teCancel').onclick = function(){ document.getElementById('ovTEntry').hidden = true; };
+document.getElementById('teCatMgr').onclick = function(){ vOpenCats(); };
+document.getElementById('btnCats').onclick = function(){ vOpenCats(); };
+document.getElementById('cmClose').onclick = function(){ document.getElementById('ovCats').hidden = true; };
+document.getElementById('ovCats').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('cmAdd').onclick = function(){
+  var nm = document.getElementById('cmName').value.trim();
+  if (!nm) return;
+  if (vCats.indexOf(nm) >= 0) { alert('已存在同名分类'); return; }
+  vCats.push(nm); vCatColor[nm] = document.getElementById('cmColor').value;
+  document.getElementById('cmName').value = '';
+  vSaveAll(); vRenderCatsMgr(); vRenderTime();
+};
+document.getElementById('btnXpReset').onclick = function(){
+  if (!confirm('把五维经验当前累计记为零点、从头开始？\n（不删任何日志；升级里程碑会重新庆祝。）')) return;
+  var t0 = vComputeXp().total;
+  for (var k in t0) vXpOff[k] = (vXpOff[k] || 0) + t0[k];
+  vRankSeen = null;
+  try { localStorage.setItem('velvet_ranks_v1', 'null'); } catch(e){}
+  vSaveAll(); renderGrowth(); vCheckRanks();
+  alert('已归零。重新开始吧。');
+};
 document.getElementById('ovTEntry').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
 document.getElementById('teDel').onclick = function(){
   if (!teEntry || !confirm('删除这个时段？')) return;
@@ -2950,10 +3078,9 @@ function vGainXp(dimKey, fromEl, pre){
   var rc = fromEl && fromEl.getBoundingClientRect ? fromEl.getBoundingClientRect() : null;
   var fx = rc ? rc.left + rc.width/2 : innerWidth/2, fy = rc ? rc.top + rc.height/2 : 120;
   var brc = bar.getBoundingClientRect(), tx = brc.left + brc.width/2, ty = brc.top + brc.height/2;
-  var chars = ['\u266a','\u266b','\u266a','\u2669','\u266b'];
   for (var i = 0; i < 5; i++){
     var nd = document.createElement('div');
-    nd.className = 'xnote'; nd.textContent = chars[i];
+    nd.className = 'xnote'; nd.innerHTML = vNoteSVG(i);
     nd.style.left = fx + 'px'; nd.style.top = fy + 'px';
     document.body.appendChild(nd);
     var dx = tx - fx, dy = ty - fy;
