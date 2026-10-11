@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="3.8">
+<meta name="app-version" content="3.9">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -547,6 +547,8 @@ nav button.on::before {
 .achslot .ac { margin-top:2px; font-size:9px; color:var(--tx-3); line-height:1.5; min-height:27px; }
 .achslot .ad { font-size:9px; color:var(--tx-3); font-family:Georgia,serif; letter-spacing:1px; }
 .achslot.lock .an { color:var(--tx-3); }
+#ovWEdit { z-index:77; }
+#ovReq { z-index:77; }
 #ovAchG { z-index:82; }
 #ovAch { z-index:88; }
 .achstamp { text-align:center; }
@@ -560,6 +562,10 @@ nav button.on::before {
   text-shadow:0 0 24px rgba(201,168,106,.8); margin:14px 0 6px; }
 .achstamp .a3 { font-size:14px; font-weight:600; color:var(--tx); letter-spacing:1px; max-width:320px; margin:0 auto; line-height:1.8; }
 .achstamp .a4 { margin-top:8px; font-size:11px; font-family:Georgia,serif; color:var(--tx-3); letter-spacing:2px; }
+
+.wreq { cursor:pointer; display:inline-block; padding:2px 4px; border-radius:4px; }
+.wreq:hover { background:rgba(65,199,255,.12); }
+.wreq.done { color:var(--tx-3); text-decoration:line-through; }
 
 /* 计时 FAB */
 #tFab {
@@ -678,7 +684,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v3.8 · 2026-10-10</span>
+  <span class="ver">v3.9 · 2026-10-10</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -702,6 +708,7 @@ nav button.on::before {
   <div id="tLine"></div>
   <div style="text-align:center;margin-top:14px">
     <button class="btn" id="tAddBtn">＋ 补录时段</button>
+    <button class="btn" id="tReqBtn">＋ 追加需求</button>
   </div>
 </section>
 
@@ -900,6 +907,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v3.9（2026-10-10）工坊需求改为待办清单：新增即 `- [ ]`，维护页详情里点一下勾掉/放回；时光页「补录时段」旁新增「追加需求」入口（选项目直写 0-工坊.md）；修复工坊「改」弹层被维护层盖住；修复预算「更新数据」不刷新本周纪律（预填文本补纪律节头）。</p>
       <p>v3.8（2026-10-10）成长页新增「阿尔卡纳回廊」：22 张大阿尔卡纳对应 22 个成就，未解锁显示卡背与 ???，解锁时翻牌揭晓（成就名 + 文案 + 日期），回廊里新解锁的卡一次性翻开展示；修复五维/分类颜色/经验零点跨端不同步（本地改动时间戳此前恒为「现在」导致远端永远不生效）；工坊条目支持修改用途/文件位置/维护站、追加「需求」。</p>
       <p>v3.7（2026-10-10）卡背裁净白边并拉伸至 2:3，正反比例一致；经验音符与经验条缩小至约一半、动画稍加快；抽选三张卡牌散开不再叠压，项目名直接显示在卡牌正下方。</p>
       <p>v3.6（2026-10-09）抽选卡面按 2:3 修正不再上下裁切；计划块底纹只露卡面、宽度与块一致；PC 主菜单点外部即关；卡背换真实 P3 卡背；经验动效放慢、音符与经验条放大三倍、音符从计划块弹出；删除时段改为墓碑删除并同步删除当日日志，经验随删回退、不再复活。</p>
@@ -1009,6 +1017,20 @@ nav button.on::before {
     <div class="r2" id="rkDim"></div>
     <div class="r3" id="rkName"></div>
     <div style="margin-top:18px"><button class="btn pri" id="rkOk">收下</button></div>
+  </div>
+</div>
+
+<!-- 追加需求（选工坊项目 → 写进 0-工坊.md 的 ### 需求） -->
+<div class="ov" id="ovReq" hidden>
+  <div class="box" onclick="event.stopPropagation()">
+    <h3>追加需求<span class="en">REQUEST</span></h3>
+    <div class="fg"><label>项目</label><select id="rqSel"></select></div>
+    <div class="fg"><label>需求内容</label><input id="rqText" placeholder="想让它会什么？"></div>
+    <div class="bx-actions">
+      <button class="btn" id="rqCancel">取消</button>
+      <button class="btn pri" id="rqOk">写入</button>
+    </div>
+    <div class="b-msg" id="rqMsg"></div>
   </div>
 </div>
 
@@ -1739,7 +1761,7 @@ document.getElementById('bBtnEdit').onclick = function(){
   document.getElementById('bMsg').textContent = '';
   document.getElementById('bMsg').className = 'b-msg';
   bLoad();
-  document.getElementById('bTa').value = bAllToText();
+  document.getElementById('bTa').value = '【本周纪律】\n' + bAllToText();   /* bAllToText 冻结不带节头，不补头纪律行会被路由进月度解析 */
   document.getElementById('bOvEdit').hidden = false;
 };
 document.getElementById('bOvEdit').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
@@ -2163,8 +2185,8 @@ function parseWorkMd(text){
       cur.logs.push({ line:idx, date:m[2]+'-'+pad(+m[3])+'-'+pad(+m[4]), text:m[5], bullet:m[1] });
       cur.bullet = m[1];
     }
-    if (sec === 'req' && (m = /^\s*([-*])\s*(.+)$/.exec(raw))) {
-      cur.reqs.push({ line:idx, text:m[2].trim() });
+    if (sec === 'req' && (m = /^\s*([-*])\s*(\[[ xX]\])?\s*(.+)$/.exec(raw))) {
+      cur.reqs.push({ line:idx, text:m[3].trim(), done: !!m[2] && /x/i.test(m[2]), bullet:m[1] });
     }
   });
   return blocks;
@@ -2689,6 +2711,25 @@ document.getElementById('tRedraw').onclick = function(){
   vRenderTime();
 };
 document.getElementById('tAddBtn').onclick = function(){ vOpenEntry('new', null); };
+document.getElementById('tReqBtn').onclick = function(){
+  if (!vWorkBlocks.length) { alert('工坊还是空的：先到「维护 → 工坊」新增项目（需配好同步）'); return; }
+  var sel = document.getElementById('rqSel');
+  sel.innerHTML = vWorkBlocks.map(function(b){ return '<option value="' + esc(b.name) + '">' + esc(b.name) + '</option>'; }).join('');
+  document.getElementById('rqText').value = '';
+  document.getElementById('rqMsg').textContent = '';
+  document.getElementById('ovReq').hidden = false;
+};
+document.getElementById('rqCancel').onclick = function(){ document.getElementById('ovReq').hidden = true; };
+document.getElementById('ovReq').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('rqOk').onclick = function(){
+  var name = document.getElementById('rqSel').value;
+  var text = document.getElementById('rqText').value.trim();
+  if (!name || !text) { document.getElementById('rqMsg').textContent = '项目和内容都要填'; return; }
+  vFileWrite('work', vEditWorkReq(name, text), function(){
+    document.getElementById('ovReq').hidden = true;
+    syncLine('需求已写进 0-工坊.md');
+  });
+};
 
 /* ---- 时段弹窗（补录 / 编辑 / 计划落定 / 计时开始 四态） ---- */
 var teMode = 'new', teEntry = null, tePlanIdx = -1, teLink = null;
@@ -3110,7 +3151,7 @@ function vEditWorkReq(name, text){
   return function(lines){
     var b = vFindBlock(parseWorkMd(lines.join('\n')), name);
     if (!b) return { ok:false, msg:'找不到工坊条目：' + name };
-    var line = '- ' + text;
+    var line = '- [ ] ' + text;
     if (b.reqSecLine >= 0) {
       var at = b.reqSecLine;
       b.reqs.forEach(function(r){ if (r.line > at) at = r.line; });
@@ -3120,6 +3161,19 @@ function vEditWorkReq(name, text){
     } else {
       lines.splice(b.lastLine + 1, 0, '### 需求', line);
     }
+    return { ok:true };
+  };
+}
+/* 需求勾掉/放回：按块内序号定位；无勾选框的老格式 → 直接打 [x] */
+function vEditWorkReqToggle(name, reqIdx){
+  return function(lines){
+    var b = vFindBlock(parseWorkMd(lines.join('\n')), name);
+    if (!b || !b.reqs[reqIdx]) return { ok:false, msg:'找不到该需求' };
+    var li = b.reqs[reqIdx].line, t = lines[li];
+    if (/\[[xX]\]/.test(t)) t = t.replace(/\[[xX]\]/, '[ ]');
+    else if (/\[ \]/.test(t)) t = t.replace(/\[ \]/, '[x]');
+    else t = t.replace(/^(\s*[-*]\s*)/, '$1[x] ');
+    lines[li] = t;
     return { ok:true };
   };
 }
@@ -3298,7 +3352,12 @@ function vRenderMaint(){
         div.className = 'mdetail';
         div.innerHTML = (b.pos ? '位置：' + esc(b.pos) + '<br>' : '')
           + (b.site ? '维护站：' + esc(b.site) + '<br>' : '')
-          + (b.reqs && b.reqs.length ? '需求：' + b.reqs.map(function(r){ return esc(r.text); }).join('；') + '<br>' : '')
+          + (b.reqs && b.reqs.length
+              ? '需求：<br>' + b.reqs.map(function(r, ri){
+                  return '<span class="wreq' + (r.done ? ' done' : '') + '" data-wr="' + esc(b.name) + '|' + ri + '">'
+                    + (r.done ? '☑' : '☐') + ' ' + esc(r.text) + '</span>';
+                }).join('<br>') + '<br>'
+              : '')
           + (b.logs.length
               ? b.logs.map(function(l){ return '<span class="dd">' + l.date + '</span><span class="dl">' + esc(l.text) + '</span>'; }).join('<br>')
               : '暂无日志');
@@ -3306,6 +3365,13 @@ function vRenderMaint(){
         var anchor = row.nextElementSibling;
         if (anchor && !anchor.classList.contains('mrow') && !anchor.classList.contains('mgrp')) anchor = anchor.nextElementSibling;
         row.parentNode.insertBefore(div, anchor);
+        div.querySelectorAll('.wreq').forEach(function(wr){
+          wr.onclick = function(ev){
+            ev.stopPropagation();
+            var p = wr.dataset.wr.split('|'), ri = +p.pop(), wn = p.join('|');
+            vFileWrite('work', vEditWorkReqToggle(wn, ri), function(){ vRenderMaint(); });
+          };
+        });
       });
       row.querySelectorAll('button').forEach(function(btn){
         btn.onclick = function(ev){
