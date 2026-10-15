@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="app-version" content="1.1">
+<title>随机视频抽取器 · Murmurs</title>
+<style>
+/* ===== P3 设计令牌（与《P3视觉规范.md》一致） ===== */
+:root {
+  --sea-0:#0000a8; --sea-1:#003fb9; --sea-2:#0d8be2;
+  --bar:#05070d; --bar-2:#0d1424;
+  --line:rgba(0,216,255,.30);
+  --cyan:#00d8ff; --cyan-dim:#0a7f99;
+  --yellow:#f5d84a;
+  --gold:#c9a86a; --gold-dim:#7a6844;
+  --tx:#f6fbff; --tx-2:#8da0b8; --tx-3:#54637e;
+  --slant:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  --cut:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+  font-size:16px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--tx); font-weight:500; min-height:100vh;
+  background:linear-gradient(180deg,#0d8be2 0%,#0262c3 30%,#003fb9 55%,#0018b0 80%,#0000a0 100%);
+  background-attachment:fixed;
+  font-variant-numeric:tabular-nums;
+}
+body::after { /* CRT 扫描线（同工作台） */
+  content:""; position:fixed; inset:0; z-index:60; pointer-events:none; opacity:.045;
+  background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px);
+}
+/* 环境气泡（轻量版意识之海） */
+.bub { position:fixed; z-index:0; pointer-events:none; opacity:.2;
+  background:radial-gradient(circle at 35% 30%,rgba(180,240,255,.9),rgba(120,200,255,.25) 60%,transparent 75%);
+  animation:bubUp linear infinite; filter:blur(1px); }
+@keyframes bubUp {
+  from { transform:translateY(15vh) translateX(0); }
+  to   { transform:translateY(-115vh) translateX(6vw); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bub { animation:none; } * { animation-duration:.01ms !important; transition:none !important; }
+}
+
+.wrap { position:relative; z-index:1; max-width:720px; margin:0 auto; padding:0 14px 60px; }
+
+/* ===== 顶条 ===== */
+.topbar { display:flex; align-items:center; gap:10px; padding:14px 2px 12px; }
+.topbar .moon { flex:none; }
+.topbar h1 { font-size:18px; font-weight:900; font-style:italic; letter-spacing:1px; white-space:nowrap; }
+@media (max-width:480px){ .topbar .en { display:none; } .topbar h1 { font-size:16px; } }
+.topbar .en { font-family:Georgia,"Times New Roman",serif; font-size:11px; color:var(--tx-2);
+  letter-spacing:4px; text-transform:uppercase; margin-left:2px; }
+.topbar .ver { margin-left:auto; font-size:11.5px; font-weight:700; color:var(--gold);
+  border:1px solid var(--gold-dim); padding:1px 8px;
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); background:rgba(201,168,106,.12); }
+.topbar a.back { font-size:12px; color:var(--tx-2); text-decoration:none; margin-left:8px; }
+.topbar a.back:hover { color:var(--yellow); }
+
+/* ===== 面板通用 ===== */
+.panel { background:rgba(5,7,13,.88); border:1px solid var(--line);
+  clip-path:var(--cut); padding:16px; margin-bottom:14px;
+  filter:drop-shadow(4px 4px 0 rgba(0,4,16,.45)); }
+.ptitle { display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
+.ptitle h2 { font-size:15px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--cyan); }
+.ptitle .en { font-family:Georgia,serif; font-size:10px; color:var(--tx-3); letter-spacing:3px; text-transform:uppercase; }
+.ptitle .cnt { margin-left:auto; font-size:12px; color:var(--tx-2); }
+.hint { font-size:12px; color:var(--tx-2); line-height:1.7; }
+.hint b { color:var(--tx); font-weight:700; }
+
+/* ===== 抽选区 ===== */
+.pools { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:560px){ .pools { grid-template-columns:1fr; } }
+.pool {
+  position:relative; border:1px solid var(--line); background:var(--bar);
+  clip-path:var(--slant); padding:18px 14px 14px; cursor:pointer; text-align:left;
+  color:var(--tx); font-family:inherit;
+  filter:drop-shadow(4px 4px 0 rgba(0,4,16,.45));
+  transition:transform .12s, filter .12s;
+}
+.pool:hover { transform:translateY(-2px); filter:drop-shadow(4px 6px 0 rgba(0,4,16,.45)); }
+.pool:active { transform:translateY(1px); }
+.pool .k { display:block; font-size:17px; font-weight:900; font-style:italic; letter-spacing:2px; }
+.pool .e { display:block; font-family:Georgia,serif; font-size:10px; letter-spacing:3px;
+  text-transform:uppercase; margin-top:3px; }
+.pool .d { display:block; font-size:11.5px; color:var(--tx-2); margin-top:8px; line-height:1.6; }
+.pool .n { position:absolute; top:10px; right:12px; font-size:12px; font-weight:700; color:var(--tx-2); }
+.pool.bg  { border-color:rgba(0,216,255,.55); }
+.pool.bg .k  { color:var(--cyan); text-shadow:0 0 12px rgba(0,216,255,.5); }
+.pool.think { border-color:rgba(201,168,106,.55); }
+.pool.think .k { color:var(--gold); text-shadow:0 0 12px rgba(201,168,106,.5); }
+
+/* ===== 结果卡 ===== */
+#result:empty { display:none; }
+.result-card { border:1px solid var(--gold-dim); background:rgba(10,15,30,.92);
+  clip-path:var(--cut); padding:16px; margin-top:14px; position:relative;
+  animation:flipIn .45s ease both; }
+@keyframes flipIn {
+  from { transform:perspective(800px) rotateX(-70deg); opacity:0; }
+  to   { transform:perspective(800px) rotateX(0); opacity:1; }
+}
+.result-card .rtag { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:2px;
+  padding:1px 8px; margin-bottom:8px; clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); }
+.result-card .rtag.bg { background:rgba(0,216,255,.15); color:var(--cyan); border:1px solid var(--cyan-dim); }
+.result-card .rtag.think { background:rgba(201,168,106,.15); color:var(--gold); border:1px solid var(--gold-dim); }
+.result-card .rtitle { font-size:16px; font-weight:700; line-height:1.55; word-break:break-all; }
+.result-card .rurl { font-size:11px; color:var(--tx-3); margin-top:6px; word-break:break-all; }
+.result-card .ractions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.result-card .again { position:absolute; top:12px; right:12px; font-size:11px; color:var(--tx-2);
+  background:none; border:1px solid var(--line); padding:3px 10px; cursor:pointer;
+  clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); font-family:inherit; }
+.result-card .again:hover { color:var(--yellow); border-color:var(--yellow); }
+
+/* ===== 按钮 ===== */
+.btn {
+  background:var(--bar); color:var(--tx); border:1px solid var(--line);
+  clip-path:var(--slant); padding:8px 18px; font-size:13px; font-weight:700;
+  cursor:pointer; font-family:inherit; letter-spacing:1px;
+  filter:drop-shadow(3px 3px 0 rgba(0,4,16,.4)); transition:transform .1s;
+}
+.btn:hover { transform:translateY(-1px); color:var(--cyan); border-color:var(--cyan); }
+.btn:active { transform:translateY(1px); }
+.btn.pri { background:var(--cyan); color:#001018; border-color:var(--cyan); }
+.btn.pri:hover { background:#7fe9ff; color:#001018; }
+.btn.gold { border-color:var(--gold-dim); color:var(--gold); }
+.btn.gold:hover { border-color:var(--gold); }
+.btn.sm { padding:4px 12px; font-size:12px; filter:none; }
+.btn.ghost { filter:none; background:transparent; }
+.btn.danger:hover { color:var(--magenta,#ff3daa); border-color:#ff3daa; }
+
+/* ===== 标签切换 chips ===== */
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.chip {
+  background:var(--bar); border:1px solid var(--line); color:var(--tx-2);
+  clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%);
+  padding:6px 16px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;
+}
+.chip.on.bg { color:var(--cyan); border-color:var(--cyan); background:rgba(0,216,255,.12); }
+.chip.on.think { color:var(--gold); border-color:var(--gold); background:rgba(201,168,106,.12); }
+.chip.on.all { color:var(--yellow); border-color:var(--yellow); background:rgba(245,216,74,.10); }
+
+/* ===== 输入 ===== */
+textarea, input[type=text] {
+  width:100%; background:rgba(3,8,26,.7); border:1px solid var(--line); color:var(--tx);
+  font-family:inherit; font-size:13.5px; font-weight:500; padding:10px 12px; resize:vertical;
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+}
+textarea:focus, input[type=text]:focus { outline:none; border-color:var(--cyan); }
+textarea { min-height:86px; line-height:1.7; }
+
+/* ===== 页签 ===== */
+.tabs { display:flex; gap:6px; margin:16px 0 12px; }
+.tab { flex:1; background:var(--bar); border:1px solid var(--line); color:var(--tx-2);
+  clip-path:var(--slant); padding:9px 0; font-size:13px; font-weight:700; cursor:pointer;
+  font-family:inherit; letter-spacing:2px; }
+.tab.on { color:#001018; background:var(--cyan); border-color:var(--cyan); }
+.tab .en { display:block; font-family:Georgia,serif; font-size:9px; letter-spacing:3px; font-weight:400; margin-top:2px; }
+.tab.on .en { color:rgba(0,16,24,.7); }
+
+/* ===== 库存列表 ===== */
+.vrow { display:flex; align-items:center; gap:8px; padding:9px 4px; border-bottom:1px solid rgba(0,216,255,.12); }
+.vrow:last-child { border-bottom:none; }
+.vrow .vt { flex:1; min-width:0; font-size:13.5px; font-weight:600; line-height:1.5;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:text; }
+.vrow .vt:hover { color:var(--cyan); }
+.vrow .vtag { flex:none; font-size:10px; font-weight:700; letter-spacing:1px; padding:2px 8px;
+  cursor:pointer; border:1px solid; clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
+.vrow .vtag.bg { color:var(--cyan); border-color:var(--cyan-dim); background:rgba(0,216,255,.10); }
+.vrow .vtag.think { color:var(--gold); border-color:var(--gold-dim); background:rgba(201,168,106,.10); }
+.vrow .vb { flex:none; font-size:11px; color:var(--tx-3); background:none; border:1px solid var(--line);
+  padding:2px 8px; cursor:pointer; font-family:inherit; }
+.vrow .vb:hover { color:var(--cyan); }
+.vrow .vb.del:hover { color:#ff3daa; border-color:#ff3daa; }
+.empty { text-align:center; color:var(--tx-3); font-size:13px; padding:22px 0; }
+
+/* ===== 嵌入播放器 ===== */
+.playerbox { margin-top:14px; border:1px solid var(--cyan-dim); background:#000;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  overflow:hidden; }
+.playerbox iframe { display:block; width:100%; aspect-ratio:16/9; border:0; }
+.playerbox .pbar { display:flex; align-items:center; gap:10px; padding:6px 10px;
+  background:var(--bar); font-size:11.5px; color:var(--tx-2); }
+.playerbox .pbar button { margin-left:auto; }
+
+/* ===== Toast ===== */
+#toast { position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px);
+  background:var(--bar); border:1px solid var(--cyan); color:var(--cyan);
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  padding:9px 22px; font-size:13px; font-weight:700; letter-spacing:1px; z-index:70;
+  opacity:0; pointer-events:none; transition:all .22s; }
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+footer { text-align:center; font-family:Georgia,serif; font-size:10px; letter-spacing:3px;
+  color:var(--tx-3); margin-top:26px; text-transform:uppercase; }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <svg class="moon" width="26" height="26" viewBox="0 0 26 26">
+      <circle cx="13" cy="13" r="10" fill="none" stroke="#c9a86a" stroke-width="1.4"/>
+      <path d="M13 3a10 10 0 0 1 0 20a7.5 7.5 0 0 0 0-20z" fill="#c9a86a" opacity=".85"/>
+    </svg>
+    <h1>随机视频抽取器</h1><span class="en">Murmurs</span>
+    <span class="ver">v1.1</span>
+    <a class="back" href="../index.html">← 天鹅绒房间</a>
+  </div>
+
+  <!-- 抽选区 -->
+  <section class="panel">
+    <div class="ptitle"><h2>抽一个陪伴</h2><span class="en">Draw</span>
+      <span class="cnt" id="poolCnt"></span></div>
+    <div class="pools">
+      <button class="pool bg" data-tag="bg">
+        <span class="n" id="nBg"></span>
+        <span class="k">不影响思考</span><span class="e">Background</span>
+        <span class="d">纯背景音，干活时放在耳边听。</span>
+      </button>
+      <button class="pool think" data-tag="think">
+        <span class="n" id="nThink"></span>
+        <span class="k">影响思考</span><span class="e">Engage</span>
+        <span class="d">会占用注意力，适合机械劳动时抬头看。</span>
+      </button>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <!-- 页签 -->
+  <nav class="tabs">
+    <button class="tab on" data-tab="add">添加库存<span class="en">Add</span></button>
+    <button class="tab" data-tab="list">库存管理<span class="en">Stock</span></button>
+    <button class="tab" data-tab="data">数据<span class="en">Data</span></button>
+  </nav>
+
+  <!-- 添加 -->
+  <section class="panel" id="tabAdd">
+    <div class="ptitle"><h2>添加库存</h2><span class="en">Add</span></div>
+    <p class="hint" style="margin-bottom:10px">把 B 站<b>分享文本整段粘贴</b>进来即可（标题、短链、UP主会自动拆出来），一行一条可批量。BV 直链也可以。</p>
+    <textarea id="addText" placeholder="【视频标题】 https://b23.tv/xxxx  bilibili&#10;https://www.bilibili.com/video/BV1xx411c7mD&#10;BV1xx411c7mD"></textarea>
+    <div style="display:flex; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
+      <div class="chips" id="addChips">
+        <button class="chip bg on" data-tag="bg">不影响思考</button>
+        <button class="chip think" data-tag="think">影响思考</button>
+      </div>
+      <button class="btn pri" id="btnAdd" style="margin-left:auto;">解析添加</button>
+    </div>
+    <p class="hint" id="addPreview" style="margin-top:10px;"></p>
+  </section>
+
+  <!-- 管理 -->
+  <section class="panel" id="tabList" hidden>
+    <div class="ptitle"><h2>库存管理</h2><span class="en">Stock</span>
+      <span class="cnt" id="listCnt"></span></div>
+    <div class="chips" id="filterChips" style="margin-bottom:10px;">
+      <button class="chip all on" data-f="all">全部</button>
+      <button class="chip bg" data-f="bg">不影响思考</button>
+      <button class="chip think" data-f="think">影响思考</button>
+    </div>
+    <div id="vlist"></div>
+  </section>
+
+  <!-- 数据 -->
+  <section class="panel" id="tabData" hidden>
+    <div class="ptitle"><h2>数据</h2><span class="en">Data</span></div>
+    <p class="hint" style="margin-bottom:10px">库存本机存一份（<b>murmur_v1</b>），云端同步到私有仓 cal-data 的 <b>murmur/data.json</b>（独立文件，不碰工作台数据）。Token 复用工作台「设置 → GitHub 同步」里保存的那份；改库存 3 秒后自动同步，前台每 2 分钟轮询一次。</p>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+      <button class="btn pri" id="btnSync">立即同步</button>
+      <span class="hint" id="syncLine" style="margin:0;"></span>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+      <button class="btn gold" id="btnExport">导出到剪贴板</button>
+      <button class="btn" id="btnImport">导入</button>
+      <button class="btn danger ghost" id="btnWipe" style="margin-left:auto;">清空库存</button>
+    </div>
+    <textarea id="ioBox" placeholder="导出结果 / 粘贴要导入的 JSON" style="min-height:120px;"></textarea>
+  </section>
+
+  <footer>Velvet Room · Murmurs v1.1</footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= Murmurs · 随机视频抽取器 v1.0 ================= */
+'use strict';
+var LS_KEY = 'murmur_v1';
+
+/* ---------- 状态 ---------- */
+var videos = [];
+var lastTag = 'bg';           // 添加时默认标签（记住上次）
+var filter = 'all';           // 管理列表筛选
+var curTag = 'bg';            // 添加页选中的标签
+try { videos = JSON.parse(localStorage.getItem(LS_KEY) || '[]') || []; } catch (e) { videos = []; }
+if (!Array.isArray(videos)) videos = [];
+
+function persist() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(videos)); } catch (e) {}
+  renderCounts();
+}
+function stampMu() { videos.forEach(function (v) { if (!v.mu) v.mu = v.addedAt || Date.now(); }); }
+function save() { stampMu(); persist(); scheduleSync(); }
+
+/* ---------- 工具 ---------- */
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+  });
+}
+var toastTimer = null;
+function toast(msg) {
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+function copyText(s, okMsg) {
+  function done() { toast(okMsg || '已复制'); }
+  function legacy() {
+    var ta = document.createElement('textarea'); ta.value = s;
+    ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && window.isSecureContext !== false) {
+    navigator.clipboard.writeText(s).then(done, legacy);
+  } else legacy();
+}
+function uid() { return 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+/* ---------- 解析：分享文本 → 条目 ---------- */
+var RE_URL   = /https?:\/\/[^\s"'］\]）)>，。；;、]+/i;
+var RE_BV    = /BV1[a-zA-Z0-9]{9}/;
+
+function parseLine(line) {
+  line = String(line || '').trim();
+  if (!line) return null;
+  var rawUrl = '', bv = '', m = line.match(RE_URL);
+  if (m) rawUrl = m[0];
+  var bm = line.match(RE_BV) || (rawUrl.match(/\/video\/(BV1[a-zA-Z0-9]{9})/i) || [])[1];
+  if (typeof bm === 'string' && bm) bv = bm;
+  var url = bv ? ('https://www.bilibili.com/video/' + bv) : rawUrl;   // 统一成 BV 规范链
+  if (!url) return null;                       // 没有可识别的链接
+
+  // 标题：先剥掉尾部统计类括号（如 【10万播放】），再取括号内容
+  var title = '';
+  var head = rawUrl ? line.replace(rawUrl, ' ') : line;
+  head = head.replace(/\s+/g, ' ').trim();
+  head = head.replace(/(?:【[^】]*\d[^】]*】[，,、\s]*)+$/g, ' ').trim();
+  var om = head.match(/^【([\s\S]*?)】$/);   // 整串是一对括号 → 取内部全部（容忍内部再嵌套【】）
+  if (om) title = om[1];
+  else {
+    var bm2 = head.match(/【(.+?)】/);
+    if (bm2) title = bm2[1];
+    else {
+      title = head.split('http')[0];
+      if (!title.trim()) title = head.replace(/【.+?】/g, ' ').trim();
+      title = title.replace(/【.+?】/g, ' ');
+    }
+  }
+  title = title
+    .replace(/\s*UP主?\s*[:：][^:：]{0,30}$/i, ' ')
+    .replace(/[，,]?\s*(点击|长按|复制|打开)[^。；;]*$/i, ' ')
+    .replace(/[，,]\s*时长.*$/i, ' ')
+    .replace(/[，,]\s*(\d{1,3}[:：]\d{2}|\d+(\.\d+)?万?播放).*$/i, ' ')
+    .replace(/bilibili[。；;\s]*$/i, ' ')
+    .replace(/[|｜/·•]+$/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[—\-–~·•\s:：，,。]+/, '')
+    .replace(/[—\-–~·•\s:：，,。]+$/, '')
+    .trim();
+  if (!title) title = '未命名视频';
+  if (title.length > 80) title = title.slice(0, 80) + '…';
+  return { title: title, url: url, bv: bv };
+}
+
+/* ---------- 渲染：计数 / 列表 ---------- */
+function counts() {
+  var n = { bg: 0, think: 0 };
+  videos.forEach(function (v) { if (!v.del && n[v.tag] != null) n[v.tag]++; });
+  return n;
+}
+function renderCounts() {
+  var n = counts();
+  $('nBg').textContent = n.bg + ' 条';
+  $('nThink').textContent = n.think + ' 条';
+  $('poolCnt').textContent = '共 ' + videos.length + ' 条库存';
+  $('listCnt').textContent = '共 ' + videos.length + ' 条';
+}
+function renderList() {
+  var box = $('vlist');
+  var arr = videos.filter(function (v) { return !v.del && (filter === 'all' || v.tag === filter); });
+  if (!arr.length) {
+    box.innerHTML = '<div class="empty">这里是空的——去「添加库存」贴几条分享链接吧。</div>';
+    return;
+  }
+  box.innerHTML = arr.map(function (v) {
+    return '<div class="vrow" data-id="' + v.id + '">'
+      + '<span class="vt" title="点击改名">' + esc(v.title) + '</span>'
+      + '<button class="vtag ' + v.tag + '" title="点击切换标签">' + (v.tag === 'bg' ? '不影响' : '影响') + '</button>'
+      + '<button class="vb cp" title="复制链接">复制</button>'
+      + '<button class="vb del" title="删除">删</button></div>';
+  }).join('');
+}
+
+/* ---------- 抽选 ---------- */
+function draw(tag) {
+  var pool = videos.filter(function (v) { return !v.del && v.tag === tag; });
+  var box = $('result');
+  if (!pool.length) {
+    box.innerHTML = '<div class="empty" style="text-align:left;padding:10px 2px;">'
+      + (tag === 'bg' ? '「不影响思考」' : '「影响思考」')
+      + '的池子还是空的，先去添加库存吧。</div>';
+    return;
+  }
+  var v = pool[Math.floor(Math.random() * pool.length)];
+  lastTag = tag;
+  var isBg = tag === 'bg';
+  var canEmbed = !!v.bv;
+  box.innerHTML =
+    '<div class="result-card">'
+    + '<button class="again" title="换一个">↻ 换一个</button>'
+    + '<span class="rtag ' + tag + '">' + (isBg ? '不影响思考 · BACKGROUND' : '影响思考 · ENGAGE') + '</span>'
+    + '<div class="rtitle">' + esc(v.title) + '</div>'
+    + '<div class="rurl">' + esc(v.url) + '</div>'
+    + '<div class="ractions">'
+    + (canEmbed ? '<button class="btn pri" data-a="embed">页内播放</button>' : '')
+    + '<button class="btn" data-a="copy">复制链接</button>'
+    + '<button class="btn gold" data-a="open">去 B 站打开</button>'
+    + '</div>'
+    + (canEmbed
+        ? '<p class="hint" style="margin-top:10px;">页内播放无需跳转；若要<b>洗脑循环</b>或开弹幕，点「去 B 站打开」，在播放器<b>齿轮设置里开「循环播放」</b>即可。</p>'
+        : '<p class="hint" style="margin-top:10px;">这条是短链，无法页内嵌播，点「去 B 站打开」即可。</p>')
+    + '<div class="playerSlot"></div>'
+    + '</div>';
+  box.querySelector('.again').onclick = function () { draw(tag); };
+  box.querySelectorAll('[data-a]').forEach(function (b) {
+    b.onclick = function () {
+      var a = b.getAttribute('data-a');
+      if (a === 'copy') copyText(v.url);
+      else if (a === 'open') window.open(v.url, '_blank', 'noopener');
+      else if (a === 'embed') {
+        var slot = box.querySelector('.playerSlot');
+        if (slot.querySelector('iframe')) { slot.innerHTML = ''; b.textContent = '页内播放'; return; }
+        slot.innerHTML =
+          '<div class="playerbox">'
+          + '<iframe src="https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(v.bv)
+          + '&autoplay=1&danmaku=0" allow="autoplay; fullscreen" allowfullscreen></iframe>'
+          + '<div class="pbar">页内播放中<span style="color:var(--tx-3)">（无声音时点一下画面）</span>'
+          + '<button class="btn sm ghost" data-a="closeplayer">收起</button></div></div>';
+        b.textContent = '收起播放';
+        slot.querySelector('[data-a=closeplayer]').onclick = function () {
+          slot.innerHTML = ''; b.textContent = '页内播放';
+        };
+      }
+    };
+  });
+  window.scrollTo({ top: box.getBoundingClientRect().top + window.pageYOffset - 70, behavior: 'smooth' });
+}
+
+/* ---------- 事件绑定 ---------- */
+document.querySelectorAll('.pool').forEach(function (b) {
+  b.addEventListener('click', function () { draw(b.getAttribute('data-tag')); });
+});
+
+/* 页签 */
+document.querySelectorAll('.tab').forEach(function (t) {
+  t.addEventListener('click', function () {
+    document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('on', x === t); });
+    var k = t.getAttribute('data-tab');
+    $('tabAdd').hidden = k !== 'add';
+    $('tabList').hidden = k !== 'list';
+    $('tabData').hidden = k !== 'data';
+    if (k === 'list') renderList();
+  });
+});
+
+/* 添加页标签 chips */
+document.querySelectorAll('#addChips .chip').forEach(function (c) {
+  c.addEventListener('click', function () {
+    curTag = c.getAttribute('data-tag');
+    document.querySelectorAll('#addChips .chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+  });
+});
+
+/* 解析添加 */
+function doAdd() {
+  var raw = $('addText').value;
+  var lines = raw.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  var added = 0, skipped = 0, seen = {};
+  videos.forEach(function (v) { if (!v.del) seen[(v.bv || v.url).toLowerCase()] = 1; });
+  lines.forEach(function (ln) {
+    var p = parseLine(ln);
+    if (!p) { skipped++; return; }
+    var k = (p.bv || p.url).toLowerCase();
+    if (seen[k]) { skipped++; return; }
+    seen[k] = 1;
+    videos.push({ id: uid(), title: p.title, url: p.url, bv: p.bv, tag: curTag, addedAt: Date.now() });
+    added++;
+  });
+  save();
+  $('addText').value = '';
+  $('addPreview').innerHTML = added
+    ? '已添加 <b style="color:var(--cyan)">' + added + '</b> 条到「' + (curTag === 'bg' ? '不影响思考' : '影响思考') + '」'
+      + (skipped ? '，跳过 ' + skipped + ' 条（无法识别或已在库里）' : '') + '。'
+    : '没有添加任何条目——' + (skipped ? '这 ' + skipped + ' 条无法识别或已在库里。' : '先贴点内容。');
+  if (added) toast('已添加 ' + added + ' 条');
+}
+$('btnAdd').addEventListener('click', doAdd);
+$('addText').addEventListener('keydown', function (e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') doAdd();
+});
+
+/* 管理列表：改名 / 切标签 / 复制 / 删除 */
+$('vlist').addEventListener('click', function (e) {
+  var row = e.target.closest('.vrow'); if (!row) return;
+  var v = videos.filter(function (x) { return x.id === row.getAttribute('data-id'); })[0];
+  if (!v) return;
+  if (e.target.classList.contains('vt')) {
+    var nt = prompt('修改标题：', v.title);
+    if (nt != null && nt.trim()) { v.title = nt.trim().slice(0, 80); save(); renderList(); }
+  } else if (e.target.classList.contains('vtag')) {
+    v.tag = v.tag === 'bg' ? 'think' : 'bg'; save(); renderList();
+    toast('已移到「' + (v.tag === 'bg' ? '不影响思考' : '影响思考') + '」');
+  } else if (e.target.classList.contains('cp')) {
+    copyText(v.url);
+  } else if (e.target.classList.contains('del')) {
+    if (confirm('删掉「' + v.title + '」？（各端同步后生效）')) {
+      v.del = true; v.mu = Date.now();   // 墓碑：保留条目防远端旧副本复活
+      save(); renderList();
+    }
+  }
+});
+document.querySelectorAll('#filterChips .chip').forEach(function (c) {
+  c.addEventListener('click', function () {
+    filter = c.getAttribute('data-f');
+    document.querySelectorAll('#filterChips .chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+    renderList();
+  });
+});
+
+/* 数据：导出 / 导入 / 清空 */
+$('btnExport').addEventListener('click', function () {
+  var s = JSON.stringify({ app: 'murmur', version: 1, exportedAt: new Date().toISOString(), videos: videos }, null, 2);
+  $('ioBox').value = s;
+  copyText(s, '已导出并复制');
+});
+$('btnImport').addEventListener('click', function () {
+  var s = $('ioBox').value.trim();
+  if (!s) { toast('先在下面粘贴导出的 JSON'); return; }
+  try {
+    var obj = JSON.parse(s);
+    var arr = Array.isArray(obj) ? obj : obj.videos;
+    if (!Array.isArray(arr)) throw 0;
+    var seen = {}, n0 = videos.length;
+    videos.forEach(function (v) { if (!v.del) seen[(v.bv || v.url).toLowerCase()] = 1; });
+    arr.forEach(function (v) {
+      if (!v || !v.url) return;
+      var k = (v.bv || v.url).toLowerCase();
+      if (seen[k]) return; seen[k] = 1;
+      videos.push({ id: v.id || uid(), title: String(v.title || '未命名视频').slice(0, 80),
+        url: v.url, bv: v.bv || '', tag: v.tag === 'think' ? 'think' : 'bg',
+        addedAt: v.addedAt || Date.now() });
+    });
+    save(); renderList();
+    toast('导入 ' + (videos.length - n0) + ' 条（重复的已跳过）');
+  } catch (err) { toast('导入失败：不是有效的库存 JSON'); }
+});
+$('btnWipe').addEventListener('click', function () {
+  if (!videos.length) { toast('库存已经是空的'); return; }
+  if (confirm('确定清空全部库存？此操作不可撤销，且会同步到各端。')) {
+    videos.forEach(function (v) { v.del = true; v.mu = Date.now(); });
+    save(); renderList(); $('result').innerHTML = '';
+    toast('库存已清空');
+  }
+});
+
+/* ---------- GitHub 云同步（v1.1 · 同步五铁律同法） ----------
+   独立文件 murmur/data.json；按条目(id)合并、mu 新者胜、删除走墓碑、
+   只含用户数据、手动同步按钮 + 改后 3s 自动推 + 前台轮询。Token 只读本机 cal_gh。 */
+var ghBusy = false, ghTimer = null;
+function ghCfg() { try { return JSON.parse(localStorage.getItem('cal_gh') || 'null'); } catch (e) { return null; } }
+function syncLine(t) { var el = $('syncLine'); if (el) el.textContent = t; }
+function b64e(str) { return btoa(unescape(encodeURIComponent(str))); }
+function b64d(str) { return decodeURIComponent(escape(atob(str.replace(/\n/g, '')))); }
+function syncUrl(cfg) { return 'https://api.github.com/repos/' + cfg.user + '/' + cfg.repo + '/contents/murmur/data.json'; }
+function mergeRemote(remote) {
+  if (!remote || !Array.isArray(remote.videos)) return;
+  var map = {};
+  videos.forEach(function (v) { map[v.id] = v; });
+  remote.videos.forEach(function (rv) {
+    if (!rv || !rv.id) return;
+    var lv = map[rv.id];
+    if (!lv) map[rv.id] = rv;
+    else if ((rv.mu || rv.addedAt || 0) > (lv.mu || lv.addedAt || 0)) map[rv.id] = rv;
+  });
+  videos = Object.keys(map).map(function (k) { return map[k]; });
+}
+function cloudSync(manual) {
+  var cfg = ghCfg();
+  if (!cfg || !cfg.user || !cfg.repo || !cfg.token) {
+    if (manual) syncLine('未配置：到工作台「设置 → GitHub 同步」保存 Token');
+    return Promise.resolve(false);
+  }
+  if (ghBusy) return Promise.resolve(false);
+  ghBusy = true; syncLine('同步中…');
+  var url = syncUrl(cfg);
+  return fetch(url, { headers: { 'Authorization': 'token ' + cfg.token } })
+    .then(function (r) {
+      if (r.status === 404) return { sha: null, remote: null };
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().then(function (f) { return { sha: f.sha, remote: JSON.parse(b64d(f.content)) }; });
+    })
+    .then(function (cur) {
+      stampMu();
+      var remoteSnap = JSON.stringify((cur.remote && cur.remote.videos) || null);
+      mergeRemote(cur.remote);
+      var changed = JSON.stringify(videos) !== remoteSnap;   // 本地合并态 vs 远端：不一致就必须推
+      persist();
+      if (!$('tabList').hidden) renderList();
+      var body = JSON.stringify({ app: 'murmur', version: 1, updatedAt: Date.now(), videos: videos });
+      if (/ghp_|github_pat_/i.test(body)) {   // 安全红线：用户数据里检出 Token 特征，拒写
+        ghBusy = false; syncLine('检出疑似 Token，已拒绝写入');
+        return false;
+      }
+      if (!changed) { ghBusy = false; syncLine('已是最新 · ' + new Date().toLocaleTimeString()); return true; }
+      return fetch(url, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + cfg.token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'murmur sync', content: b64e(body), branch: 'main', sha: cur.sha || undefined })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        ghBusy = false; syncLine('已同步 · ' + new Date().toLocaleTimeString());
+        return true;
+      });
+    })
+    .catch(function (e) {
+      ghBusy = false;
+      syncLine('同步失败：' + e.message + (manual ? '（可重试）' : ''));
+      return false;
+    });
+}
+function scheduleSync() { if (!ghCfg()) return; clearTimeout(ghTimer); ghTimer = setTimeout(function () { cloudSync(false); }, 3000); }
+$('btnSync').addEventListener('click', function () { cloudSync(true); });
+
+/* ---------- 环境气泡 ---------- */
+(function () {
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var shapes = ['50% 50% 50% 50%','60% 40% 55% 45%','40% 60% 45% 55%','55% 45% 60% 40%','45% 55% 40% 60%'];
+  for (var i = 0; i < 12; i++) {
+    var b = document.createElement('div'); b.className = 'bub';
+    var size = 5 + Math.random() * 20;
+    b.style.width = b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + 'vw';
+    b.style.bottom = '-40px';
+    b.style.opacity = (0.12 + Math.random() * 0.2).toFixed(2);
+    b.style.borderRadius = shapes[i % 5];
+    if (size > 16) b.style.filter = 'blur(2px)';
+    b.style.animationDuration = (9 + Math.random() * 14) + 's';
+    b.style.animationDelay = (-Math.random() * 20) + 's';
+    document.body.appendChild(b);
+  }
+})();
+
+/* ---------- 启动 ---------- */
+document.querySelectorAll('#addChips .chip').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-tag') === curTag); });
+renderCounts();
+/* 云同步启动态 + 前台轮询（2 分钟，仅页面可见时） */
+(function () {
+  var cfg = ghCfg();
+  syncLine(cfg && cfg.token ? '就绪（' + cfg.user + '/' + cfg.repo + '）' : '未配置：数据只在本机');
+  setInterval(function () { if (document.visibilityState === 'visible') cloudSync(false); }, 120000);
+})();
+</script>
+</body>
+</html>
