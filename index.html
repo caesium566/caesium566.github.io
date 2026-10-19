@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="4.2">
+<meta name="app-version" content="4.3">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -684,7 +684,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v4.2 · 2026-10-19</span>
+  <span class="ver">v4.3 · 2026-10-19</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -925,6 +925,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v4.3（2026-10-19）本周纪律改为原样收录：【本周纪律】与【月度预算使用情况】之间的每一行不再解析内容，整行进纪律条，只认行首 emoji 定灯色（无 emoji = 绿灯）——任何措辞都能进。</p>
       <p>v4.2（2026-10-19）预算页「更新数据」壳层两处修复（冻结解析器不动）：本周纪律改在壳层用 u 标志正则解析——冻结 bParseWeek 的 emoji 字符类劈不开增补平面字符，此前粘贴的纪律行其实一直解析成乱码+默认绿点；锁定行兼容新格式「名称：¥金额 · 待购/已放行（说明）」与后缀格式「名称锁定：金额」，统一改写为前缀行喂给冻结解析器，名称保持干净、状态保护生效。</p>
       <p>v4.1（2026-10-19）时光页：工坊需求勾选改为就地打勾，维护详情不再收起；成长页：五维雷达改绝对刻度（轴长 = 总经验 / R10 满级），每点经验都看得见，已庆祝 Rank 一并入同步，成长页数据全部上云；活动页：events.json 兼容 ISO datetime（只取日期部分），日期显示不再带 T 尾巴；预算页：强制理财分类不进看板，「更新数据」后锁定项的勾选与绑定分类按名字保留；设置页新增「工具卡片」维护入口（名称/链接/描述/版本/图标，随 data.json 同步），图标约定为 24×24 线性 SVG 代码段；GitHub 写入遇 409（双端抢写）自动重取 sha 重试一次；启动时先渲染首屏再发起同步，打开更快。</p>
       <p>v4.0（2026-10-15）工具抽屉新增入口卡片：随机视频抽取器（独立子目录工具 murmur/，本文件不含其实现；B 站库存分「影响思考 / 不影响思考」两池抽签，支持分享文本整段粘贴入库与页内嵌播）。</p>
@@ -1842,16 +1843,15 @@ function bShellRoute(text){
 }
 var B_WEEK_LV = { '🟢':'g', '🟩':'g', '🟡':'y', '🟨':'y', '🔴':'r', '🟥':'r' };
 function bShellWeek(lines){
+  /* v4.3：纪律节内容不再解析，【本周纪律】与【月度…】之间每行原样收录；只认行首 emoji 定灯色（没有就绿灯） */
   var out = [];
   lines.forEach(function(raw){
     var line = raw.trim();
     if (!line) return;
-    var level = 'g', body = line;
-    var m = /^(🟢|🟡|🔴|🟩|🟨|🟥)\s*(.+)$/u.exec(line);   /* u 标志：整颗 emoji 一起匹配 */
-    if (m) { body = m[2]; level = B_WEEK_LV[m[1]] || 'g'; }
-    var mm = /^([^:：\s]{1,12})\s*[:：]\s*(.+)$/.exec(body);
-    if (mm) out.push({ cat: mm[1].trim(), level: level, text: mm[2].trim() });
-    else out.push({ cat: '', level: level, text: body });
+    var level = 'g';
+    var m = /^(🟢|🟡|🔴|🟩|🟨|🟥)\s*/u.exec(line);   /* u 标志：整颗 emoji 一起匹配 */
+    if (m) { level = B_WEEK_LV[m[1]] || 'g'; line = line.slice(m[0].length); }
+    out.push({ cat: '', level: level, text: line });
   });
   return out;
 }
