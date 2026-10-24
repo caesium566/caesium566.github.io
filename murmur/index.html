@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="1.1">
+<meta name="app-version" content="1.2">
 <title>随机视频抽取器 · Murmurs</title>
 <style>
 /* ===== P3 设计令牌（与《P3视觉规范.md》一致） ===== */
@@ -71,8 +71,8 @@ body::after { /* CRT 扫描线（同工作台） */
 .hint b { color:var(--tx); font-weight:700; }
 
 /* ===== 抽选区 ===== */
-.pools { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-@media (max-width:560px){ .pools { grid-template-columns:1fr; } }
+.pools { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+@media (max-width:640px){ .pools { grid-template-columns:1fr; } }
 .pool {
   position:relative; border:1px solid var(--line); background:var(--bar);
   clip-path:var(--slant); padding:18px 14px 14px; cursor:pointer; text-align:left;
@@ -91,6 +91,8 @@ body::after { /* CRT 扫描线（同工作台） */
 .pool.bg .k  { color:var(--cyan); text-shadow:0 0 12px rgba(0,216,255,.5); }
 .pool.think { border-color:rgba(201,168,106,.55); }
 .pool.think .k { color:var(--gold); text-shadow:0 0 12px rgba(201,168,106,.5); }
+.pool.music { border-color:rgba(245,216,74,.55); }
+.pool.music .k { color:var(--yellow); text-shadow:0 0 12px rgba(245,216,74,.5); }
 
 /* ===== 结果卡 ===== */
 #result:empty { display:none; }
@@ -105,6 +107,7 @@ body::after { /* CRT 扫描线（同工作台） */
   padding:1px 8px; margin-bottom:8px; clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); }
 .result-card .rtag.bg { background:rgba(0,216,255,.15); color:var(--cyan); border:1px solid var(--cyan-dim); }
 .result-card .rtag.think { background:rgba(201,168,106,.15); color:var(--gold); border:1px solid var(--gold-dim); }
+.result-card .rtag.music { background:rgba(245,216,74,.13); color:var(--yellow); border:1px solid rgba(245,216,74,.4); }
 .result-card .rtitle { font-size:16px; font-weight:700; line-height:1.55; word-break:break-all; }
 .result-card .rurl { font-size:11px; color:var(--tx-3); margin-top:6px; word-break:break-all; }
 .result-card .ractions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
@@ -139,6 +142,7 @@ body::after { /* CRT 扫描线（同工作台） */
 }
 .chip.on.bg { color:var(--cyan); border-color:var(--cyan); background:rgba(0,216,255,.12); }
 .chip.on.think { color:var(--gold); border-color:var(--gold); background:rgba(201,168,106,.12); }
+.chip.on.music { color:var(--yellow); border-color:var(--yellow); background:rgba(245,216,74,.12); }
 .chip.on.all { color:var(--yellow); border-color:var(--yellow); background:rgba(245,216,74,.10); }
 
 /* ===== 输入 ===== */
@@ -169,6 +173,7 @@ textarea { min-height:86px; line-height:1.7; }
   cursor:pointer; border:1px solid; clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
 .vrow .vtag.bg { color:var(--cyan); border-color:var(--cyan-dim); background:rgba(0,216,255,.10); }
 .vrow .vtag.think { color:var(--gold); border-color:var(--gold-dim); background:rgba(201,168,106,.10); }
+.vrow .vtag.music { color:var(--yellow); border-color:rgba(245,216,74,.4); background:rgba(245,216,74,.10); }
 .vrow .vb { flex:none; font-size:11px; color:var(--tx-3); background:none; border:1px solid var(--line);
   padding:2px 8px; cursor:pointer; font-family:inherit; }
 .vrow .vb:hover { color:var(--cyan); }
@@ -206,7 +211,7 @@ footer { text-align:center; font-family:Georgia,serif; font-size:10px; letter-sp
       <path d="M13 3a10 10 0 0 1 0 20a7.5 7.5 0 0 0 0-20z" fill="#c9a86a" opacity=".85"/>
     </svg>
     <h1>随机视频抽取器</h1><span class="en">Murmurs</span>
-    <span class="ver">v1.1</span>
+    <span class="ver">v1.2</span>
     <a class="back" href="../index.html">← 天鹅绒房间</a>
   </div>
 
@@ -224,6 +229,11 @@ footer { text-align:center; font-family:Georgia,serif; font-size:10px; letter-sp
         <span class="n" id="nThink"></span>
         <span class="k">影响思考</span><span class="e">Engage</span>
         <span class="d">会占用注意力，适合机械劳动时抬头看。</span>
+      </button>
+      <button class="pool music" data-tag="music">
+        <span class="n" id="nMusic"></span>
+        <span class="k">音乐</span><span class="e">Music</span>
+        <span class="d">纯听不看，干活的节拍器。</span>
       </button>
     </div>
     <div id="result"></div>
@@ -245,6 +255,7 @@ footer { text-align:center; font-family:Georgia,serif; font-size:10px; letter-sp
       <div class="chips" id="addChips">
         <button class="chip bg on" data-tag="bg">不影响思考</button>
         <button class="chip think" data-tag="think">影响思考</button>
+        <button class="chip music" data-tag="music">音乐</button>
       </div>
       <button class="btn pri" id="btnAdd" style="margin-left:auto;">解析添加</button>
     </div>
@@ -259,6 +270,7 @@ footer { text-align:center; font-family:Georgia,serif; font-size:10px; letter-sp
       <button class="chip all on" data-f="all">全部</button>
       <button class="chip bg" data-f="bg">不影响思考</button>
       <button class="chip think" data-f="think">影响思考</button>
+      <button class="chip music" data-f="music">音乐</button>
     </div>
     <div id="vlist"></div>
   </section>
@@ -279,7 +291,7 @@ footer { text-align:center; font-family:Georgia,serif; font-size:10px; letter-sp
     <textarea id="ioBox" placeholder="导出结果 / 粘贴要导入的 JSON" style="min-height:120px;"></textarea>
   </section>
 
-  <footer>Velvet Room · Murmurs v1.1</footer>
+  <footer>Velvet Room · Murmurs v1.2</footer>
 </div>
 
 <div id="toast"></div>
@@ -377,8 +389,10 @@ function parseLine(line) {
 }
 
 /* ---------- 渲染：计数 / 列表 ---------- */
+var TAGNAMES = { bg: '不影响思考', think: '影响思考', music: '音乐' };
+var TAGEN = { bg: 'BACKGROUND', think: 'ENGAGE', music: 'MUSIC' };
 function counts() {
-  var n = { bg: 0, think: 0 };
+  var n = { bg: 0, think: 0, music: 0 };
   videos.forEach(function (v) { if (!v.del && n[v.tag] != null) n[v.tag]++; });
   return n;
 }
@@ -386,6 +400,7 @@ function renderCounts() {
   var n = counts();
   $('nBg').textContent = n.bg + ' 条';
   $('nThink').textContent = n.think + ' 条';
+  $('nMusic').textContent = n.music + ' 条';
   $('poolCnt').textContent = '共 ' + videos.length + ' 条库存';
   $('listCnt').textContent = '共 ' + videos.length + ' 条';
 }
@@ -399,7 +414,7 @@ function renderList() {
   box.innerHTML = arr.map(function (v) {
     return '<div class="vrow" data-id="' + v.id + '">'
       + '<span class="vt" title="点击改名">' + esc(v.title) + '</span>'
-      + '<button class="vtag ' + v.tag + '" title="点击切换标签">' + (v.tag === 'bg' ? '不影响' : '影响') + '</button>'
+      + '<button class="vtag ' + v.tag + '" title="点击换池：不影响→影响→音乐">' + ({ bg: '不影响', think: '影响', music: '音乐' })[v.tag] + '</button>'
       + '<button class="vb cp" title="复制链接">复制</button>'
       + '<button class="vb del" title="删除">删</button></div>';
   }).join('');
@@ -411,18 +426,17 @@ function draw(tag) {
   var box = $('result');
   if (!pool.length) {
     box.innerHTML = '<div class="empty" style="text-align:left;padding:10px 2px;">'
-      + (tag === 'bg' ? '「不影响思考」' : '「影响思考」')
+      + '「' + TAGNAMES[tag] + '」'
       + '的池子还是空的，先去添加库存吧。</div>';
     return;
   }
   var v = pool[Math.floor(Math.random() * pool.length)];
   lastTag = tag;
-  var isBg = tag === 'bg';
   var canEmbed = !!v.bv;
   box.innerHTML =
     '<div class="result-card">'
     + '<button class="again" title="换一个">↻ 换一个</button>'
-    + '<span class="rtag ' + tag + '">' + (isBg ? '不影响思考 · BACKGROUND' : '影响思考 · ENGAGE') + '</span>'
+    + '<span class="rtag ' + tag + '">' + TAGNAMES[tag] + ' · ' + TAGEN[tag] + '</span>'
     + '<div class="rtitle">' + esc(v.title) + '</div>'
     + '<div class="rurl">' + esc(v.url) + '</div>'
     + '<div class="ractions">'
@@ -503,7 +517,7 @@ function doAdd() {
   save();
   $('addText').value = '';
   $('addPreview').innerHTML = added
-    ? '已添加 <b style="color:var(--cyan)">' + added + '</b> 条到「' + (curTag === 'bg' ? '不影响思考' : '影响思考') + '」'
+    ? '已添加 <b style="color:var(--cyan)">' + added + '</b> 条到「' + TAGNAMES[curTag] + '」'
       + (skipped ? '，跳过 ' + skipped + ' 条（无法识别或已在库里）' : '') + '。'
     : '没有添加任何条目——' + (skipped ? '这 ' + skipped + ' 条无法识别或已在库里。' : '先贴点内容。');
   if (added) toast('已添加 ' + added + ' 条');
@@ -522,8 +536,11 @@ $('vlist').addEventListener('click', function (e) {
     var nt = prompt('修改标题：', v.title);
     if (nt != null && nt.trim()) { v.title = nt.trim().slice(0, 80); save(); renderList(); }
   } else if (e.target.classList.contains('vtag')) {
-    v.tag = v.tag === 'bg' ? 'think' : 'bg'; save(); renderList();
-    toast('已移到「' + (v.tag === 'bg' ? '不影响思考' : '影响思考') + '」');
+    var order = ['bg', 'think', 'music'];   // 点击循环换池
+    var ix = order.indexOf(v.tag);
+    v.tag = order[(ix + 1) % order.length]; v.mu = Date.now();
+    save(); renderList();
+    toast('已移到「' + TAGNAMES[v.tag] + '」');
   } else if (e.target.classList.contains('cp')) {
     copyText(v.url);
   } else if (e.target.classList.contains('del')) {
@@ -561,7 +578,8 @@ $('btnImport').addEventListener('click', function () {
       var k = (v.bv || v.url).toLowerCase();
       if (seen[k]) return; seen[k] = 1;
       videos.push({ id: v.id || uid(), title: String(v.title || '未命名视频').slice(0, 80),
-        url: v.url, bv: v.bv || '', tag: v.tag === 'think' ? 'think' : 'bg',
+        url: v.url, bv: v.bv || '', tag: TAGNAMES[v.tag] ? v.tag : 'bg',
+        mu: v.mu || v.addedAt || Date.now(),
         addedAt: v.addedAt || Date.now() });
     });
     save(); renderList();
