@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="4.4">
+<meta name="app-version" content="4.6">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -684,7 +684,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v4.4 · 2026-10-19</span>
+  <span class="ver">v4.6 · 2026-10-27</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -925,6 +925,8 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v4.6（2026-10-27）启动时序与归零一致性五连修（《格式契约.md》契约五同步更新）：① 版本嗅探改与本页 meta 自引用比较——v4.4 起硬编码版本串，升级到 4.5 后每个标签页打开即白刷 3 次（打开慢主因），修复后每会话至多 1 次且永不过期失效；② 启动同步去掉 600ms 固定等待，vPullData/vPullMd 收进 Promise.all 屏障：两端都到齐才允许庆祝检查，vStable 标志管住 md 先到时的 vCheckRanks，根治"等级看着低却弹 R4"；③ vCheckRanks 弹窗前复核当前等级，同步中间态的虚高到显示时已回落则取消；④ 归零（经验从头开始）：庆祝基线改为归零后的实际 Rank（不再写 null），当场关掉可能挂着的升级弹窗，vXpRev 推进重置代并立即推送；⑤ 契约级修复：velvet/data.json 新增 rev 重置代次——远端代次更新则整代采用远端 xpo/rks（旧代庆祝记录不合入新代），同代维持 xpo 随 updatedAt、rks 按维取大。修掉"重置清不掉云端旧庆祝记录"与"旧设备陈旧偏移覆盖归零"两个陈年矛盾。</p>
+      <p>v4.5（2026-10-24）murmur 入口卡片换耳机线性图标（原随机箭头图标弃用），卡片版本/描述随 murmur v1.2 三池更新（不影响思考 / 影响思考 / 音乐）。</p>
       <p>v4.4（2026-10-19）同步链路三连修：① 修复自动同步死循环——每次同步成功后 applySync 回写本地会再次触发 3 秒调度，页面每 3 秒强推一次，双端同开互相撞出 409（此前手机端「一直 HTTP 409」的根因）；新增 ghMute 静默期，同步回写不再触发调度。② ghSyncAll 补上更新记录里承诺过的 409 重试：撞车后重取 sha、按最新远程重合并再推一次。③ 拉取改合并式（条目并集 + 预算按 updatedAt 取新），启动/轮询不再整包覆盖本地，未推成功的修改不会被下一次拉取抹掉；新增 cal_gh_pending 待推标志，打开页面时若有未推修改自动补推。④ 新增版本嗅探：检测到线上文件版本比本页新时自动刷新一次，根治旧缓存页面跑老代码；同步失败红字提示。</p>
       <p>v4.3（2026-10-19）本周纪律改为原样收录：【本周纪律】与【月度预算使用情况】之间的每一行不再解析内容，整行进纪律条，只认行首 emoji 定灯色（无 emoji = 绿灯）——任何措辞都能进。</p>
       <p>v4.2（2026-10-19）预算页「更新数据」壳层两处修复（冻结解析器不动）：本周纪律改在壳层用 u 标志正则解析——冻结 bParseWeek 的 emoji 字符类劈不开增补平面字符，此前粘贴的纪律行其实一直解析成乱码+默认绿点；锁定行兼容新格式「名称：¥金额 · 待购/已放行（说明）」与后缀格式「名称锁定：金额」，统一改写为前缀行喂给冻结解析器，名称保持干净、状态保护生效。</p>
@@ -1130,8 +1132,8 @@ var TOOLS = [
     icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5"/></svg>' },
   { name:'极简书房', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/',
     icon:'<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' },
-  { name:'随机视频抽取器', ver:'1.0', desc:'B 站收藏池 · 影响/不影响思考 两池抽签', url:'./murmur/',
-    icon:'<svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M21 3l-7.5 7.5"/><path d="M8 21H3v-5"/><path d="M3 21l7.5-7.5"/><path d="M14.5 9.5l-5 5"/></svg>' }
+  { name:'随机视频抽取器', ver:'1.2', desc:'B 站收藏池 · 背景 / 影响思考 / 音乐 三池抽签', url:'./murmur/',
+    icon:'<svg viewBox="0 0 24 24"><path d="M3 18v-5a9 9 0 0 1 18 0v5"/><path d="M3 14h4v7H5a2 2 0 0 1-2-2v-5z"/><path d="M21 14h-4v7h2a2 2 0 0 0 2-2v-5z"/></svg>' }
 ];
 /* 图标约定：一段 <svg viewBox="0 0 24 24"> 线性图标代码，只放 path/circle 等元素，颜色粗细由卡片样式统一施加 */
 var TOOL_ICON_DEFAULT = '<svg viewBox="0 0 24 24"><path d="M12 2l2.4 5.9 6.3.5-4.8 4.1 1.5 6.2L12 15.8 6.6 18.7l1.5-6.2-4.8-4.1 6.3-.5z"/></svg>';
@@ -2121,9 +2123,11 @@ if (ghCfg) {
       .then(function(r){ return r.text(); })
       .then(function(t){
         var m = /name="app-version" content="([\d.]+)"/.exec(t);
-        if (m && m[1] !== '4.4') {
+        var me = document.querySelector('meta[name="app-version"]');
+        var myVer = me ? me.getAttribute('content') : '';
+        if (m && myVer && m[1] !== myVer) {
           var n = +(sessionStorage.getItem('vchk') || 0);
-          if (n < 3) { try { sessionStorage.setItem('vchk', String(n + 1)); } catch(e){} location.reload(); }
+          if (n < 1) { try { sessionStorage.setItem('vchk', String(n + 1)); } catch(e){} location.reload(); }
         }
       })
       .catch(function(){});
@@ -2271,6 +2275,9 @@ var vAch = {};              /* 成就：序号 → 解锁日期 */
 var vTools = [];            /* 自定义工具卡片（设置页维护，随 data.json 同步） */
 var vAchSeen = {};          /* 回廊里已看过翻牌的（本机） */
 var vUpdatedAt = 0;         /* 本地数据最后改动时刻（合并比较用，v3.8 修复） */
+var vStable = true;          /* v4.6：启动同步窗口内为 false，此时不许庆祝检查（防中间态误弹 Rank） */
+var vXpRev = 0;              /* v4.6 契约五·重置代次：归零时前进（时间戳），云端按代次合并 */
+try { vXpRev = +localStorage.getItem('velvet_rev_v1') || 0; } catch(e){}
 try { vAch = JSON.parse(localStorage.getItem('velvet_ach_v1') || '{}'); } catch(e){}
 try { vAchSeen = JSON.parse(localStorage.getItem('velvet_achseen_v1') || '{}'); } catch(e){}
 try { vUpdatedAt = +localStorage.getItem('velvet_updated_v1') || 0; } catch(e){}
@@ -2417,9 +2424,12 @@ function vCheckRanks(){
   DIMS.forEach(function(d){
     var r = vRankOf(xp[d.key]);
     if (!first && r > (seen[d.key] || 1) && RANK_MILESTONE[r]) {
-      document.getElementById('rkDim').textContent = d.name + ' · R' + r;
-      document.getElementById('rkName').textContent = d.ranks[r-1];
-      document.getElementById('ovRank').hidden = false;
+      /* v4.6 显示前复核：同步中间态造成的虚高等级，到弹窗这一刻已回落则取消 */
+      if (vRankOf(vComputeXp().total[d.key]) === r) {
+        document.getElementById('rkDim').textContent = d.name + ' · R' + r;
+        document.getElementById('rkName').textContent = d.ranks[r-1];
+        document.getElementById('ovRank').hidden = false;
+      }
     }
     seen[d.key] = r;
   });
@@ -2630,7 +2640,7 @@ function vFileWrite(which, editFn, done){
 }
 /* velvet/data.json：拉（合并） / 推（去抖 3 秒） */
 var vGhTimer = null, vGhBusy = false;
-function vCollect(){ return { updatedAt:vUpdatedAt, tl:vTl, feel:vFeel, plans:vPlans, cats:vCats, ccol:vCatColor, xpo:vXpOff, ach:vAch, rks:vRankSeen || {}, tools:vTools }; }
+function vCollect(){ return { updatedAt:vUpdatedAt, tl:vTl, feel:vFeel, plans:vPlans, cats:vCats, ccol:vCatColor, xpo:vXpOff, rev:vXpRev || 0, ach:vAch, rks:vRankSeen || {}, tools:vTools }; }
 function vMergeData(local, remote){
   if (!remote) return local;
   var map = {};
@@ -2641,12 +2651,22 @@ function vMergeData(local, remote){
   for (var k2 in (remote.plans || {})) if (!local.plans[k2] || (remote.plans[k2].pu||0) > (local.plans[k2].pu||0)) local.plans[k2] = remote.plans[k2];
   if (Array.isArray(remote.cats) && (remote.updatedAt||0) > (local.updatedAt||0)) local.cats = remote.cats;
   if (remote.ccol && (remote.updatedAt||0) > (local.updatedAt||0)) local.ccol = remote.ccol;
-  if (remote.xpo && (remote.updatedAt||0) > (local.updatedAt||0)) local.xpo = remote.xpo;
-  for (var k3 in (remote.ach || {})) if (!local.ach[k3] || remote.ach[k3] < local.ach[k3]) local.ach[k3] = remote.ach[k3];
-  if (remote.rks) {   /* 各维已庆祝过的最高 Rank：按维取大，里程碑不重复庆祝 */
-    if (!local.rks) local.rks = {};
-    for (var k4 in remote.rks) local.rks[k4] = Math.max(local.rks[k4] || 0, remote.rks[k4] || 0);
+  /* v4.6 契约五·重置代：远端是更新的重置代时，整代采用远端 xpo/rks（旧代庆祝记录不合入新代）；
+     同代维持原语义：xpo 随最新 updatedAt，rks 按维取大 */
+  var rRev = remote.rev || 0, lRev = local.rev || 0;
+  if (rRev > lRev) {
+    local.rev = rRev;
+    if (remote.xpo) local.xpo = remote.xpo;
+    if (remote.rks) local.rks = remote.rks;
+  } else {
+    local.rev = lRev;
+    if (remote.xpo && (remote.updatedAt||0) > (local.updatedAt||0)) local.xpo = remote.xpo;
+    if (remote.rks) {   /* 各维已庆祝过的最高 Rank：按维取大，里程碑不重复庆祝 */
+      if (!local.rks) local.rks = {};
+      for (var k4 in remote.rks) local.rks[k4] = Math.max(local.rks[k4] || 0, remote.rks[k4] || 0);
+    }
   }
+  for (var k3 in (remote.ach || {})) if (!local.ach[k3] || remote.ach[k3] < local.ach[k3]) local.ach[k3] = remote.ach[k3];
   if (Array.isArray(remote.tools) && (remote.updatedAt || 0) > (local.updatedAt || 0)) local.tools = remote.tools;
   return local;
 }
@@ -2659,6 +2679,7 @@ function vPullData(){
     vTl = merged.tl || []; vFeel = merged.feel || {}; vPlans = merged.plans || {}; vCats = merged.cats || vCats;
     vCatColor = merged.ccol || vCatColor; vXpOff = merged.xpo || vXpOff; vAch = merged.ach || vAch;
     if (merged.rks) vRankSeen = merged.rks;
+    if (merged.rev) { vXpRev = merged.rev; try { localStorage.setItem('velvet_rev_v1', String(vXpRev)); } catch(e){} }
     if (Array.isArray(merged.tools)) { vTools = merged.tools; renderTools(); }
     vUpdatedAt = Math.max(vUpdatedAt, remote.updatedAt || 0);
     try {
@@ -2703,7 +2724,7 @@ function vPullMd(){
     var changed = false;
     if (rs[0] && (!vMdCache.todo || rs[0].sha !== vMdCache.todo.sha)) { vMdCache.todo = rs[0]; changed = true; }
     if (rs[1] && (!vMdCache.work || rs[1].sha !== vMdCache.work.sha)) { vMdCache.work = rs[1]; changed = true; }
-    if (changed) { vSaveMdCache(); vParseAll(); vCheckRanks(); vRenderTime(); renderGrowth(); }
+    if (changed) { vSaveMdCache(); vParseAll(); if (vStable) vCheckRanks(); vRenderTime(); renderGrowth(); }
     return changed;
   });
 }
@@ -3035,8 +3056,15 @@ document.getElementById('btnXpReset').onclick = function(){
   if (!confirm('把五维经验当前累计记为零点、从头开始？\n（不删任何日志；升级里程碑会重新庆祝。）')) return;
   var t0 = vComputeXp().total;
   for (var k in t0) vXpOff[k] = (vXpOff[k] || 0) + t0[k];
-  vRankSeen = null;
-  try { localStorage.setItem('velvet_ranks_v1', 'null'); } catch(e){}
+  /* v4.6 契约五·重置代：归零推进重置代次，云端以代次为准合并，旧代庆祝记录不合入新代 */
+  vXpRev = Date.now();
+  try { localStorage.setItem('velvet_rev_v1', String(vXpRev)); } catch(e){}
+  /* 庆祝基线 = 归零后的实际 Rank（不再用 null 当基线）；关掉可能挂着的升级弹窗 */
+  var xp0 = vComputeXp().total;
+  vRankSeen = {};
+  DIMS.forEach(function(d){ vRankSeen[d.key] = vRankOf(xp0[d.key]); });
+  try { localStorage.setItem('velvet_ranks_v1', JSON.stringify(vRankSeen)); } catch(e){}
+  document.getElementById('ovRank').hidden = true;
   vSaveAll(); renderGrowth(); vCheckRanks();
   alert('已归零。重新开始吧。');
 };
@@ -3713,7 +3741,18 @@ try {   /* 成就首次回填静默，不进庆祝队列 */
   var _ap = document.getElementById('achProg');
   if (_ap) _ap.textContent = Object.keys(vAch).length + ' / 22 已解锁';
 } catch(e){}
-setTimeout(function(){ if (ghCfg) { vPullData(); vPullMd(); } }, 600);   /* 首屏优先：网络同步延后到渲染之后 */
+/* v4.6 启动同步：缓存已同步绘制首屏，云端后台拉；两端都到齐（Promise.all 屏障）才允许庆祝检查 */
+function vStartupSync(){
+  if (!ghCfg) return;
+  vStable = false;
+  Promise.all([vPullData(), vPullMd()]).then(function(){
+    vStable = true;
+    vCheckRanks();
+    vRenderTime();
+    renderGrowth();
+  });
+}
+if (ghCfg) vStartupSync();   /* 首屏优先：网络同步延后到渲染之后 */
 setInterval(function(){ if (ghCfg && !document.hidden && !vGhBusy) { vPullData(); vPullMd(); } }, 120000);
 document.getElementById('ghBtnNow').addEventListener('click', function(){ vSyncAll(); });
 
