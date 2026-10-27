@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="4.6">
+<meta name="app-version" content="4.7">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -486,6 +486,8 @@ nav button.on::before {
 /* 日志弹窗要压住维护层（70） */
 #ovTLog { z-index:75; }
 #ovCats { z-index:76; }
+#ovTools { z-index:61; }   /* v4.7 工具管理：设置 60 的子层 */
+.dgroup { font-size:11px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--cyan); margin:10px 0 6px; border-left:3px solid var(--cyan-dim); padding-left:8px; }
 .cmrow { display:flex; align-items:center; gap:10px; padding:7px 2px; border-bottom:1px solid var(--line); }
 .cmrow .cmn { flex:1; font-size:14px; font-weight:700; }
 .cmrow input[type=color] { width:40px; height:28px; padding:1px; background:var(--bar-2); border:1px solid var(--line); }
@@ -684,7 +686,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v4.6 · 2026-10-27</span>
+  <span class="ver">v4.7 · 2026-10-27</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -837,6 +839,40 @@ nav button.on::before {
   </div>
 </div>
 
+<!-- 工具管理（v4.7：设置页「管理工具卡」打开的独立界面，z 61 = 设置 60 的子层） -->
+<div class="ov" id="ovTools" hidden>
+  <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
+    <h3>工具管理<span class="en">TOOLBOX</span></h3>
+    <div class="mtabs" id="tmTabs">
+      <button data-tmf="全部" class="on">全部</button>
+      <button data-tmf="日常">日常</button>
+      <button data-tmf="游戏">游戏</button>
+    </div>
+    <div id="tmList"></div>
+    <div class="set-sec" style="margin-top:14px">
+      <div class="st" id="tmFormTitle">新增工具</div>
+      <div class="hint" id="tmHintEdit" hidden>正在编辑已有卡片，保存后覆盖原条目。</div>
+      <div class="fg"><label>名称</label><input id="tmName" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+      <div class="fg"><label>链接（相对路径 ./xxx/ 或完整网址）</label><input id="tmUrl" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+      <div class="fg"><label>描述 / 版本号</label>
+        <div style="display:flex;gap:8px">
+          <input id="tmDesc" class="b-ta" style="min-height:0;padding:8px 10px;flex:1">
+          <input id="tmVer" class="b-ta" style="min-height:0;padding:8px 10px;width:76px" placeholder="1.0">
+        </div>
+      </div>
+      <div class="fg"><label>分类</label><select id="tmCat" style="width:100%;padding:8px 10px;border:1px solid var(--line);background:var(--bar-2);color:var(--tx);font:inherit"><option>日常</option><option>游戏</option></select></div>
+      <div class="fg"><label>图标 SVG（可留空，用默认星标）</label><textarea id="tmIcon" class="b-ta" style="min-height:56px" placeholder='<svg viewBox="0 0 24 24"><path d="..."/></svg>'></textarea></div>
+      <div class="bx-actions" style="margin-top:4px">
+        <button class="btn" id="tmCancelEdit" hidden>取消编辑</button>
+        <button class="btn pri" id="tmSave">＋ 新增工具卡片</button>
+      </div>
+    </div>
+    <div class="bx-actions">
+      <button class="btn pri" id="tmClose">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- 设置（后台功能集中：同步 / 导入 / 手册） -->
 <div class="ov" id="ovSettings" hidden>
   <div class="box" style="max-width:520px" onclick="event.stopPropagation()">
@@ -871,19 +907,9 @@ nav button.on::before {
 
     <div class="set-sec">
       <div class="st">工具卡片</div>
-      <div class="hint">给左侧抽屉加新工具入口，随 data.json 多端同步。图标约定：一段以 <code>&lt;svg viewBox="0 0 24 24"&gt;</code> 开头的线性图标代码，只放 path / circle 等元素、不填颜色（颜色粗细由卡片样式统一施加）；以后生成新工具时让 AI 按这个约定一并产出图标。</div>
-      <div id="tlist"></div>
-      <div class="fg"><label>名称</label><input id="tName" class="b-ta" style="min-height:0;padding:8px 10px"></div>
-      <div class="fg"><label>链接（相对路径 ./xxx/ 或完整网址）</label><input id="tUrl" class="b-ta" style="min-height:0;padding:8px 10px"></div>
-      <div class="fg"><label>描述 / 版本号</label>
-        <div style="display:flex;gap:8px">
-          <input id="tDesc" class="b-ta" style="min-height:0;padding:8px 10px;flex:1">
-          <input id="tVer" class="b-ta" style="min-height:0;padding:8px 10px;width:76px" placeholder="1.0">
-        </div>
-      </div>
-      <div class="fg"><label>图标 SVG（可留空，用默认星标）</label><textarea id="tIcon" class="b-ta" style="min-height:56px" placeholder='<svg viewBox="0 0 24 24"><path d="..."/></svg>'></textarea></div>
+      <div class="hint">左侧抽屉的工具入口集中管理：分「日常 / 游戏」两类，可新增、编辑、删除，随 data.json 多端同步。图标约定：一段以 <code>&lt;svg viewBox="0 0 24 24"&gt;</code> 开头的线性图标代码，只放 path / circle 等元素、不填颜色；以后生成新工具时让 AI 按这个约定一并产出图标。</div>
       <div class="bx-actions" style="margin-top:4px">
-        <button class="btn pri" id="btnToolAdd">＋ 新增工具卡片</button>
+        <button class="btn pri" id="btnToolMgr">管理工具卡</button>
       </div>
     </div>
 
@@ -925,6 +951,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v4.7（2026-10-27）工具卡片管理独立成界面：设置页「工具卡片」内联表单整段移除，改为「管理工具卡」按钮，打开工具管理弹层（z-index 61 = 设置 60 的子层）；「全部 / 日常 / 游戏」三类页签过滤，内置四卡只读展示（代码内置，不可删改），自定义卡可新增 / 编辑（名称、链接、描述、版本、图标、分类）/ 删除；顶栏抽屉按分类分组显示；tools 条目新增 cat 字段（日常|游戏，缺省日常），随 velvet/data.json 同步，旧端无感兼容。</p>
       <p>v4.6（2026-10-27）启动时序与归零一致性五连修（《格式契约.md》契约五同步更新）：① 版本嗅探改与本页 meta 自引用比较——v4.4 起硬编码版本串，升级到 4.5 后每个标签页打开即白刷 3 次（打开慢主因），修复后每会话至多 1 次且永不过期失效；② 启动同步去掉 600ms 固定等待，vPullData/vPullMd 收进 Promise.all 屏障：两端都到齐才允许庆祝检查，vStable 标志管住 md 先到时的 vCheckRanks，根治"等级看着低却弹 R4"；③ vCheckRanks 弹窗前复核当前等级，同步中间态的虚高到显示时已回落则取消；④ 归零（经验从头开始）：庆祝基线改为归零后的实际 Rank（不再写 null），当场关掉可能挂着的升级弹窗，vXpRev 推进重置代并立即推送；⑤ 契约级修复：velvet/data.json 新增 rev 重置代次——远端代次更新则整代采用远端 xpo/rks（旧代庆祝记录不合入新代），同代维持 xpo 随 updatedAt、rks 按维取大。修掉"重置清不掉云端旧庆祝记录"与"旧设备陈旧偏移覆盖归零"两个陈年矛盾。</p>
       <p>v4.5（2026-10-24）murmur 入口卡片换耳机线性图标（原随机箭头图标弃用），卡片版本/描述随 murmur v1.2 三池更新（不影响思考 / 影响思考 / 音乐）。</p>
       <p>v4.4（2026-10-19）同步链路三连修：① 修复自动同步死循环——每次同步成功后 applySync 回写本地会再次触发 3 秒调度，页面每 3 秒强推一次，双端同开互相撞出 409（此前手机端「一直 HTTP 409」的根因）；新增 ghMute 静默期，同步回写不再触发调度。② ghSyncAll 补上更新记录里承诺过的 409 重试：撞车后重取 sha、按最新远程重合并再推一次。③ 拉取改合并式（条目并集 + 预算按 updatedAt 取新），启动/轮询不再整包覆盖本地，未推成功的修改不会被下一次拉取抹掉；新增 cal_gh_pending 待推标志，打开页面时若有未推修改自动补推。④ 新增版本嗅探：检测到线上文件版本比本页新时自动刷新一次，根治旧缓存页面跑老代码；同步失败红字提示。</p>
@@ -1126,13 +1153,13 @@ var GAMES = [
   { name:'自定义',             color:'#868e96' }
 ];
 var TOOLS = [
-  { name:'彩墨管理', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/',
+  { name:'彩墨管理', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/', cat:'日常',
     icon:'<svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>' },
-  { name:'铁巢重炮 · 狙击计算器', ver:'1.0', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/',
+  { name:'铁巢重炮 · 狙击计算器', ver:'1.0', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/', cat:'游戏',
     icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5"/></svg>' },
-  { name:'极简书房', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/',
+  { name:'极简书房', ver:'2.4', desc:'ISBN 扫码入库 · Obsidian 同步', url:'https://caesium566.github.io/shelf/', cat:'日常',
     icon:'<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' },
-  { name:'随机视频抽取器', ver:'1.2', desc:'B 站收藏池 · 背景 / 影响思考 / 音乐 三池抽签', url:'./murmur/',
+  { name:'随机视频抽取器', ver:'1.2', desc:'B 站收藏池 · 背景 / 影响思考 / 音乐 三池抽签', url:'./murmur/', cat:'游戏',
     icon:'<svg viewBox="0 0 24 24"><path d="M3 18v-5a9 9 0 0 1 18 0v5"/><path d="M3 14h4v7H5a2 2 0 0 1-2-2v-5z"/><path d="M21 14h-4v7h2a2 2 0 0 0 2-2v-5z"/></svg>' }
 ];
 /* 图标约定：一段 <svg viewBox="0 0 24 24"> 线性图标代码，只放 path/circle 等元素，颜色粗细由卡片样式统一施加 */
@@ -1440,13 +1467,30 @@ document.getElementById('btnAddOk').onclick = function(){
 
 /* ================= 工具抽屉 ================= */
 var dF = document.getElementById('drawerF'), dT = document.getElementById('drawerT'), dmask = document.getElementById('dmask');
+var TOOL_CATS = ['日常', '游戏'];   /* v4.7 工具分类（tmCatOf 容错：无 cat 的老数据归日常） */
+function tmCatOf(t){ return (t && t.cat) || '日常'; }
 function renderTools(){
   var h = '';
-  TOOLS.concat(vTools || []).forEach(function(t){
-    h += '<a class="dcard" href="'+esc(t.url)+'"><span class="ic">'+(t.icon || TOOL_ICON_DEFAULT)+'</span>'
-       + '<span><span class="nm">'+esc(t.name)+'</span><br><span class="ds">'+esc(t.desc || '')+'</span></span>'
-       + '<span class="vv">'+(t.ver?'v'+esc(t.ver):'未标注')+'</span></a>';
+  TOOL_CATS.forEach(function(cat){
+    var items = TOOLS.concat(vTools || []).filter(function(t){ return tmCatOf(t) === cat; });
+    if (!items.length) return;
+    h += '<div class="dgroup">' + cat + '</div>';
+    items.forEach(function(t){
+      h += '<a class="dcard" href="'+esc(t.url)+'"><span class="ic">'+(t.icon || TOOL_ICON_DEFAULT)+'</span>'
+         + '<span><span class="nm">'+esc(t.name)+'</span><br><span class="ds">'+esc(t.desc || '')+'</span></span>'
+         + '<span class="vv">'+(t.ver?'v'+esc(t.ver):'未标注')+'</span></a>';
+    });
   });
+  /* 容错：老数据/手改 JSON 出现的第三类归入「其他」 */
+  var misc = (vTools || []).filter(function(t){ return TOOL_CATS.indexOf(tmCatOf(t)) < 0; });
+  if (misc.length) {
+    h += '<div class="dgroup">其他</div>';
+    misc.forEach(function(t){
+      h += '<a class="dcard" href="'+esc(t.url)+'"><span class="ic">'+(t.icon || TOOL_ICON_DEFAULT)+'</span>'
+         + '<span><span class="nm">'+esc(t.name)+'</span><br><span class="ds">'+esc(t.desc || '')+'</span></span>'
+         + '<span class="vv">'+(t.ver?'v'+esc(t.ver):'未标注')+'</span></a>';
+    });
+  }
   document.getElementById('dlist').innerHTML = h;
 }
 renderTools();
@@ -1463,35 +1507,86 @@ document.getElementById('btnSettings').onclick = function(){ openSettings(); };
 document.getElementById('setClose').onclick = function(){ ovSettings.hidden = true; };
 ovSettings.addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
 
-/* ---------- 工具卡片维护（设置内，vTools 随 data.json 同步） ---------- */
-function renderToolMgr(){
-  var el = document.getElementById('tlist');
-  if (!el) return;
-  el.innerHTML = vTools.map(function(t, i){
-    return '<div class="dcard" style="cursor:default"><span class="ic">' + (t.icon || TOOL_ICON_DEFAULT) + '</span>'
-      + '<span><span class="nm">' + esc(t.name) + '</span><br><span class="ds">' + esc(t.url) + '</span></span>'
-      + '<button class="btn" data-tdel="' + i + '" style="margin-left:auto;padding:2px 10px">删</button></div>';
-  }).join('') || '<div style="color:var(--tx-3);font-size:12px;margin-bottom:8px">还没有自定义工具，在下面加。</div>';
-  el.querySelectorAll('[data-tdel]').forEach(function(b){
-    b.onclick = function(){
-      var t = vTools[+this.dataset.tdel];
+/* ---------- 工具管理（v4.7 独立界面：分类页签 + 增改删；vTools 随 velvet/data.json 同步） ---------- */
+var ovTools = document.getElementById('ovTools');
+var tmFilter = '全部', tmEditing = -1;
+function tmAll(){ return TOOLS.concat(vTools || []); }
+function tmRender(){
+  var el = document.getElementById('tmList');
+  var list = tmAll().map(function(t, i){ return { t: t, i: i, custom: i >= TOOLS.length }; })
+    .filter(function(x){ return tmFilter === '全部' || tmCatOf(x.t) === tmFilter; });
+  el.innerHTML = list.map(function(x){
+    var b = x.t;
+    return '<div class="mrow" style="cursor:default"><span class="ic" style="width:18px;flex:none;color:var(--cyan);display:flex">'
+      + (b.icon || TOOL_ICON_DEFAULT) + '</span>'
+      + '<span class="mn">' + esc(b.name) + '</span>'
+      + '<span class="dim">' + (x.custom ? '自定义' : '内置') + ' · ' + esc(tmCatOf(b)) + '</span>'
+      + (x.custom
+          ? '<button data-tmedit="' + x.i + '">改</button><button class="del" data-tmdel="' + (x.i - TOOLS.length) + '">删</button>'
+          : '<span style="font-size:10px;color:var(--tx-3);flex:none">代码内置</span>')
+      + '</div>';
+  }).join('') || '<div style="color:var(--tx-3);font-size:12px;padding:12px 0">该分类还没有工具。</div>';
+  el.querySelectorAll('[data-tmedit]').forEach(function(btn){
+    btn.onclick = function(){
+      var t = tmAll()[+this.dataset.tmedit];
+      tmEditing = +this.dataset.tmedit - TOOLS.length;
+      document.getElementById('tmName').value = t.name || '';
+      document.getElementById('tmUrl').value = t.url || '';
+      document.getElementById('tmDesc').value = t.desc || '';
+      document.getElementById('tmVer').value = t.ver || '';
+      document.getElementById('tmIcon').value = t.icon || '';
+      document.getElementById('tmCat').value = tmCatOf(t);
+      document.getElementById('tmFormTitle').textContent = '编辑工具';
+      document.getElementById('tmSave').textContent = '保存修改';
+      document.getElementById('tmCancelEdit').hidden = false;
+      document.getElementById('tmHintEdit').hidden = false;
+    };
+  });
+  el.querySelectorAll('[data-tmdel]').forEach(function(btn){
+    btn.onclick = function(){
+      var idx = +this.dataset.tmdel;
+      var t = vTools[idx];
       if (!confirm('删除工具卡片「' + t.name + '」？（只删抽屉入口，不动工具本身）')) return;
-      vTools.splice(+this.dataset.tdel, 1);
-      vSaveAll(); renderTools(); renderToolMgr();
+      if (tmEditing === idx) tmResetForm();
+      vTools.splice(idx, 1);
+      vSaveAll(); renderTools(); tmRender();
     };
   });
 }
-document.getElementById('btnToolAdd').onclick = function(){
-  var name = document.getElementById('tName').value.trim();
-  var url = document.getElementById('tUrl').value.trim();
+function tmResetForm(){
+  tmEditing = -1;
+  ['tmName','tmUrl','tmDesc','tmVer','tmIcon'].forEach(function(id){ document.getElementById(id).value = ''; });
+  document.getElementById('tmCat').value = '日常';
+  document.getElementById('tmFormTitle').textContent = '新增工具';
+  document.getElementById('tmSave').textContent = '＋ 新增工具卡片';
+  document.getElementById('tmCancelEdit').hidden = true;
+  document.getElementById('tmHintEdit').hidden = true;
+}
+document.getElementById('tmSave').onclick = function(){
+  var name = document.getElementById('tmName').value.trim();
+  var url = document.getElementById('tmUrl').value.trim();
   if (!name || !url) { alert('名称和链接必填'); return; }
-  var icon = document.getElementById('tIcon').value.trim();
+  var icon = document.getElementById('tmIcon').value.trim();
   if (icon && icon.indexOf('<svg') !== 0) { alert('图标请粘贴以 <svg 开头的代码段'); return; }
-  vTools.push({ name:name, ver:document.getElementById('tVer').value.trim(), desc:document.getElementById('tDesc').value.trim(), url:url, icon:icon });
-  vSaveAll(); renderTools(); renderToolMgr();
-  document.getElementById('tName').value = ''; document.getElementById('tUrl').value = '';
-  document.getElementById('tDesc').value = ''; document.getElementById('tVer').value = ''; document.getElementById('tIcon').value = '';
+  var rec = { name:name, url:url,
+    ver:document.getElementById('tmVer').value.trim(),
+    desc:document.getElementById('tmDesc').value.trim(),
+    cat:document.getElementById('tmCat').value, icon:icon };
+  if (tmEditing >= 0) { vTools[tmEditing] = rec; }
+  else { vTools.push(rec); }
+  vSaveAll(); renderTools(); tmRender(); tmResetForm();
 };
+document.getElementById('tmCancelEdit').onclick = tmResetForm;
+document.getElementById('tmClose').onclick = function(){ ovTools.hidden = true; };
+ovTools.addEventListener('click', function(e){ if (e.target === ovTools) ovTools.hidden = true; });
+document.getElementById('btnToolMgr').onclick = function(){ tmRender(); ovTools.hidden = false; };
+document.querySelectorAll('#tmTabs button').forEach(function(b){
+  b.onclick = function(){
+    tmFilter = this.dataset.tmf;
+    document.querySelectorAll('#tmTabs button').forEach(function(x){ x.classList.toggle('on', x === b); });
+    tmRender();
+  };
+});
 
 /* ---------- 导入活动数据（设置内） ---------- */
 function doImportText(text){
@@ -2078,7 +2173,6 @@ function openSettings(){
   } else {
     ghStatus('未配置：数据只在本机');
   }
-  renderToolMgr();
   document.getElementById('ovSettings').hidden = false;
 }
 document.getElementById('ghBtnSave').onclick = function(){
