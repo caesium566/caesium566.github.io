@@ -955,7 +955,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
-      <p>v4.9（2026-11-01）覆盖防呆 UX 修正：v4.8 的"分类变少确认"只报数量，换月时合法地减少分类（如纯娱乐池并入/取消）会被误拦——现在确认框直接列出将被删除的分类名，合法换月一眼可判、片段粘贴一眼可辨；触发条件与还原机制不变（快照贴回 + bLoad）。</p>
+      <p>v4.9（2026-11-01）预算「更新数据」三处核心修正（GPT-6 审校后按保存语义重做，不只是提示文字）：① 失败不再被掩盖——月度节存在但解析失败时整体报错（此前"本周纪律 N 条"会盖住"没有解析出任何分类"，预算静默不动）；只有纯纪律粘贴（无月度节）才以纪律成功为准。② 锁定项替换语义——完整月度指令单解析通过且未带锁定行 = 明确清空旧锁定项（影之刃零这类上月遗留从此随换月自动移除）；纯纪律粘贴不动预算与锁定。③ 解析+确认窗口禁止自动推送——冻结 bParse 内部自带 bSave，此前会在用户还没答确认框时就触发 3 秒自动同步，坏数据先上云、取消后下次拉取又弹回（两端数据老不一致的隐藏源头）；窗口内 ghMute 压住调度，成功后只由末尾 bSave 推一次。④ 覆盖防呆确认框列出将被删除的分类名（换月合法减项可判，片段粘贴可辨），触发条件与快照回滚还原不变。</p>
       <p>v4.8（2026-11-01）预算页三处可用性修复（解析器冻结不动，全在壳层与显示层；契约一加容忍度说明）：① 锁定项终于可删——每行 hover 出 × 按钮，确认即移除（此前唯一途径是贴入另一组锁定行挤掉它，唯一项时无解）；② 树形大纲符容错：「├─ / └─ / │」等行首符号壳层剥掉并转两空格缩进，冻结解析器的分组前缀照常识别，弹性娱乐子项不再变成「├─ 日用杂物」乱码分类；③ 全量覆盖防呆：解析出的分类数明显少于现有（漏贴分类）时弹确认，取消可从 localStorage 还原，防止片段粘贴把整月预算冲掉；④ 行尾全角括号备注：「分类：已用/预算（备注）」整体可解析，备注存 c.note、看板以小字显示在进度条下，预填往返不丢（冻结解析器行尾锚定不认括号，壳层剥下贴回）。</p>
       <p>v4.7（2026-10-27）工具卡片管理独立成界面：设置页「工具卡片」内联表单整段移除，改为「管理工具卡」按钮，打开工具管理弹层（z-index 61 = 设置 60 的子层）；「全部 / 日常 / 游戏」三类页签过滤，内置四卡只读展示（代码内置，不可删改），自定义卡可新增 / 编辑（名称、链接、描述、版本、图标、分类）/ 删除；顶栏抽屉按分类分组显示；tools 条目新增 cat 字段（日常|游戏，缺省日常），随 velvet/data.json 同步，旧端无感兼容。</p>
       <p>v4.6（2026-10-27）启动时序与归零一致性五连修（《格式契约.md》契约五同步更新）：① 版本嗅探改与本页 meta 自引用比较——v4.4 起硬编码版本串，升级到 4.5 后每个标签页打开即白刷 3 次（打开慢主因），修复后每会话至多 1 次且永不过期失效；② 启动同步去掉 600ms 固定等待，vPullData/vPullMd 收进 Promise.all 屏障：两端都到齐才允许庆祝检查，vStable 标志管住 md 先到时的 vCheckRanks，根治"等级看着低却弹 R4"；③ vCheckRanks 弹窗前复核当前等级，同步中间态的虚高到显示时已回落则取消；④ 归零（经验从头开始）：庆祝基线改为归零后的实际 Rank（不再写 null），当场关掉可能挂着的升级弹窗，vXpRev 推进重置代并立即推送；⑤ 契约级修复：velvet/data.json 新增 rev 重置代次——远端代次更新则整代采用远端 xpo/rks（旧代庆祝记录不合入新代），同代维持 xpo 随 updatedAt、rks 按维取大。修掉"重置清不掉云端旧庆祝记录"与"旧设备陈旧偏移覆盖归零"两个陈年矛盾。</p>
@@ -2002,15 +2002,19 @@ document.getElementById('bBtnParse').onclick = function(){
   /* v4.8 防呆快照：冻结 bParse 内部自带 bSave，解析失败的"取消"必须从这里还原（先存 localStorage 原文） */
   var bSnap = null;
   try { bSnap = localStorage.getItem(BKEY); } catch(e){}
+  ghMute = true;   /* v4.9：解析+确认窗口内压住自动推送——冻结 bParse/bParseAll 的内部 bSave 不许偷跑上云 */
   var lockState = {};   /* 冻结解析器会重建锁定项：按净名（剥状态词缀）快照勾选/分类，解析后回填 */
   (budget.locked || []).forEach(function(l){ lockState[bCleanName(l.name)] = { used:!!l.used, cat:l.cat || '' }; });
   var sp = bShellRoute(document.getElementById('bTa').value);
   var oldCatN = (budget.categories || []).length;   /* v4.8 覆盖防呆用 */
   var notePack = bShellNote(bShellTree(sp.rest));   /* v4.8 行尾（...）备注：先剥下再喂冻结解析器 */
   var r = bParseAll(bShellLockLine(notePack.text));
-  var okAll = r.ok || sp.week.length > 0;
+  var hasMonth = !!String(sp.rest).trim();   /* v4.9：月度节是否存在 */
+  /* v4.9：月度节存在但解析失败 = 整体失败（此前会被纪律成功掩盖）；
+     仅当没有月度节（纯纪律粘贴）时，纪律成功才算成功 */
+  var okAll = r.ok || (sp.week.length > 0 && !hasMonth);
   var parts = [];
-  if (r.ok) parts.push(r.msg);
+  if (r.ok || hasMonth) parts.push(r.msg);   /* 月度失败的报错必须显示出来 */
   if (sp.week.length) parts.push('本周纪律 ' + sp.week.length + ' 条');
   var msg = document.getElementById('bMsg');
   msg.textContent = parts.join('；') || r.msg;
@@ -2031,6 +2035,7 @@ document.getElementById('bBtnParse').onclick = function(){
       /* 还原：冻结 bParse 内部自带 bSave，localStorage 须先贴回快照，bLoad 才读得到旧数据 */
       if (bSnap != null) { try { localStorage.setItem(BKEY, bSnap); } catch(e){} }
       bLoad();
+      ghMute = false;
       return;
       }
     }
@@ -2041,17 +2046,24 @@ document.getElementById('bBtnParse').onclick = function(){
         if (c.name === nk || c.name.slice(-(nk.length + 1)) === '-' + nk) { c.note = notePack.map[nk]; break; }
       }
     });
+    /* v4.9 锁定项替换语义：完整月度指令单解析通过且没带锁定行 = 明确清空旧锁定项；
+       纯纪律粘贴（无月度节）走不到这里，预算与锁定项原样保留 */
+    if (r.ok && hasMonth) {
+      var lockLines = notePack.text.split('\n').filter(function(l){ return /预留|锁定|已放行|待购/.test(l); }).length;
+      if (!lockLines) budget.locked = [];
+    }
     if (sp.week.length) budget.weekly = bShellWeek(sp.week);
     var kept = 0;
     (budget.locked || []).forEach(function(l){
       var s = lockState[bCleanName(l.name)];
       if (s) { l.used = s.used; l.cat = s.cat; kept++; }
     });
+    ghMute = false;   /* 落定：解除静音，末尾 bSave 正常触发一次自动同步 */
     bSave();
     document.getElementById('bOvEdit').hidden = true;
     bRender();
     bRenderWeekStrip();
-  }
+  } else { ghMute = false; }
 };
 
 /* ---------- 本周纪律条（预算页顶部） ---------- */
