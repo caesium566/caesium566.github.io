@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="4.8">
+<meta name="app-version" content="4.9">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -690,7 +690,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v4.8 · 2026-11-01</span>
+  <span class="ver">v4.9 · 2026-11-01</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -955,6 +955,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v4.9（2026-11-01）覆盖防呆 UX 修正：v4.8 的"分类变少确认"只报数量，换月时合法地减少分类（如纯娱乐池并入/取消）会被误拦——现在确认框直接列出将被删除的分类名，合法换月一眼可判、片段粘贴一眼可辨；触发条件与还原机制不变（快照贴回 + bLoad）。</p>
       <p>v4.8（2026-11-01）预算页三处可用性修复（解析器冻结不动，全在壳层与显示层；契约一加容忍度说明）：① 锁定项终于可删——每行 hover 出 × 按钮，确认即移除（此前唯一途径是贴入另一组锁定行挤掉它，唯一项时无解）；② 树形大纲符容错：「├─ / └─ / │」等行首符号壳层剥掉并转两空格缩进，冻结解析器的分组前缀照常识别，弹性娱乐子项不再变成「├─ 日用杂物」乱码分类；③ 全量覆盖防呆：解析出的分类数明显少于现有（漏贴分类）时弹确认，取消可从 localStorage 还原，防止片段粘贴把整月预算冲掉；④ 行尾全角括号备注：「分类：已用/预算（备注）」整体可解析，备注存 c.note、看板以小字显示在进度条下，预填往返不丢（冻结解析器行尾锚定不认括号，壳层剥下贴回）。</p>
       <p>v4.7（2026-10-27）工具卡片管理独立成界面：设置页「工具卡片」内联表单整段移除，改为「管理工具卡」按钮，打开工具管理弹层（z-index 61 = 设置 60 的子层）；「全部 / 日常 / 游戏」三类页签过滤，内置四卡只读展示（代码内置，不可删改），自定义卡可新增 / 编辑（名称、链接、描述、版本、图标、分类）/ 删除；顶栏抽屉按分类分组显示；tools 条目新增 cat 字段（日常|游戏，缺省日常），随 velvet/data.json 同步，旧端无感兼容。</p>
       <p>v4.6（2026-10-27）启动时序与归零一致性五连修（《格式契约.md》契约五同步更新）：① 版本嗅探改与本页 meta 自引用比较——v4.4 起硬编码版本串，升级到 4.5 后每个标签页打开即白刷 3 次（打开慢主因），修复后每会话至多 1 次且永不过期失效；② 启动同步去掉 600ms 固定等待，vPullData/vPullMd 收进 Promise.all 屏障：两端都到齐才允许庆祝检查，vStable 标志管住 md 先到时的 vCheckRanks，根治"等级看着低却弹 R4"；③ vCheckRanks 弹窗前复核当前等级，同步中间态的虚高到显示时已回落则取消；④ 归零（经验从头开始）：庆祝基线改为归零后的实际 Rank（不再写 null），当场关掉可能挂着的升级弹窗，vXpRev 推进重置代并立即推送；⑤ 契约级修复：velvet/data.json 新增 rev 重置代次——远端代次更新则整代采用远端 xpo/rks（旧代庆祝记录不合入新代），同代维持 xpo 随 updatedAt、rks 按维取大。修掉"重置清不掉云端旧庆祝记录"与"旧设备陈旧偏移覆盖归零"两个陈年矛盾。</p>
@@ -2015,14 +2016,23 @@ document.getElementById('bBtnParse').onclick = function(){
   msg.textContent = parts.join('；') || r.msg;
   msg.className = 'b-msg' + (okAll ? '' : ' err');
   if (okAll) {
-    /* v4.8 全量覆盖防呆：解析出的分类比现有少很多 = 大概率漏贴，确认后才覆盖（取消则贴回启动快照还原——冻结 bParse 内部自带 bSave，.localStorage 在守卫触发前已被改写） */
+    /* v4.9 全量覆盖防呆：分类变少时列出将删除的名字——换月合法减项可一眼判明，片段粘贴一眼可辨；
+       取消则贴回快照还原（冻结 bParse 内部自带 bSave，守卫触发前 localStorage 已被改写） */
     var newCatN = (budget.categories || []).length;
-    if (newCatN > 0 && newCatN < oldCatN &&
-        !confirm('⚠ 解析出 ' + newCatN + ' 个分类，比现有的 ' + oldCatN + ' 个少。\n「更新数据」是全量覆盖：没贴进来的分类会被删除。\n确认覆盖？')) {
+    if (newCatN > 0 && newCatN < oldCatN) {
+      var newNames = {};
+      (budget.categories || []).forEach(function(c){ newNames[c.name] = 1; });
+      var gone = [];
+      try { JSON.parse(bSnap || '{"categories":[]}').categories.forEach(function(c){
+        if (!newNames[c.name]) gone.push(c.name);
+      }); } catch(e2){}
+      if (gone.length && !confirm('⚠ 解析出 ' + newCatN + ' 个分类，比现有的 ' + oldCatN + ' 个少。\n'
+        + '将删除：' + gone.join('、') + '\n\n「更新数据」是全量覆盖。这些删除是有意的吗？')) {
       /* 还原：冻结 bParse 内部自带 bSave，localStorage 须先贴回快照，bLoad 才读得到旧数据 */
       if (bSnap != null) { try { localStorage.setItem(BKEY, bSnap); } catch(e){} }
       bLoad();
       return;
+      }
     }
     /* v4.8 备注贴回：按分类名（含 组-子 前缀形式）写回 c.note */
     (budget.categories || []).forEach(function(c){
