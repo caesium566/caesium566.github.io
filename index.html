@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="4.9">
+<meta name="app-version" content="5.0">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -392,6 +392,9 @@ nav button.on::before {
 .b-lock:hover .bdel { display:block; }
 .b-lock .bdel:hover { color:var(--magenta); }
 .b-note { font-size:10px; color:var(--tx-3); margin-top:2px; line-height:1.6; }
+.b-todo { display:flex; gap:8px; align-items:center; padding:5px 0; font-size:13px; }
+.b-todo input { width:15px; height:15px; flex:none; accent-color:var(--cyan); cursor:pointer; }
+.b-todo.done span { color:var(--tx-3); text-decoration:line-through; }
 .b-lock.used .nm { text-decoration:line-through; }
 .b-sel { padding:2px 4px; border:1px solid var(--line); background:var(--bar); color:var(--tx-2); font-size:11px; max-width:110px; }
 .b-week { display:flex; gap:8px; align-items:baseline; font-size:13px; padding:5px 0; }
@@ -690,7 +693,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v4.9 · 2026-11-01</span>
+  <span class="ver">v5.0 · 2026-11-01</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -752,8 +755,8 @@ nav button.on::before {
     <div class="b-sum" id="bSum"></div>
     <div class="b-sec">分类预算</div>
     <div id="bCats"></div>
-    <div class="b-sec">已锁定 / 预留</div>
-    <div id="bLock"></div>
+    <div class="b-sec">待办</div>
+    <div id="bTodos"></div>
     <div class="bx-actions">
       <button class="btn pri" id="bBtnEdit">更新数据</button>
     </div>
@@ -943,18 +946,19 @@ nav button.on::before {
         <li>维护弹出页：待办（进行中：新增/完成/删/追加日志）、已完成（档案馆：点开看开始日期与全部日志，可恢复为进行中）、工坊（新增项目/追加日志/改信息加需求/删）三栏；全部手术刀式写回 md，不重排全文。</li>
         <li>成长页：雷达轴长 = 该维总经验 / R10 满级（360）的绝对进度，每次升级都会变长；五角数字 = 总 Rank；等级名到 R4 / R7 / R10 才有庆祝章，下一级名未达前显示 ???。</li>
         <li>手机用底部导航切四页；电脑点左上角月相呼出左侧边栏。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
-        <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析；锁定项勾选 = 已购入，计入绑定分类。</li>
+        <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析（整体替换：纪律文本 + 进度条 + 缩进待办）；行首空一格的行进待办清单，可就地勾选。</li>
         <li>ob 侧：首次在电脑库里跑 <code>python .tools/velvet_sync.py push</code> 初始化镜像，之后日常跑 <code>python .tools/velvet_sync.py</code> 拉取覆盖。</li>
       </ul>
       <h4>维护要点</h4>
       <ul>
-        <li>预算解析器（bParse 系）与指令单格式是<b>冻结契约</b>，一个字符不改。</li>
+        <li>预算模块 v5.0 已整体重写（旧 bParse 系冻结层退役）：指令单格式以《格式契约.md》契约一（v5.0）为准，解析即整体替换，无防呆。</li>
         <li>localStorage 键名勿改；版本号在 <code>&lt;meta name="app-version"&gt;</code> 与顶栏徽标，两处同步 +1。</li>
         <li>弹层 z-index 梯度：普通 50、设置 60、维护 70、庆祝 80，新弹层继续 +10。</li>
         <li>只庆祝不惩罚：不加扣点/断签/streak；红色仅用于庆祝与预算超支。</li>
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v5.0（2026-11-01）预算模块整体重写（用户拍板：删了重写）：旧 bParse 冻结层与全部壳层（bShellRoute/Tree/Note/LockLine、防呆、快照回滚、锁定列表、分类组、强制理财过滤）全部退役，替换为约 130 行新解析器，规格回到极简——【本周纪律】后每行 = 文本（行首 emoji 定灯色）；【月度计划】后每行「名称：已用/预算（备注小字）」= 进度条，行首空一格 = 待办（- [ ] 可勾选）；裸数字行 = 0/预算；含预留/锁定/已放行/待购的行忽略（锁定功能退役）。解析即整体替换，无防呆无确认。同步语义不变且更直白：本地改了按 updatedAt 优先上云，没改拉 GitHub 的。旧数据自动迁移：categories→bars，已购锁定的金额并入绑定分类已用，影之刃零这类未购锁定项直接消失。契约一同步重写。</p>
       <p>v4.9（2026-11-01）预算「更新数据」三处核心修正（GPT-6 审校后按保存语义重做，不只是提示文字）：① 失败不再被掩盖——月度节存在但解析失败时整体报错（此前"本周纪律 N 条"会盖住"没有解析出任何分类"，预算静默不动）；只有纯纪律粘贴（无月度节）才以纪律成功为准。② 锁定项替换语义——完整月度指令单解析通过且未带锁定行 = 明确清空旧锁定项（影之刃零这类上月遗留从此随换月自动移除）；纯纪律粘贴不动预算与锁定。③ 解析+确认窗口禁止自动推送——冻结 bParse 内部自带 bSave，此前会在用户还没答确认框时就触发 3 秒自动同步，坏数据先上云、取消后下次拉取又弹回（两端数据老不一致的隐藏源头）；窗口内 ghMute 压住调度，成功后只由末尾 bSave 推一次。④ 覆盖防呆确认框列出将被删除的分类名（换月合法减项可判，片段粘贴可辨），触发条件与快照回滚还原不变。</p>
       <p>v4.8（2026-11-01）预算页三处可用性修复（解析器冻结不动，全在壳层与显示层；契约一加容忍度说明）：① 锁定项终于可删——每行 hover 出 × 按钮，确认即移除（此前唯一途径是贴入另一组锁定行挤掉它，唯一项时无解）；② 树形大纲符容错：「├─ / └─ / │」等行首符号壳层剥掉并转两空格缩进，冻结解析器的分组前缀照常识别，弹性娱乐子项不再变成「├─ 日用杂物」乱码分类；③ 全量覆盖防呆：解析出的分类数明显少于现有（漏贴分类）时弹确认，取消可从 localStorage 还原，防止片段粘贴把整月预算冲掉；④ 行尾全角括号备注：「分类：已用/预算（备注）」整体可解析，备注存 c.note、看板以小字显示在进度条下，预填往返不丢（冻结解析器行尾锚定不认括号，壳层剥下贴回）。</p>
       <p>v4.7（2026-10-27）工具卡片管理独立成界面：设置页「工具卡片」内联表单整段移除，改为「管理工具卡」按钮，打开工具管理弹层（z-index 61 = 设置 60 的子层）；「全部 / 日常 / 游戏」三类页签过滤，内置四卡只读展示（代码内置，不可删改），自定义卡可新增 / 编辑（名称、链接、描述、版本、图标、分类）/ 删除；顶栏抽屉按分类分组显示；tools 条目新增 cat 字段（日常|游戏，缺省日常），随 velvet/data.json 同步，旧端无感兼容。</p>
@@ -987,10 +991,10 @@ nav button.on::before {
   <div class="box" style="max-width:560px" onclick="event.stopPropagation()">
     <h3>更新数据<span class="en">BUDGET INPUT</span></h3>
     <div class="hint">
-      <b>月度预算</b>：餐饮：1250（纯预算）或 餐饮：500/1250（已用/预算）；含"预留/已放行/待购"的行进锁定列表。<br>
-      <b>本周纪律</b>：从"本周："标题或 🟢🟡🔴 圆点行开始，之后的行自动归入纪律。
+      <b>本周纪律</b>：标题后每行一条，🟢🟡🔴 行首定灯色，其余原样显示。<br>
+      <b>月度计划</b>：每行「名称：已用/预算（备注小字）」= 进度条；<b>行首空一格 = 待办</b>（- [ ] / - [x] 可勾选）。解析即整体替换。
     </div>
-    <textarea id="bTa" class="b-ta" placeholder="餐饮：1250&#10;游戏月卡：128&#10;影之刃零预留：268&#10;&#10;本周：&#10;🟢 餐饮：正常吃，日均¥64&#10;🔴 弹性娱乐：锁死"></textarea>
+    <textarea id="bTa" class="b-ta" placeholder="【本周纪律】&#10;🟢 餐饮：正常吃&#10;&#10;【月度计划】&#10;餐饮：32.7/1250（储备粮结转≤122）&#10;游戏月卡：0/128&#10;  - [ ] 屯粮采购&#10;  - [x] 充月卡"></textarea>
     <div class="bx-actions">
       <button class="btn" id="bBtnCancel">取消</button>
       <button class="btn pri" id="bBtnParse">解析并保存</button>
@@ -1197,8 +1201,9 @@ fetch('./events.json?t=' + Date.now())
     if (Array.isArray(d.customs)) { customs = d.customs; persistCustom(); }
     if (d.done) { doneMap = d.done; persistDone(); }
     if (d.hidden) { hiddenMap = d.hidden; persistHidden(); }
-    if (d.budget && Array.isArray(d.budget.categories)) {
-      try { localStorage.setItem('cal_budget_v1', JSON.stringify(d.budget)); } catch(e) {}
+    if (d.budget) {
+      var eb = bMigrate(d.budget);
+      if (eb) { try { localStorage.setItem('cal_budget_v1', JSON.stringify(eb)); } catch(e){} }
     }
     render(); bRenderWeekStrip();
   })
@@ -1621,9 +1626,9 @@ function doImportText(text){
   }
   if (d.done) { for (var k in d.done) doneMap[k] = d.done[k]; persistDone(); }
   if (d.hidden) { for (var k2 in d.hidden) hiddenMap[k2] = d.hidden[k2]; persistHidden(); }
-  if (d.budget && Array.isArray(d.budget.categories)) {
-    try { localStorage.setItem('cal_budget_v1', JSON.stringify(d.budget)); } catch(e) {}
-    msgs.push('预算已覆盖');
+  if (d.budget) {
+    var mb = bMigrate(d.budget);
+    if (mb) { try { localStorage.setItem('cal_budget_v1', JSON.stringify(mb)); } catch(e){} msgs.push('预算已覆盖'); }
   }
   if (!msgs.length) return { ok:false, msg:'找不到可识别的数据（events / customs / budget）' };
   return { ok:true, msg:msgs.join('；') };
@@ -1643,428 +1648,126 @@ document.getElementById('impFile').addEventListener('change', function(){
   reader.readAsText(f);
 });
 
-/* ================= 预算管理 ================= */
+/* ================= 预算管理（v5.0 重写：旧冻结层全部退役） =================
+   指令单格式（以《格式契约.md》契约一为准，极简）：
+     【本周纪律】  其后每行 = 一条纪律（行首 🟢🟡🔴 定灯色，其余原样显示）
+     【月度计划】  其后每行 = 进度条「名称：已用/预算（备注）」，备注小字；
+                   行首空一格 = 待办（- [ ] / - [x]，可勾选）
+   语义：解析即整体替换（无防呆/无确认/无回填）；本地修改按 updatedAt 优先上云。 */
 var BKEY = 'cal_budget_v1';
-var B_DEFAULT = {
-  month: '2026-10',
-  categories: [
-    { name:'强制理财', budget:2000, spent:0, group:'' },
-    { name:'餐饮', budget:1250, spent:0, group:'日常预算' },
-    { name:'交通', budget:650, spent:0, group:'日常预算' },
-    { name:'通讯+医疗', budget:200, spent:0, group:'日常预算' },
-    { name:'VIP订阅', budget:198.56, spent:0, group:'日常预算' },
-    { name:'游戏月卡', budget:128, spent:0, group:'日常预算' },
-    { name:'弹性娱乐-日用杂物', budget:150, spent:0, group:'日常预算' },
-    { name:'弹性娱乐-纯娱乐池', budget:423.44, spent:0, group:'日常预算' }
-  ],
-  locked: [
-    { name:'影之刃零', amount:268, status:'locked', cat:'弹性娱乐-纯娱乐池', used:false },
-    { name:'时间轴印章', amount:30.1, status:'approved', cat:'弹性娱乐-日用杂物', used:false },
-    { name:'筋膜轮', amount:33.9, status:'approved', cat:'弹性娱乐-日用杂物', used:false }
-  ],
-  weekly: [
-    { cat:'餐饮', level:'g', text:'正常吃，日均¥64，单笔控制¥50' },
-    { cat:'交通', level:'g', text:'正常通行' },
-    { cat:'通讯+医疗', level:'y', text:'已超¥18，如有额外医疗走储备金' },
-    { cat:'弹性娱乐', level:'r', text:'锁死，任何东西都不买（包括时间轴印章，等10月）' },
-    { cat:'日用杂物', level:'r', text:'锁死，等10月预算' },
-    { cat:'终末地', level:'g', text:'每日正常做任务，10抽保底自然到手，无需氪金' }
-  ]
-};
+var B_EMOJI = { g:'🟢', y:'🟡', r:'🔴' };
 var budget = null;
 
-function bClone(o){ return JSON.parse(JSON.stringify(o)); }
+function bCurMonth(){ var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1 < 10 ? '0' : '') + (d.getMonth() + 1); }
+function bFmt(n){ n = Math.round((+n || 0) * 100) / 100; return '¥' + (n % 1 === 0 ? String(n) : n.toFixed(2)); }
+function bBlank(){ return { month: bCurMonth(), updatedAt: 0, weekly: [], bars: [], todos: [] }; }
+function bSave(){ try { budget.updatedAt = new Date().toISOString(); localStorage.setItem(BKEY, JSON.stringify(budget)); } catch(e){} }
+
+/* v5.0 迁移：旧形状（categories/locked）→ bars；已购锁定的金额并入绑定分类的已用，未购锁定项直接丢弃 */
+function bMigrate(raw){
+  if (!raw) return null;
+  if (Array.isArray(raw.bars)) return raw;
+  if (!Array.isArray(raw.categories)) return null;
+  var bars = [];
+  (raw.categories || []).forEach(function(c){
+    var s = +c.spent || 0;
+    (raw.locked || []).forEach(function(l){ if (l.used && (l.cat || '') === c.name) s += +l.amount || 0; });
+    bars.push({ n: c.name, s: Math.round(s * 100) / 100, b: +c.budget || 0, t: c.note || '' });
+  });
+  return { month: raw.month || bCurMonth(), updatedAt: raw.updatedAt || 0, weekly: raw.weekly || [], bars: bars, todos: raw.todos || [] };
+}
 function bLoad(){
-  try { budget = JSON.parse(localStorage.getItem(BKEY)); } catch(e) { budget = null; }
-  if (!budget || !Array.isArray(budget.categories) || !budget.categories.length) {
-    budget = bClone(B_DEFAULT);
-    bSave();
-    return;
-  }
-  /* 旧数据迁移 */
-  var catMap = { '影之刃零':'弹性娱乐-纯娱乐池', '时间轴印章':'弹性娱乐-日用杂物', '筋膜轮':'弹性娱乐-日用杂物' };
-  (budget.locked || []).forEach(function(l){
-    if (l.cat === undefined) l.cat = catMap[l.name] || '';
-    if (l.used === undefined) l.used = false;
-    if (l.name === '影之刃零') l.status = 'locked';
-  });
-  var GROUP_MAP = { '餐饮':'日常预算','交通':'日常预算','通讯+医疗':'日常预算','VIP订阅':'日常预算',
-    '游戏月卡':'日常预算','弹性娱乐-日用杂物':'日常预算','弹性娱乐-纯娱乐池':'日常预算' };
-  budget.categories.forEach(function(c){
-    if (c.group === undefined) c.group = GROUP_MAP[c.name] || '';
-  });
-  /* v4.2：不再强制塞回「强制理财」分类——指令单里没有就是没有；显示层另有前缀过滤兜底 */
-  if (!Array.isArray(budget.weekly)) { budget.weekly = bClone(B_DEFAULT.weekly); bSave(); }
-}
-function bSave(){ try { budget.updatedAt = new Date().toISOString(); localStorage.setItem(BKEY, JSON.stringify(budget)); } catch(e) {} }
-function bFmt(n){
-  n = Math.round((+n || 0) * 100) / 100;
-  return '¥' + (n % 1 === 0 ? String(n) : n.toFixed(2));
-}
-/* 分类已用金额 = 基础 spent + 绑定该类且已勾选的锁定项 */
-function bSpentOf(catName){
-  var base = 0;
-  (budget.categories || []).forEach(function(c){ if (c.name === catName) base = +c.spent || 0; });
-  (budget.locked || []).forEach(function(l){
-    if (l.used && l.cat === catName) base += +l.amount || 0;
-  });
-  return base;
+  var raw = null;
+  try { raw = JSON.parse(localStorage.getItem(BKEY)); } catch(e){}
+  var m = bMigrate(raw);
+  if (!m) { budget = bBlank(); return; }
+  var migrated = !raw.bars && !!raw.categories;
+  budget = m;
+  if (!Array.isArray(budget.weekly)) budget.weekly = [];
+  if (!Array.isArray(budget.todos)) budget.todos = [];
+  if (migrated) bSave();
 }
 
-function bCurMonth(){
-  var d = new Date();
-  return d.getFullYear() + '-' + (d.getMonth() + 1 < 10 ? '0' : '') + (d.getMonth() + 1);
+/* ---------- 解析（新解析器） ---------- */
+function bParseNew(text){
+  var weekly = [], bars = [], todos = [], mode = '';
+  String(text || '').split(/\r?\n/).forEach(function(raw){
+    var t = raw.trim();
+    if (!t) return;
+    if (t.length <= 20 && /本周|纪律/.test(t)) { mode = 'week'; return; }
+    if (t.length <= 24 && /月度/.test(t)) { mode = 'month'; return; }
+    if (mode === 'week') {
+      var lv = 'g';
+      var m0 = /^(🟢|🟡|🔴|🟩|🟨|🟥)\s*/u.exec(t);
+      var body = t;
+      if (m0) { lv = { '🟢':'g','🟩':'g','🟡':'y','🟨':'y','🔴':'r','🟥':'r' }[m0[1]] || 'g'; body = t.slice(m0[0].length); }
+      weekly.push({ cat: '', level: lv, text: body });
+      return;
+    }
+    if (mode !== 'month') return;
+    if (/^\s/.test(raw)) {   /* 行首空一格 = 待办 */
+      var done = false, txt = t, mm;
+      if ((mm = /^[-*•]\s+\[([ xX])\]\s*(.*)$/.exec(t))) { done = mm[1] !== ' '; txt = mm[2].trim(); }
+      if (txt) todos.push({ x: txt, d: done });
+      return;
+    }
+    if (/预留|锁定|已放行|待购/.test(t)) return;   /* 锁定/预留功能已退役，这类行忽略 */
+    var m;
+    if ((m = /^([^：:]{1,40}?)[：:]\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*(?:（([^（）]*)）)?\s*$/.exec(t))) {
+      bars.push({ n: m[1].trim(), s: +m[2], b: +m[3], t: m[4] || '' });
+      return;
+    }
+    if ((m = /^([^：:]{1,40}?)[：:]\s*(\d+(?:\.\d+)?)\s*(?:（([^（）]*)）)?\s*$/.exec(t))) {
+      bars.push({ n: m[1].trim(), s: 0, b: +m[2], t: m[3] || '' });   /* 裸数字 = 0/预算 */
+      return;
+    }
+  });
+  if (!weekly.length && !bars.length && !todos.length) return { ok: false, msg: '没有可解析的内容（需要【本周纪律】或【月度计划】节）' };
+  return { ok: true, weekly: weekly, bars: bars, todos: todos,
+    msg: '本周纪律 ' + weekly.length + ' 条；进度条 ' + bars.length + ' 个；待办 ' + todos.length + ' 项' };
+}
+
+/* ---------- 序列化（预填用，往返无损） ---------- */
+function bSerialize(){
+  bLoad();
+  var L = ['【本周纪律】'];
+  (budget.weekly || []).forEach(function(w){ L.push((B_EMOJI[w.level] || '🟢') + ' ' + (w.text || '')); });
+  L.push('', '【月度计划】');
+  (budget.bars || []).forEach(function(c){ L.push(c.n + '：' + c.s + '/' + c.b + (c.t ? '（' + c.t + '）' : '')); });
+  (budget.todos || []).forEach(function(t){ L.push('  ' + (t.d ? '- [x] ' : '- [ ] ') + t.x); });
+  return L.join('\n');
 }
 
 /* ---------- 看板渲染 ---------- */
 function bRender(){
   bLoad();
   document.getElementById('bMonth').textContent = budget.month || '';
-  var bCats = (budget.categories || []).filter(function(c){ return c.name.indexOf('强制理财') !== 0; });  /* 强制理财节不进看板 */
   var tb = 0, ts = 0;
-  bCats.forEach(function(c){ tb += +c.budget || 0; ts += bSpentOf(c.name); });
-  (budget.locked || []).forEach(function(l){ if (l.used && !l.cat) ts += +l.amount || 0; });
+  (budget.bars || []).forEach(function(c){ tb += +c.b || 0; ts += +c.s || 0; });
   var left = tb - ts;
   document.getElementById('bSum').innerHTML =
     '<div class="it"><div class="l">总预算</div><div class="v">' + bFmt(tb) + '</div></div>' +
     '<div class="it"><div class="l">已用</div><div class="v c">' + bFmt(ts) + '</div></div>' +
     '<div class="it"><div class="l">剩余</div><div class="v ' + (left < 0 ? 'neg' : 'y') + '">' + bFmt(left) + '</div></div>';
-
-  /* 分类按 group 分组渲染，组带小计 */
-  var gOrder = [], gMap = {};
-  bCats.forEach(function(c){
-    var g = c.group || '';
-    if (!gMap[g]) { gMap[g] = []; gOrder.push(g); }
-    gMap[g].push(c);
-  });
-  var catRow = function(c){
-    var spent = bSpentOf(c.name);
-    var pct = c.budget > 0 ? Math.round(spent / c.budget * 100) : 0;
+  document.getElementById('bCats').innerHTML = (budget.bars || []).map(function(c){
+    var pct = c.b > 0 ? Math.round(c.s / c.b * 100) : 0;
     var cls = pct > 100 ? 'r' : (pct >= 80 ? 'y' : 'b');
-    return '<div class="b-cat"><div class="r1"><span>' + esc(c.name) + '</span><span class="amt">'
-      + bFmt(spent) + ' / ' + bFmt(c.budget) + '（' + pct + '%）</span></div>'
+    return '<div class="b-cat"><div class="r1"><span>' + esc(c.n) + '</span><span class="amt">'
+      + bFmt(c.s) + ' / ' + bFmt(c.b) + '（' + pct + '%）</span></div>'
       + '<div class="bar"><div class="fill ' + cls + '" style="width:' + Math.min(pct, 100) + '%"></div></div>'
-      + (c.note ? '<div class="b-note">（' + esc(c.note) + '）</div>' : '') + '</div>';
-  };
-  var catsHtml = '';
-  gOrder.forEach(function(g){
-    if (g) {
-      var gb = 0, gs = 0;
-      gMap[g].forEach(function(c){ gb += +c.budget || 0; gs += bSpentOf(c.name); });
-      var gpct = gb > 0 ? Math.round(gs / gb * 100) : 0;
-      catsHtml += '<div class="b-sec">' + esc(g) + '：' + bFmt(gs) + ' / ' + bFmt(gb)
-        + '（' + gpct + '%）</div>';
-    }
-    catsHtml += gMap[g].map(catRow).join('');
-  });
-  document.getElementById('bCats').innerHTML = catsHtml || '<div style="color:var(--tx-3);font-size:12px">暂无分类</div>';
-
-  /* 锁定列表：勾选 = 钱已实际花掉，计入绑定分类 */
-  var catOpts = function(sel){
-    var h = '<option value="">未分配</option>';
-    bCats.forEach(function(c){
-      h += '<option value="' + esc(c.name) + '"' + (sel === c.name ? ' selected' : '') + '>' + esc(c.name) + '</option>';
-    });
-    return h;
-  };
-  document.getElementById('bLock').innerHTML = (budget.locked || []).map(function(l, i){
-    return '<div class="b-lock' + (l.used ? ' used' : '') + '">'
-      + '<input type="checkbox" data-bi="' + i + '"' + (l.used ? ' checked' : '') + ' title="已购入">'
-      + '<span class="nm">' + esc(l.name) + '</span>'
-      + '<select class="b-sel" data-bi="' + i + '" title="计入哪个分类">' + catOpts(l.cat) + '</select>'
-      + '<span class="am">' + bFmt(l.amount) + '</span>'
-      + '<span class="b-tag ' + (l.status === 'approved' ? 'ok' : (l.status === 'locked' ? 'lk' : 'pd')) + '">'
-      + (l.status === 'approved' ? '已放行' : (l.status === 'locked' ? '锁定' : '待购')) + '</span>'
-      + '<button class="bdel" data-bdel="' + i + '" title="删除">×</button></div>';
-  }).join('') || '<div style="color:var(--tx-3);font-size:12px">暂无锁定项</div>';
-
-  /* 锁定项事件：勾选 / 改分类 */
-  document.querySelectorAll('#bLock input[type=checkbox]').forEach(function(cb){
+      + (c.t ? '<div class="b-note">（' + esc(c.t) + '）</div>' : '') + '</div>';
+  }).join('') || '<div style="color:var(--tx-3);font-size:12px">暂无数据，点「更新数据」粘贴指令单</div>';
+  document.getElementById('bTodos').innerHTML = (budget.todos || []).map(function(t, i){
+    return '<div class="b-todo' + (t.d ? ' done' : '') + '"><input type="checkbox" data-ti="' + i + '"' + (t.d ? ' checked' : '')
+      + '><span>' + esc(t.x) + '</span></div>';
+  }).join('');
+  document.querySelectorAll('#bTodos input').forEach(function(cb){
     cb.addEventListener('change', function(){
-      budget.locked[+this.dataset.bi].used = this.checked;
+      budget.todos[+this.dataset.ti].d = this.checked;
       bSave(); bRender();
     });
   });
-  document.querySelectorAll('#bLock select').forEach(function(sel){
-    sel.addEventListener('change', function(){
-      budget.locked[+this.dataset.bi].cat = this.value;
-      bSave(); bRender();
-    });
-  });
-  /* v4.8：锁定项删除（此前无入口，只能靠解析挤掉） */
-  document.querySelectorAll('#bLock .bdel').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var i = +this.dataset.bdel;
-      if (!confirm('删除锁定项「' + budget.locked[i].name + '」？（不再计入任何分类）')) return;
-      budget.locked.splice(i, 1);
-      bSave(); bRender();
-    });
-  });
-
 }
-
-/* ---------- 解析（冻结契约，原样搬运） ---------- */
-function bCleanName(n){
-  return n.replace(/(预留|锁定|已放行|待购)[:：]?$/, '').trim();
-}
-function bLockStatus(line){
-  if (/已放行|通过/.test(line)) return 'approved';
-  if (/待购/.test(line)) return 'pending';
-  return 'locked';
-}
-function bParse(text){
-  var EXCL = /类别|项目|名称|预算|已用|剩余|状态|合计|总计|小计|备注|来源|日期|^月份/;
-  var LOCK_RE = /预留|锁定|已放行|放行/;
-  var SKIP_GROUP = { '日常预算':1, '弹性娱乐':1 };
-  var cats = [], locked = [], lastGroup = '';
-  var lines = String(text || '').split(/\r?\n/);
-  for (var i = 0; i < lines.length; i++){
-    var raw = lines[i];
-    var line = raw.trim();
-    if (!line) continue;
-    var m, name, val;
-
-    /* 0. 已用/预算：名称：200/1250 */
-    m = /^([^\d/：:|]+?)\s*[：:]?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/.exec(line);
-    if (m && !EXCL.test(m[1]) && !LOCK_RE.test(m[1])) {
-      cats.push({ name: m[1].trim(), budget: +m[3], spent: +m[2] });
-      continue;
-    }
-
-    /* 1. Markdown 表格行：| 名称 | 金额 | */
-    m = /\|\s*([^|]+?)\s*\|\s*(\d+(?:\.\d+)?)\s*\|/.exec(line);
-    if (m && !EXCL.test(m[1])) {
-      name = m[1].trim(); val = +m[2];
-      if (SKIP_GROUP[name]) { lastGroup = name; continue; }
-      if (LOCK_RE.test(name)) {
-        locked.push({ name: name.replace(/^(预留|锁定|已放行|放行)[:：]?\s*/, ''), amount: val,
-          status: /已放行|通过|approved/i.test(line) ? 'approved' : 'pending' });
-      } else {
-        cats.push({ name: name, budget: val, spent: 0 });
-      }
-      continue;
-    }
-    /* 2. 简单键值对：名称：金额 / 名称: 金额 / 名称 金额 */
-    m = /^([^\d:：|]+?)[\s：:]+(\d+(?:\.\d+)?)\s*$/.exec(line);
-    if (m && !/^(合计|总计|小计|备注|来源|日期|月份)/.test(m[1].trim()) && !EXCL.test(m[1])) {
-      name = m[1].trim(); val = +m[2];
-      if (LOCK_RE.test(name)) {
-        var nm = name.replace(/^(预留|锁定|已放行|放行)[:：]?\s*/, '');
-        var st = /已放行|通过|approved/i.test(line) ? 'approved' : 'pending';
-        var oldL = (budget.locked || []).filter(function(x){ return x.name === nm; })[0];
-        if (oldL && oldL.status === 'locked' && st === 'pending') st = 'locked';
-        locked.push({ name: nm, amount: val, status: st });
-      } else {
-        if (/^\s/.test(raw) && lastGroup) name = lastGroup + '-' + name;
-        else if (/^\s/.test(raw) && cats.length) name = cats[cats.length - 1].name.split('-')[0] + '-' + name;
-        cats.push({ name: name, budget: val, spent: 0 });
-      }
-      continue;
-    }
-  }
-  cats = cats.filter(function(c){ return !SKIP_GROUP[c.name]; });
-  if (!cats.length) return { ok: false, msg: '没有解析出任何分类，预算未改动' };
-
-  /* 同名去重（保留最后一次） */
-  var seen = {}, deduped = [];
-  cats.forEach(function(c){
-    if (seen[c.name] != null) deduped[seen[c.name]] = c;
-    else { seen[c.name] = deduped.length; deduped.push(c); }
-  });
-  cats = deduped;
-
-  /* 同名分类继承组归属（spent 以新数据为准） */
-  var oldCats = {};
-  (budget.categories || []).forEach(function(c){ oldCats[c.name] = c.group || ''; });
-  cats.forEach(function(c){ c.group = oldCats[c.name] || ''; });
-
-  budget = {
-    month: bCurMonth(),
-    categories: cats,
-    locked: locked.length ? locked : (budget.locked || []),
-    weekly: budget.weekly || []
-  };
-  bSave();
-  return { ok: true, msg: '预算更新 ' + cats.length + ' 个分类' + (locked.length ? '，' + locked.length + ' 个锁定项' : '') };
-}
-
-/* 统一解析：【本周纪律】段进纪律，【月度…】段进预算，无标记默认按预算 */
-function bParseAll(text){
-  var weekLines = [], monthLines = [], mode = '';
-  String(text || '').split(/\r?\n/).forEach(function(raw){
-    var t = raw.trim();
-    if (!t) return;
-    if (t.length <= 20 && /本周|纪律/.test(t)) { mode = 'week'; return; }
-    if (t.length <= 20 && /月度|使用情况/.test(t)) { mode = 'month'; return; }
-    if (mode === 'week') weekLines.push(raw);
-    else monthLines.push(raw);
-  });
-  var msgs = [], ok = false;
-  if (monthLines.length) {
-    var rm = bParse(monthLines.join('\n'));
-    msgs.push(rm.msg); ok = ok || rm.ok;
-  }
-  if (weekLines.length) {
-    budget.weekly = bParseWeek(weekLines.join('\n'));
-    bSave();
-    msgs.push('本周纪律 ' + budget.weekly.length + ' 条');
-    ok = true;
-  }
-  return { ok: ok, msg: msgs.join('；') || '没有可解析的内容' };
-}
-
-/* 全量序列化（预填用） */
-function bAllToText(){
-  bLoad();
-  var lines = (budget.weekly || []).map(function(w){
-    return (B_EMOJI[w.level] || '🟢') + ' ' + (w.cat ? w.cat + '：' : '') + (w.text || '');
-  });
-  lines.push('', '【月度预算使用情况】');
-  budget.categories.forEach(function(c){
-    lines.push(c.name + '：' + (+c.spent || 0) + '/' + c.budget + (c.note ? '（' + c.note + '）' : ''));
-  });
-  (budget.locked || []).forEach(function(l){
-    var tag = l.status === 'approved' ? '已放行' : (l.status === 'locked' ? '锁定' : '预留');
-    lines.push(l.name + tag + '：' + l.amount);
-  });
-  return lines.join('\n');
-}
-
-/* ---------- 事件绑定（DOM 已就绪：script 在 body 末尾） ---------- */
-document.getElementById('bBtnEdit').onclick = function(){
-  document.getElementById('bMsg').textContent = '';
-  document.getElementById('bMsg').className = 'b-msg';
-  bLoad();
-  document.getElementById('bTa').value = '【本周纪律】\n' + bAllToText();   /* bAllToText 冻结不带节头，不补头纪律行会被路由进月度解析 */
-  document.getElementById('bOvEdit').hidden = false;
-};
-document.getElementById('bOvEdit').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
-document.getElementById('bBtnCancel').onclick = function(){
-  document.getElementById('bOvEdit').hidden = true;
-};
-/* 壳层预处理（冻结解析器一个字符不改，v4.2）：
-   ① 纪律节在壳层解析——冻结 bParseWeek 的 emoji 字符类没有 u 标志，增补平面 emoji 会被劈成半个 surrogate（level 丢失、文本混进乱码）；
-   ② 锁定行新格式「名称：¥金额 · 状态（说明）」与后缀格式「名称锁定：金额」统一改写成冻结 bParse 认得的「状态 名称 金额」前缀行 */
-function bShellRoute(text){
-  var week = [], rest = [], mode = '';
-  String(text || '').split(/\r?\n/).forEach(function(raw){
-    var t = raw.trim();
-    if (!t) return;
-    if (t.length <= 20 && /本周|纪律/.test(t)) { mode = 'week'; return; }
-    if (t.length <= 20 && /月度|使用情况/.test(t)) { mode = 'month'; return; }
-    if (mode === 'week') week.push(raw); else rest.push(raw);
-  });
-  return { week: week, rest: rest.join('\n') };
-}
-var B_WEEK_LV = { '🟢':'g', '🟩':'g', '🟡':'y', '🟨':'y', '🔴':'r', '🟥':'r' };
-function bShellWeek(lines){
-  /* v4.3：纪律节内容不再解析，【本周纪律】与【月度…】之间每行原样收录；只认行首 emoji 定灯色（没有就绿灯） */
-  var out = [];
-  lines.forEach(function(raw){
-    var line = raw.trim();
-    if (!line) return;
-    var level = 'g';
-    var m = /^(🟢|🟡|🔴|🟩|🟨|🟥)\s*/u.exec(line);   /* u 标志：整颗 emoji 一起匹配 */
-    if (m) { level = B_WEEK_LV[m[1]] || 'g'; line = line.slice(m[0].length); }
-    out.push({ cat: '', level: level, text: line });
-  });
-  return out;
-}
-function bShellLockLine(text){
-  return String(text || '')
-    .replace(/^([^\n：:|/]+?)：\s*¥?(\d+(?:\.\d+)?)\s*·\s*(已放行|通过|放行|待购|预留|锁定)[^\n]*$/gm,
-      function(_, n, amt, st){ return (/已放行|通过|放行/.test(st) ? '已放行 ' : '锁定 ') + n.trim() + ' ' + amt; })
-    .replace(/^([^\n：:|/]+?)(已放行|预留|锁定|待购)[:：]\s*¥?(\d+(?:\.\d+)?)\s*$/gm,
-      function(_, n, st, amt){ return (st === '已放行' ? '已放行 ' : '锁定 ') + n.trim() + ' ' + amt; });
-}
-
-/* v4.8 壳层：树形大纲符（├─ └─ │ 等 box-drawing）剥掉并转成两空格缩进，
-   冻结解析器的分组前缀（/^\s/ + lastGroup）照常识别；不动解析器一个字符 */
-function bShellTree(text){
-  return String(text || '').replace(/^[ \t]*[\u2500-\u257F]+[ \t\u2010\u2011\u2012\u2013\u2014\u2015\u2500\u2501\-]*/gm, '  ');
-}
-
-/* v4.8 壳层：行尾全角括号备注（...）提取——冻结解析器行尾锚定不认这种行，
-   壳层把备注剥下、解析后按分类名贴回（c.note）；显示层渲染为小字 */
-function bShellNote(text){
-  var map = {};
-  var out = String(text || '').split('\n').map(function(line){
-    var m = /^(.+?[：:]\s*[^（()\n]*?)\s*（([^（）]*)）\s*$/.exec(line);
-    if (!m) return line;
-    var nm = /^([^：:]+?)[：:]/.exec(m[1]);
-    if (nm) map[nm[1].trim()] = m[2];
-    return m[1];
-  }).join('\n');
-  return { text: out, map: map };
-}
-document.getElementById('bBtnParse').onclick = function(){
-  bLoad();
-  /* v4.8 防呆快照：冻结 bParse 内部自带 bSave，解析失败的"取消"必须从这里还原（先存 localStorage 原文） */
-  var bSnap = null;
-  try { bSnap = localStorage.getItem(BKEY); } catch(e){}
-  ghMute = true;   /* v4.9：解析+确认窗口内压住自动推送——冻结 bParse/bParseAll 的内部 bSave 不许偷跑上云 */
-  var lockState = {};   /* 冻结解析器会重建锁定项：按净名（剥状态词缀）快照勾选/分类，解析后回填 */
-  (budget.locked || []).forEach(function(l){ lockState[bCleanName(l.name)] = { used:!!l.used, cat:l.cat || '' }; });
-  var sp = bShellRoute(document.getElementById('bTa').value);
-  var oldCatN = (budget.categories || []).length;   /* v4.8 覆盖防呆用 */
-  var notePack = bShellNote(bShellTree(sp.rest));   /* v4.8 行尾（...）备注：先剥下再喂冻结解析器 */
-  var r = bParseAll(bShellLockLine(notePack.text));
-  var hasMonth = !!String(sp.rest).trim();   /* v4.9：月度节是否存在 */
-  /* v4.9：月度节存在但解析失败 = 整体失败（此前会被纪律成功掩盖）；
-     仅当没有月度节（纯纪律粘贴）时，纪律成功才算成功 */
-  var okAll = r.ok || (sp.week.length > 0 && !hasMonth);
-  var parts = [];
-  if (r.ok || hasMonth) parts.push(r.msg);   /* 月度失败的报错必须显示出来 */
-  if (sp.week.length) parts.push('本周纪律 ' + sp.week.length + ' 条');
-  var msg = document.getElementById('bMsg');
-  msg.textContent = parts.join('；') || r.msg;
-  msg.className = 'b-msg' + (okAll ? '' : ' err');
-  if (okAll) {
-    /* v4.9 全量覆盖防呆：分类变少时列出将删除的名字——换月合法减项可一眼判明，片段粘贴一眼可辨；
-       取消则贴回快照还原（冻结 bParse 内部自带 bSave，守卫触发前 localStorage 已被改写） */
-    var newCatN = (budget.categories || []).length;
-    if (newCatN > 0 && newCatN < oldCatN) {
-      var newNames = {};
-      (budget.categories || []).forEach(function(c){ newNames[c.name] = 1; });
-      var gone = [];
-      try { JSON.parse(bSnap || '{"categories":[]}').categories.forEach(function(c){
-        if (!newNames[c.name]) gone.push(c.name);
-      }); } catch(e2){}
-      if (gone.length && !confirm('⚠ 解析出 ' + newCatN + ' 个分类，比现有的 ' + oldCatN + ' 个少。\n'
-        + '将删除：' + gone.join('、') + '\n\n「更新数据」是全量覆盖。这些删除是有意的吗？')) {
-      /* 还原：冻结 bParse 内部自带 bSave，localStorage 须先贴回快照，bLoad 才读得到旧数据 */
-      if (bSnap != null) { try { localStorage.setItem(BKEY, bSnap); } catch(e){} }
-      bLoad();
-      ghMute = false;
-      return;
-      }
-    }
-    /* v4.8 备注贴回：按分类名（含 组-子 前缀形式）写回 c.note */
-    (budget.categories || []).forEach(function(c){
-      if (notePack.map[c.name] != null) { c.note = notePack.map[c.name]; return; }
-      for (var nk in notePack.map) {
-        if (c.name === nk || c.name.slice(-(nk.length + 1)) === '-' + nk) { c.note = notePack.map[nk]; break; }
-      }
-    });
-    /* v4.9 锁定项替换语义：完整月度指令单解析通过且没带锁定行 = 明确清空旧锁定项；
-       纯纪律粘贴（无月度节）走不到这里，预算与锁定项原样保留 */
-    if (r.ok && hasMonth) {
-      var lockLines = notePack.text.split('\n').filter(function(l){ return /预留|锁定|已放行|待购/.test(l); }).length;
-      if (!lockLines) budget.locked = [];
-    }
-    if (sp.week.length) budget.weekly = bShellWeek(sp.week);
-    var kept = 0;
-    (budget.locked || []).forEach(function(l){
-      var s = lockState[bCleanName(l.name)];
-      if (s) { l.used = s.used; l.cat = s.cat; kept++; }
-    });
-    ghMute = false;   /* 落定：解除静音，末尾 bSave 正常触发一次自动同步 */
-    bSave();
-    document.getElementById('bOvEdit').hidden = true;
-    bRender();
-    bRenderWeekStrip();
-  } else { ghMute = false; }
-};
 
 /* ---------- 本周纪律条（预算页顶部） ---------- */
 function bRenderWeekStrip(){
@@ -2081,31 +1784,27 @@ function bRenderWeekStrip(){
     + '</div>';
 }
 
-/* ---------- 本周纪律：解析 / 序列化 / 弹窗 ---------- */
-var B_EMOJI = { g:'🟢', y:'🟡', r:'🔴' };
-function bWeekToText(){
-  return (budget.weekly || []).map(function(w){
-    return (B_EMOJI[w.level] || '🟢') + ' ' + (w.cat ? w.cat + '：' : '') + (w.text || '');
-  }).join('\n');
-}
-function bParseWeek(text){
-  var out = [];
-  String(text || '').split(/\r?\n/).forEach(function(line){
-    line = line.trim();
-    if (!line) return;
-    var level = 'g', body = line;
-    var m = /^([🟢🟡🔴🟩🟨🟥])\s*(.+)$/.exec(line);
-    if (m) {
-      body = m[2];
-      level = { '🟢':'g','🟩':'g','🟡':'y','🟨':'y','🔴':'r','🟥':'r' }[m[1]];
-    }
-    var mm = /^([^:：\s]{1,12})\s*[:：]\s*(.+)$/.exec(body);
-    if (mm) out.push({ cat: mm[1].trim(), level: level, text: mm[2].trim() });
-    else out.push({ cat: '', level: level, text: body });
-  });
-  return out;
-}
-
+/* ---------- 事件绑定 ---------- */
+document.getElementById('bBtnEdit').onclick = function(){
+  bLoad();
+  document.getElementById('bMsg').textContent = '';
+  document.getElementById('bMsg').className = 'b-msg';
+  document.getElementById('bTa').value = bSerialize();
+  document.getElementById('bOvEdit').hidden = false;
+};
+document.getElementById('bBtnCancel').onclick = function(){ document.getElementById('bOvEdit').hidden = true; };
+document.getElementById('bOvEdit').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('bBtnParse').onclick = function(){
+  bLoad();
+  var r = bParseNew(document.getElementById('bTa').value);
+  var msg = document.getElementById('bMsg');
+  if (!r.ok) { msg.textContent = r.msg; msg.className = 'b-msg err'; return; }
+  budget = { month: bCurMonth(), updatedAt: 0, weekly: r.weekly, bars: r.bars, todos: r.todos };
+  bSave();
+  document.getElementById('bOvEdit').hidden = true;
+  bRender();
+  bRenderWeekStrip();
+};
 
 /* ================= GitHub 双向同步（Private 仓库 data.json） ================= */
 var ghCfg = null, ghTimer = null, ghBusy = false;
@@ -2154,7 +1853,7 @@ function mergeSync(local, remote){
   for (var k in (remote.done || {})) local.done[k] = remote.done[k];
   for (var k2 in (remote.hidden || {})) local.hidden[k2] = remote.hidden[k2];
   var rb = remote.budget;
-  if (rb && Array.isArray(rb.categories) && (!local.budget || (rb.updatedAt || 0) > (local.budget.updatedAt || 0))) {
+  if (rb && (Array.isArray(rb.bars) || Array.isArray(rb.categories)) && (!local.budget || (rb.updatedAt || 0) > (local.budget.updatedAt || 0))) {
     local.budget = rb;
   }
   return local;
