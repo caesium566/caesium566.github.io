@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="5.0">
+<meta name="app-version" content="5.1">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -693,7 +693,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v5.0 · 2026-11-01</span>
+  <span class="ver">v5.1 · 2026-11-01</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -760,6 +760,7 @@ nav button.on::before {
     <div class="bx-actions">
       <button class="btn pri" id="bBtnEdit">更新数据</button>
     </div>
+    <div class="b-msg" id="bReport" style="text-align:right"></div>
   </div>
 </section>
 
@@ -958,6 +959,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v5.1（2026-11-01）解析鲁棒性三件套（都是粘贴链路的物理损伤，非逻辑bug）：① 打开「更新数据」即全选文本框——粘贴直接覆盖旧内容，杜绝"新旧合并"（此前未全选时旧进度条残留/重复的头号原因）；② 节标题容忍粘行：「【月度计划】餐饮：32/1250」连写也能正确切开（换行被移动端剪贴板吃掉时整月曾直接消失）；③ 剥离零宽字符（U+200B 等肉眼不可见，混入即该行静默丢失）＋全角空格缩进认作待办。另：解析报告持久化显示在看板（"上次解析：7 进度条 · 跳过 N 行（第 M 行起）"），以后再有问题一眼自诊。</p>
       <p>v5.0（2026-11-01）预算模块整体重写（用户拍板：删了重写）：旧 bParse 冻结层与全部壳层（bShellRoute/Tree/Note/LockLine、防呆、快照回滚、锁定列表、分类组、强制理财过滤）全部退役，替换为约 130 行新解析器，规格回到极简——【本周纪律】后每行 = 文本（行首 emoji 定灯色）；【月度计划】后每行「名称：已用/预算（备注小字）」= 进度条，行首空一格 = 待办（- [ ] 可勾选）；裸数字行 = 0/预算；含预留/锁定/已放行/待购的行忽略（锁定功能退役）。解析即整体替换，无防呆无确认。同步语义不变且更直白：本地改了按 updatedAt 优先上云，没改拉 GitHub 的。旧数据自动迁移：categories→bars，已购锁定的金额并入绑定分类已用，影之刃零这类未购锁定项直接消失。契约一同步重写。</p>
       <p>v4.9（2026-11-01）预算「更新数据」三处核心修正（GPT-6 审校后按保存语义重做，不只是提示文字）：① 失败不再被掩盖——月度节存在但解析失败时整体报错（此前"本周纪律 N 条"会盖住"没有解析出任何分类"，预算静默不动）；只有纯纪律粘贴（无月度节）才以纪律成功为准。② 锁定项替换语义——完整月度指令单解析通过且未带锁定行 = 明确清空旧锁定项（影之刃零这类上月遗留从此随换月自动移除）；纯纪律粘贴不动预算与锁定。③ 解析+确认窗口禁止自动推送——冻结 bParse 内部自带 bSave，此前会在用户还没答确认框时就触发 3 秒自动同步，坏数据先上云、取消后下次拉取又弹回（两端数据老不一致的隐藏源头）；窗口内 ghMute 压住调度，成功后只由末尾 bSave 推一次。④ 覆盖防呆确认框列出将被删除的分类名（换月合法减项可判，片段粘贴可辨），触发条件与快照回滚还原不变。</p>
       <p>v4.8（2026-11-01）预算页三处可用性修复（解析器冻结不动，全在壳层与显示层；契约一加容忍度说明）：① 锁定项终于可删——每行 hover 出 × 按钮，确认即移除（此前唯一途径是贴入另一组锁定行挤掉它，唯一项时无解）；② 树形大纲符容错：「├─ / └─ / │」等行首符号壳层剥掉并转两空格缩进，冻结解析器的分组前缀照常识别，弹性娱乐子项不再变成「├─ 日用杂物」乱码分类；③ 全量覆盖防呆：解析出的分类数明显少于现有（漏贴分类）时弹确认，取消可从 localStorage 还原，防止片段粘贴把整月预算冲掉；④ 行尾全角括号备注：「分类：已用/预算（备注）」整体可解析，备注存 c.note、看板以小字显示在进度条下，预填往返不丢（冻结解析器行尾锚定不认括号，壳层剥下贴回）。</p>
@@ -1690,12 +1692,20 @@ function bLoad(){
 
 /* ---------- 解析（新解析器） ---------- */
 function bParseNew(text){
-  var weekly = [], bars = [], todos = [], mode = '';
-  String(text || '').split(/\r?\n/).forEach(function(raw){
+  /* v5.1：先剥零宽字符（剪贴板/输入法常带入 U+200B 等，肉眼不可见） */
+  var weekly = [], bars = [], todos = [], mode = '', skips = 0, skipDemo = '';
+  String(text || '').replace(/[\u200B-\u200D\uFEFF]/g, '').split(/\r?\n/).forEach(function(raw, idx){
     var t = raw.trim();
     if (!t) return;
-    if (t.length <= 20 && /本周|纪律/.test(t)) { mode = 'week'; return; }
-    if (t.length <= 24 && /月度/.test(t)) { mode = 'month'; return; }
+    /* v5.1：节标题容忍「标题与首行粘在一起」（如 【月度计划】餐饮：32/1250）——剥出标题后剩余部分按新节首行处理 */
+    var hd = /^(【[^】]*(?:本周|纪律|月度)[^】]*】)(.*)$/.exec(t);
+    if (hd) {
+      mode = /本周|纪律/.test(hd[1]) ? 'week' : 'month';
+      if (/本周|纪律/.test(hd[1])) weekly = []; else { bars = []; todos = []; }   /* 重复节标题 = 后者覆盖，合并粘贴也确定 */
+      t = hd[2].trim();
+      if (!t) return;
+    } else if (t.length <= 20 && /本周|纪律/.test(t)) { mode = 'week'; weekly = []; return; }
+    else if (t.length <= 24 && /月度/.test(t)) { mode = 'month'; bars = []; todos = []; return; }
     if (mode === 'week') {
       var lv = 'g';
       var m0 = /^(🟢|🟡|🔴|🟩|🟨|🟥)\s*/u.exec(t);
@@ -1704,8 +1714,8 @@ function bParseNew(text){
       weekly.push({ cat: '', level: lv, text: body });
       return;
     }
-    if (mode !== 'month') return;
-    if (/^\s/.test(raw)) {   /* 行首空一格 = 待办 */
+    if (mode !== 'month') { skips++; if (!skipDemo) skipDemo = '第' + (idx+1) + '行'; return; }
+    if (/^[\s\u3000]/.test(raw)) {   /* 行首空一格（含全角空格）= 待办 */
       var done = false, txt = t, mm;
       if ((mm = /^[-*•]\s+\[([ xX])\]\s*(.*)$/.exec(t))) { done = mm[1] !== ' '; txt = mm[2].trim(); }
       if (txt) todos.push({ x: txt, d: done });
@@ -1718,13 +1728,15 @@ function bParseNew(text){
       return;
     }
     if ((m = /^([^：:]{1,40}?)[：:]\s*(\d+(?:\.\d+)?)\s*(?:（([^（）]*)）)?\s*$/.exec(t))) {
-      bars.push({ n: m[1].trim(), s: 0, b: +m[2], t: m[3] || '' });   /* 裸数字 = 0/预算 */
+      bars.push({ n: m[1].trim(), s: 0, b: +m[2], t: m[3] || '' });
       return;
     }
+    skips++; if (!skipDemo) skipDemo = '第' + (idx+1) + '行';
   });
   if (!weekly.length && !bars.length && !todos.length) return { ok: false, msg: '没有可解析的内容（需要【本周纪律】或【月度计划】节）' };
   return { ok: true, weekly: weekly, bars: bars, todos: todos,
-    msg: '本周纪律 ' + weekly.length + ' 条；进度条 ' + bars.length + ' 个；待办 ' + todos.length + ' 项' };
+    msg: '本周纪律 ' + weekly.length + ' 条；进度条 ' + bars.length + ' 个；待办 ' + todos.length + ' 项'
+      + (skips ? '；跳过 ' + skips + ' 行（' + skipDemo + ' 起）' : '') };
 }
 
 /* ---------- 序列化（预填用，往返无损） ---------- */
@@ -1742,6 +1754,8 @@ function bSerialize(){
 function bRender(){
   bLoad();
   document.getElementById('bMonth').textContent = budget.month || '';
+  var repEl = document.getElementById('bReport');
+  if (repEl) { repEl.textContent = budget.report || ''; repEl.className = 'b-msg' + (budget.report && budget.report.indexOf('跳过') >= 0 ? ' err' : ''); }
   var tb = 0, ts = 0;
   (budget.bars || []).forEach(function(c){ tb += +c.b || 0; ts += +c.s || 0; });
   var left = tb - ts;
@@ -1789,8 +1803,10 @@ document.getElementById('bBtnEdit').onclick = function(){
   bLoad();
   document.getElementById('bMsg').textContent = '';
   document.getElementById('bMsg').className = 'b-msg';
-  document.getElementById('bTa').value = bSerialize();
+  var ta = document.getElementById('bTa');
+  ta.value = bSerialize();
   document.getElementById('bOvEdit').hidden = false;
+  try { ta.focus(); ta.select(); } catch(e){}   /* v5.1：打开即全选，粘贴直接覆盖旧内容 */
 };
 document.getElementById('bBtnCancel').onclick = function(){ document.getElementById('bOvEdit').hidden = true; };
 document.getElementById('bOvEdit').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
@@ -1799,7 +1815,7 @@ document.getElementById('bBtnParse').onclick = function(){
   var r = bParseNew(document.getElementById('bTa').value);
   var msg = document.getElementById('bMsg');
   if (!r.ok) { msg.textContent = r.msg; msg.className = 'b-msg err'; return; }
-  budget = { month: bCurMonth(), updatedAt: 0, weekly: r.weekly, bars: r.bars, todos: r.todos };
+  budget = { month: bCurMonth(), updatedAt: 0, weekly: r.weekly, bars: r.bars, todos: r.todos, report: r.msg };
   bSave();
   document.getElementById('bOvEdit').hidden = true;
   bRender();
