@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="5.1">
+<meta name="app-version" content="5.5">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -27,10 +27,11 @@
   --slant-sm:polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
 }
 * { box-sizing:border-box; margin:0; padding:0; }
+html { overflow-x:clip; }
 body {
   font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   font-weight:500;
-  color:var(--tx); min-height:100vh; padding-bottom:78px;
+  color:var(--tx); min-height:100vh; padding-bottom:78px; overflow-x:clip;
   font-variant-numeric:tabular-nums;
   /* 人类意识之海：上浅下深的高饱和海蓝（参照 P3R 菜单右半取色） */
   background:linear-gradient(180deg, #0d8be2 0%, #0262c3 30%, #003fb9 55%, #0018b0 80%, #0000a0 100%);
@@ -224,6 +225,9 @@ nav button.on::before {
   clip-path:var(--slant-sm); filter:drop-shadow(3px 3px 0 rgba(5,7,13,.5));
 }
 .mnav button:active { transform:translate(2px,2px); filter:none; }
+/* v5.3：#cmToday 也是 .mnav 的 button 子元素，需用 id 优先级夺回 auto 宽度，否则被上面 width:30px 压扁 */
+#cmToday { width:auto; height:32px; font-size:13px; font-weight:700; }
+.mnav .ym, #tDateL { cursor:pointer; }
 .mnav .ym {
   font-size:17px; font-weight:900; font-style:italic; min-width:100px; text-align:center;
   letter-spacing:1px; color:var(--tx); text-shadow:0 0 16px rgba(0,216,255,.35);
@@ -493,6 +497,43 @@ nav button.on::before {
 /* 日志弹窗要压住维护层（70） */
 #ovTLog { z-index:75; }
 #ovCats { z-index:76; }
+/* ===== v5.2 视图开关：P3 影时间蓝黑配色（v5.3 起时钟徽标已删除，皮肤保留） ===== */
+.cvswitch { display:flex; background:#040b16; border:1px solid var(--cyan-dim); clip-path:var(--slant-sm); box-shadow:0 0 14px rgba(0,216,255,.18), inset 0 0 10px rgba(0,0,0,.6); }
+.cvswitch button { border:none; background:none; color:var(--tx-3); padding:8px 20px; cursor:pointer; font:inherit; font-size:13px; font-weight:900; font-style:italic; letter-spacing:2px; }
+.cvswitch button.on { background:#0d2440; color:var(--cyan); text-shadow:0 0 12px rgba(0,216,255,.8); }
+/* ===== v5.3 月份快跳菜单 ===== */
+#ymPick { z-index:62; }
+.ymp-year { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:12px; }
+.ymp-year b { font-size:18px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--yellow); font-variant-numeric:tabular-nums; }
+.ymp-year button { width:30px; height:30px; border:none; background:var(--bar); color:var(--cyan); cursor:pointer; font-size:16px; font-weight:900; clip-path:var(--slant-sm); }
+.ymp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.ymp-grid button { border:1px solid var(--line); background:var(--bar-2); color:var(--tx); padding:10px 0; cursor:pointer; font:inherit; font-size:13px; font-weight:700; clip-path:var(--slant-sm); }
+.ymp-grid button:hover { border-color:var(--cyan); color:var(--cyan); }
+.ymp-grid button.cur { border-color:var(--yellow); color:var(--yellow); }
+/* 月视图网格 */
+.cgrid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cwk { text-align:center; font-size:11px; color:var(--tx-3); font-weight:700; padding:4px 0; letter-spacing:2px; }
+.cday { min-height:76px; background:rgba(5,7,13,.82); border:1px solid var(--line); padding:4px 5px; cursor:pointer; position:relative; clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+.cday:hover { border-color:var(--cyan); }
+.cday .n { font-size:12px; font-weight:900; font-style:italic; }
+.cday.wk .n { color:var(--cyan); }
+.cday.today { border-color:var(--yellow); box-shadow:inset 0 0 12px rgba(245,216,74,.22); }
+.cday.other { opacity:.32; }
+.cday .ev { font-size:9.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; padding:0 4px; clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
+.cday .an { position:absolute; top:3px; right:5px; font-size:10px; color:var(--gold); text-shadow:0 0 6px rgba(201,168,106,.6); }
+.cday .tl-dot { position:absolute; bottom:5px; right:6px; width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 6px var(--cyan); }
+.cday .lu { position:absolute; bottom:4px; left:5px; font-size:9px; line-height:1; color:var(--tx-3); }
+#cvMonth[hidden], #cvGantt[hidden], #cvDay[hidden] { display:none; }
+/* 纪念日列表 */
+.anrow { display:flex; align-items:center; gap:12px; padding:8px 12px; margin-bottom:6px; border:1px solid var(--line); background:var(--bar-2); clip-path:var(--slant-sm); font-size:13px; }
+.anrow .dt { color:var(--gold); font-weight:900; font-style:italic; font-variant-numeric:tabular-nums; }
+.anrow .nm { flex:1; font-weight:700; }
+.anrow .cd { font-size:11px; color:var(--tx-3); font-variant-numeric:tabular-nums; }
+.anrow button.del { display:none; border:none; background:none; color:var(--tx-3); font-size:14px; cursor:pointer; padding:0 2px; }
+.anrow:hover button.del { display:block; }
+.anrow button.del:hover { color:var(--magenta); }
+@media (max-width:640px){ .cday { min-height:58px; padding:3px 3px; } .cday .ev { font-size:8.5px; } }
+
 #ovTools { z-index:61; }   /* v4.7 工具管理：设置 60 的子层 */
 .dgroup { font-size:11px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--cyan); margin:10px 0 6px; border-left:3px solid var(--cyan-dim); padding-left:8px; }
 .cmrow { display:flex; align-items:center; gap:10px; padding:7px 2px; border-bottom:1px solid var(--line); }
@@ -693,7 +734,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v5.1 · 2026-11-01</span>
+  <span class="ver">v5.5 · 2026-11-05</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -702,7 +743,51 @@ nav button.on::before {
 <main>
 
 <!-- ===== 时光（v3.1：时间线 + 计划块 + 计时） ===== -->
-<section class="page" id="page-today">
+<!-- ===== 日历（v5.2：时光 + 活动 合并为三视图：月 / 甘特 / 日 + 纪念日；v5.3：+阴历/月份快跳） ===== -->
+<section class="page wide" id="page-cal">
+  <div class="cvbar">
+    <div class="cvswitch" id="cvSwitch">
+      <button data-cv="month" class="on">月视图</button>
+      <button data-cv="gantt">甘特图</button>
+      <button data-cv="day">日视图</button>
+    </div>
+    <span class="spacer"></span>
+  </div>
+
+  <div id="cvMonth">
+    <div class="mnav" style="margin-bottom:10px">
+      <button id="cmPrev" title="上月">‹</button>
+      <span class="ym" id="cmLabel"></span>
+      <button id="cmNext" title="下月">›</button>
+      <span class="spacer"></span>
+      <button class="hbtn" id="cmToday" style="color:var(--yellow)">回本月</button>
+    </div>
+    <div class="cgrid" id="calGrid"></div>
+    <div class="b-sec" style="margin-top:18px">纪念日 · ANNIVERSARY</div>
+    <div id="annivList"></div>
+    <label style="font-size:12.5px;color:var(--tx-2);display:flex;gap:6px;align-items:center;margin:2px 0 8px;cursor:pointer"><input type="checkbox" id="anLunar"> 这是<b>阴历（农历）</b>日期，每年按农历重复</label>
+    <div class="frow" style="margin-top:8px;align-items:flex-end">
+      <div class="fg" style="flex:1"><label>名称</label><input id="anName" class="b-ta" style="min-height:0;padding:8px 10px" placeholder="如：生日 / 初见纪念日"></div>
+      <div class="fg" style="flex:none"><label>日期（每年重复）</label><input id="anDate" type="date" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+      <button class="btn pri" id="anAdd" style="margin-bottom:12px">＋ 添加</button>
+    </div>
+  </div>
+
+  <div id="cvGantt" hidden>
+  <div class="calbar">
+    <div class="mnav">
+      <button id="mPrev" title="上月">‹</button>
+      <span class="ym" id="mLabel"></span>
+      <button id="mNext" title="下月">›</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="hbtn" id="btnAdd" style="color:var(--yellow)">＋ 添加</button>
+    <button class="hbtn" id="btnFilter">筛选</button>
+  </div>
+  <div class="gwrap"><div class="gtable" id="gtable"></div></div>
+  </div>
+
+  <div id="cvDay" hidden>
   <div class="tbar">
     <button class="mbtn" id="tPrev" title="前一天">‹</button>
     <div class="tdate"><b id="tDateL"></b><span class="tw" id="tWday"></span></div>
@@ -719,9 +804,10 @@ nav button.on::before {
     <button class="btn" id="tAddBtn">＋ 补录时段</button>
     <button class="btn" id="tReqBtn">＋ 追加需求</button>
   </div>
+  </div>
 </section>
 
-<!-- ===== 成长（v3.1：五维 Rank 展示；月相/成就 v3.2） ===== -->
+<!-- ===== 预算（本周纪律并入本页） ===== -->
 <section class="page" id="page-growth">
   <div class="ptitle">成长<span class="en">GROWTH</span><span class="sub">五维 Rank · 只增不减</span></div>
   <div class="panel" style="margin-bottom:12px"><div id="radarBox"></div></div>
@@ -732,22 +818,6 @@ nav button.on::before {
   </div>
 </section>
 
-<!-- ===== 活动 ===== -->
-<section class="page wide" id="page-cal">
-  <div class="calbar">
-    <div class="mnav">
-      <button id="mPrev" title="上月">‹</button>
-      <span class="ym" id="mLabel"></span>
-      <button id="mNext" title="下月">›</button>
-    </div>
-    <span class="spacer"></span>
-    <button class="hbtn" id="btnAdd" style="color:var(--yellow)">＋ 添加</button>
-    <button class="hbtn" id="btnFilter">筛选</button>
-  </div>
-  <div class="gwrap"><div class="gtable" id="gtable"></div></div>
-</section>
-
-<!-- ===== 预算（本周纪律并入本页） ===== -->
 <section class="page" id="page-budget">
   <div class="ptitle">月度预算<span class="en">BUDGET</span><span class="sub" id="bMonth"></span></div>
   <div id="weekStrip"></div>
@@ -768,18 +838,16 @@ nav button.on::before {
 
 <!-- ===== 底部导航 ===== -->
 <nav>
-  <button id="nav-today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3.5 2"/></svg>时光<span class="en">TIME</span></button>
+  <button id="nav-cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15.5" r="2.2"/></svg>日历<span class="en">CALENDAR</span></button>
   <button id="nav-growth"><svg viewBox="0 0 24 24"><polygon points="12,3 20,9 17,19 7,19 4,9"/><circle cx="12" cy="12" r="2"/></svg>成长<span class="en">GROWTH</span></button>
-  <button id="nav-cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>活动<span class="en">EVENTS</span></button>
   <button id="nav-budget"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 9.8c0-1 1.1-1.8 2.5-1.8s2.5.8 2.5 1.8c0 2.6-5 1.4-5 4 0 1 1.1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg>预算<span class="en">BUDGET</span></button>
 </nav>
 
 <!-- 电脑端左侧边栏（手机端不显示，用底导航） -->
 <aside id="navL">
-  <button class="lnav" data-go="today"><span class="no">01</span>时光<span class="en">TIME</span></button>
+  <button class="lnav" data-go="cal"><span class="no">01</span>日历<span class="en">CALENDAR</span></button>
   <button class="lnav" data-go="growth"><span class="no">02</span>成长<span class="en">GROWTH</span></button>
-  <button class="lnav" data-go="cal"><span class="no">03</span>活动<span class="en">EVENTS</span></button>
-  <button class="lnav" data-go="budget"><span class="no">04</span>预算<span class="en">BUDGET</span></button>
+  <button class="lnav" data-go="budget"><span class="no">03</span>预算<span class="en">BUDGET</span></button>
 </aside>
 
 <!-- 添加记录 -->
@@ -830,6 +898,11 @@ nav button.on::before {
 <aside id="drawerT">
   <h4>工具</h4>
   <div id="dlist"></div>
+  <!-- v5.5：管理双入口（卡片下方）：工具卡管理 + 需求/日志维护，与日视图 🔧 同一个弹层 -->
+  <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
+    <button class="hbtn" id="dtManageTools" style="width:100%;height:36px">管理工具卡</button>
+    <button class="hbtn" id="dtMaintMd" style="width:100%;height:36px">管理需求与日志</button>
+  </div>
 </aside>
 
 <!-- 分类维护：增删 + 文字颜色（仅时光页显示，不写 md） -->
@@ -882,6 +955,14 @@ nav button.on::before {
 </div>
 
 <!-- 设置（后台功能集中：同步 / 导入 / 手册） -->
+<div class="ov" id="ymPick" hidden>
+  <div class="box" style="max-width:340px" onclick="event.stopPropagation()">
+    <h3>翻到某月<span class="en">JUMP</span></h3>
+    <div class="ymp-year"><button id="ympPrev" title="上一年">‹</button><b id="ympYear"></b><button id="ympNext" title="下一年">›</button></div>
+    <div class="ymp-grid" id="ympGrid"></div>
+  </div>
+</div>
+
 <div class="ov" id="ovSettings" hidden>
   <div class="box" style="max-width:520px" onclick="event.stopPropagation()">
     <h3>设置<span class="en">SYSTEM</span></h3>
@@ -915,7 +996,7 @@ nav button.on::before {
 
     <div class="set-sec">
       <div class="st">工具卡片</div>
-      <div class="hint">左侧抽屉的工具入口集中管理：分「日常 / 游戏」两类，可新增、编辑、删除，随 data.json 多端同步。图标约定：一段以 <code>&lt;svg viewBox="0 0 24 24"&gt;</code> 开头的线性图标代码，只放 path / circle 等元素、不填颜色；以后生成新工具时让 AI 按这个约定一并产出图标。</div>
+      <div class="hint">左侧抽屉的工具入口集中管理：可新增、编辑、删除，随 data.json 多端同步。v5.4 起代码内置的四张默认卡片已下放为普通数据（首次打开自动并入），删了想加回，照下面目录重录即可（图标留空则用默认星标）：<br>① 彩墨管理 <code>./gilt-ink/</code> ｜ 彩墨 / 钢笔 / 纸张 / 本子 ｜ 日常 ｜ v2.3<br>② 铁巢重炮 · 狙击计算器 <code>./iron-nest/</code> ｜ 仰角解算 · 开火倒计时 ｜ 游戏 ｜ v1.0<br>③ 极简书房 <code>https://caesium566.github.io/shelf/</code> ｜ ISBN 扫码入库 · Obsidian 同步 ｜ 日常 ｜ v2.4<br>④ 随机视频抽取器 <code>./murmur/</code> ｜ B 站收藏池 · 三池抽签 ｜ 游戏 ｜ v1.2。<br>图标约定：一段以 <code>&lt;svg viewBox="0 0 24 24"&gt;</code> 开头的线性图标代码，只放 path / circle 等元素、不填颜色；以后生成新工具时让 AI 按这个约定一并产出图标。</div>
       <div class="bx-actions" style="margin-top:4px">
         <button class="btn pri" id="btnToolMgr">管理工具卡</button>
       </div>
@@ -938,15 +1019,15 @@ nav button.on::before {
     <div class="set-sec man">
       <div class="st">维护手册</div>
       <h4>功能</h4>
-      <p>P3 风格个人工作台：时光（时间线 + 每日抽三计划块 + 计时 + 当日感受 + 待办/工坊维护）/ 成长（五维 Rank，xp 从 md 日志推导，只增不减）/ 活动（游戏日历甘特图）/ 预算（指令单看板 + 本周纪律）+ 老工具入口抽屉。</p>
+      <p>P3 风格个人工作台：日历（v5.3 时光+活动合并：月视图 / 甘特图 / 日视图 三视图 + 纪念日，月视图带阴历，三视图点左上角月份可快跳）/ 成长（五维 Rank，xp 从 md 日志推导，只增不减）/ 预算（指令单看板 + 本周纪律 + 待办）+ 老工具入口抽屉。</p>
       <h4>数据存储</h4>
-      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
+      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_anniv_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
       <h4>使用说明</h4>
       <ul>
         <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块（可移除、不留记录），点计划块落定实际起止。右下悬浮钮计时，结束自动成时段卡。<b>关联了待办/工坊的时段，备注即当日日志</b>：保存时自动写进 md，改备注同步改日志（同日整行替换）。</li>
-        <li>维护弹出页：待办（进行中：新增/完成/删/追加日志）、已完成（档案馆：点开看开始日期与全部日志，可恢复为进行中）、工坊（新增项目/追加日志/改信息加需求/删）三栏；全部手术刀式写回 md，不重排全文。</li>
+        <li>维护弹出页：待办（进行中：新增/完成/删/追加日志）、已完成（档案馆：点开看开始日期与全部日志，可恢复为进行中）、工坊（新增项目/追加日志/改信息加需求/删）三栏；v5.5 起工具抽屉底部有「管理工具卡」「管理需求与日志」两个直达按钮（与日视图 🔧 同一弹层）；全部手术刀式写回 md，不重排全文。</li>
         <li>成长页：雷达轴长 = 该维总经验 / R10 满级（360）的绝对进度，每次升级都会变长；五角数字 = 总 Rank；等级名到 R4 / R7 / R10 才有庆祝章，下一级名未达前显示 ???。</li>
-        <li>手机用底部导航切四页；电脑点左上角月相呼出左侧边栏。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
+        <li>手机用底部导航切三页；电脑点左上角月相呼出左侧边栏。日历页内"月视图/甘特图/日视图"开关切换；月视图点格子进当天日视图。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
         <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析（整体替换：纪律文本 + 进度条 + 缩进待办）；行首空一格的行进待办清单，可就地勾选。</li>
         <li>ob 侧：首次在电脑库里跑 <code>python .tools/velvet_sync.py push</code> 初始化镜像，之后日常跑 <code>python .tools/velvet_sync.py</code> 拉取覆盖。</li>
       </ul>
@@ -959,6 +1040,10 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v5.5（2026-11-05）管理入口合并（用户拍板：不做大面板，走抽屉直达）：工具抽屉（顶栏 🔧 打开）底部新增「管理工具卡」「管理需求与日志」两个按钮——前者打开工具管理弹层（z-61），后者打开与日视图 🔧 完全相同的维护弹层（z-70，待办/已完成/工坊三栏，写回逻辑零改动）；点击自动收起抽屉，弹层层级均高于抽屉不受遮挡。设置页原有入口保留不动。</p>
+      <p>v5.4（2026-11-05）工具卡片去代码化：原写死在代码里的四张内置卡片（彩墨管理 / 铁巢重炮 / 极简书房 / 随机视频抽取器）下放为普通数据——首次打开自动按「链接+名称」去重并入工具管理列表（localStorage 记迁移标记 velvet_tools_migrated_v1，只跑一次），之后全部在「管理工具卡」里改、删，随 velvet/data.json 多端同步（沿用 tools 按 updatedAt 整包比较的既有契约）。代码里只留 BUILTIN_TOOLS 作迁移源；抽屉渲染与工具管理不再区分内置/自定义。手册补默认目录表，删了可照表加回。</p>
+      <p>v5.3（2026-11-05）日历页五连改：① 修「回本月」按钮任何宽度都只剩一个「回」字的 bug——它是 .mnav 的 button 子元素，被 .mnav button 的 width:30px 规则压扁后又被 clip-path 裁掉文字，改用 id 优先级夺回 auto 宽度；② 删除「影时间 HH:MM」时钟徽标（HTML/CSS/JS 三处）；③ 月视图每格显示农历日期（内嵌 1900-2100 农历数据表，无外部依赖），添加纪念日新增「按阴历重复」选项，农历日期每年按农历换算（月内无该日时收敛到月末）；④ 纪念日排序由按月日改为按距今天数升序，最近的在最上；⑤ 三种视图（月/甘特/日）点左上角月份呼出「翻到某月」菜单（年份翻页 + 12 月直选），日视图跳转保留原日号（月末收敛）。另修全页横向滚动条：海洋背景装饰层的越界绝对定位元素把页面撑宽，html/body 加 overflow-x:clip。</p>
+      <p>v5.2（2026-11-04）日历大改版（此前讨论的合并方案落地）：时光与活动合并为「日历」页，导航四页变三页（日历/成长/预算），页内三视图自由切换——<b>月视图</b>（6×7 网格：事件色条按游戏色、★ 纪念日、青点=当日有时间线，点任意格跳入日视图，与甘特共享月份导航）、<b>甘特图</b>（原活动页原样保留）、<b>日视图</b>（原时光页：时间线/计划块/计时/感受，原功能一个不缺）。新增<b>纪念日</b>：名称+月日（每年重复），按月日排序、显示倒计时、hover 删除，随 data.json 同步（新字段 anniversaries，按 id 并集合并，旧端无感兼容）。视图开关与"影时间"时钟徽标采用 P3 影时间<b>蓝黑配色</b>（深蓝黑底 + 青色辉光，页面背景维持海洋蓝不动）。顺手修 v5.0 遗漏：applySync 的 budget 写入仍按旧 categories 形状过滤，远端较新预算在全自动同步时永不落地。【 v5.2 交付后发现并修复】页面合并时的区间替换误吞了成长页整节——真浏览器里成长渲染取 null 元素在加载期抛错，脚本半程夭折（表现为全页无 .on、body.dh 未加、按钮全死）；已还原成长节并加静态 id 审计防复发。</p>
       <p>v5.1（2026-11-01）解析鲁棒性三件套（都是粘贴链路的物理损伤，非逻辑bug）：① 打开「更新数据」即全选文本框——粘贴直接覆盖旧内容，杜绝"新旧合并"（此前未全选时旧进度条残留/重复的头号原因）；② 节标题容忍粘行：「【月度计划】餐饮：32/1250」连写也能正确切开（换行被移动端剪贴板吃掉时整月曾直接消失）；③ 剥离零宽字符（U+200B 等肉眼不可见，混入即该行静默丢失）＋全角空格缩进认作待办。另：解析报告持久化显示在看板（"上次解析：7 进度条 · 跳过 N 行（第 M 行起）"），以后再有问题一眼自诊。</p>
       <p>v5.0（2026-11-01）预算模块整体重写（用户拍板：删了重写）：旧 bParse 冻结层与全部壳层（bShellRoute/Tree/Note/LockLine、防呆、快照回滚、锁定列表、分类组、强制理财过滤）全部退役，替换为约 130 行新解析器，规格回到极简——【本周纪律】后每行 = 文本（行首 emoji 定灯色）；【月度计划】后每行「名称：已用/预算（备注小字）」= 进度条，行首空一格 = 待办（- [ ] 可勾选）；裸数字行 = 0/预算；含预留/锁定/已放行/待购的行忽略（锁定功能退役）。解析即整体替换，无防呆无确认。同步语义不变且更直白：本地改了按 updatedAt 优先上云，没改拉 GitHub 的。旧数据自动迁移：categories→bars，已购锁定的金额并入绑定分类已用，影之刃零这类未购锁定项直接消失。契约一同步重写。</p>
       <p>v4.9（2026-11-01）预算「更新数据」三处核心修正（GPT-6 审校后按保存语义重做，不只是提示文字）：① 失败不再被掩盖——月度节存在但解析失败时整体报错（此前"本周纪律 N 条"会盖住"没有解析出任何分类"，预算静默不动）；只有纯纪律粘贴（无月度节）才以纪律成功为准。② 锁定项替换语义——完整月度指令单解析通过且未带锁定行 = 明确清空旧锁定项（影之刃零这类上月遗留从此随换月自动移除）；纯纪律粘贴不动预算与锁定。③ 解析+确认窗口禁止自动推送——冻结 bParse 内部自带 bSave，此前会在用户还没答确认框时就触发 3 秒自动同步，坏数据先上云、取消后下次拉取又弹回（两端数据老不一致的隐藏源头）；窗口内 ghMute 压住调度，成功后只由末尾 bSave 推一次。④ 覆盖防呆确认框列出将被删除的分类名（换月合法减项可判，片段粘贴可辨），触发条件与快照回滚还原不变。</p>
@@ -1164,7 +1249,8 @@ var GAMES = [
   { name:'女神异闻录：夜幕魅影', color:'#e60012' },
   { name:'自定义',             color:'#868e96' }
 ];
-var TOOLS = [
+/* v5.4：代码内置工具已下放为可管理数据——BUILTIN_TOOLS 只是首次迁移的源，不再直接上抽屉 */
+var BUILTIN_TOOLS = [
   { name:'彩墨管理', ver:'2.3', desc:'彩墨 / 钢笔 / 纸张 / 本子', url:'./gilt-ink/', cat:'日常',
     icon:'<svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>' },
   { name:'铁巢重炮 · 狙击计算器', ver:'1.0', desc:'仰角解算 · 开火倒计时', url:'./iron-nest/', cat:'游戏',
@@ -1278,7 +1364,7 @@ function fmtD(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDa
 })();
 
 /* ================= 页面切换 ================= */
-var PAGES = ['today', 'growth', 'cal', 'budget'];
+var PAGES = ['cal', 'growth', 'budget'];
 var navL = document.getElementById('navL');
 function go(p){
   PAGES.forEach(function(x){
@@ -1287,8 +1373,8 @@ function go(p){
   });
   var lbs = document.querySelectorAll('#navL .lnav');
   for (var i=0;i<lbs.length;i++) lbs[i].classList.toggle('on', lbs[i].dataset.go === p);
+  if (p === 'cal') { cvRender(); }
   if (p === 'budget') { bRender(); bRenderWeekStrip(); }
-  if (p === 'today') { vRenderTime(); }
   if (p === 'growth') { renderGrowth(); }
   window.scrollTo(0, 0);
 }
@@ -1313,7 +1399,7 @@ document.addEventListener('click', function(ev){
 });
 
 /* ================= 月份 ================= */
-function setMonth(y, m){ cur = new Date(y, m, 1); render(); }
+function setMonth(y, m){ cur = new Date(y, m, 1); cvRender(); }
 document.getElementById('mPrev').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth()-1); };
 document.getElementById('mNext').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth()+1); };
 
@@ -1485,7 +1571,7 @@ function tmCatOf(t){ return (t && t.cat) || '日常'; }
 function renderTools(){
   var h = '';
   TOOL_CATS.forEach(function(cat){
-    var items = TOOLS.concat(vTools || []).filter(function(t){ return tmCatOf(t) === cat; });
+    var items = (vTools || []).filter(function(t){ return tmCatOf(t) === cat; });
     if (!items.length) return;
     h += '<div class="dgroup">' + cat + '</div>';
     items.forEach(function(t){
@@ -1512,7 +1598,215 @@ function toggleT(on){ dT.classList.toggle('on', on); if (on) dF.classList.remove
 function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.classList.contains('on')); }
 document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
 document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
+/* v5.5 抽屉底部双入口 */
+document.getElementById('dtManageTools').onclick = function(){ toggleT(false); tmRender(); ovTools.hidden = false; };
+document.getElementById('dtMaintMd').onclick = function(){ toggleT(false); mtTab = 'todo'; vRenderMaint(); document.getElementById('ovMaint').hidden = false; };
 dmask.onclick = function(){ toggleF(false); toggleT(false); };
+/* ================= v5.2 日历三视图 + 纪念日 ================= */
+var calView = 'month';
+function cvSet(v){
+  calView = v;
+  document.querySelectorAll('#cvSwitch button').forEach(function(b){ b.classList.toggle('on', b.dataset.cv === v); });
+  document.getElementById('cvMonth').hidden = v !== 'month';
+  document.getElementById('cvGantt').hidden = v !== 'gantt';
+  document.getElementById('cvDay').hidden = v !== 'day';
+  cvRender();
+}
+function cvRender(){
+  if (calView === 'month') { cmRender(); anRender(); }
+  else if (calView === 'gantt') { render(); }
+  else { vRenderTime(); }
+}
+document.querySelectorAll('#cvSwitch button').forEach(function(b){
+  b.onclick = function(){ cvSet(b.dataset.cv); };
+});
+/* ---------- 农历引擎（1900-2100，月视图格内显示 + 阴历纪念日换算；独立数据表，无外部依赖） ---------- */
+var LUNAR_INFO = [
+0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,
+0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,
+0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,
+0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,
+0x0a2e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,
+0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,
+0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,
+0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252,0x0d520];
+var LMONTH_NAMES = ['正','二','三','四','五','六','七','八','九','十','冬','腊'];
+var LDAY_NAMES = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+function lLeapMonth(y){ return LUNAR_INFO[y - 1900] & 0xf; }
+function lLeapDays(y){ return lLeapMonth(y) ? ((LUNAR_INFO[y - 1900] & 0x10000) ? 30 : 29) : 0; }
+function lMonthDays(y, m){ return (LUNAR_INFO[y - 1900] & (0x10000 >> m)) ? 30 : 29; }
+function lYearDays(y){ var s = 348; for (var i = 0x8000; i > 0x8; i >>= 1) s += (LUNAR_INFO[y - 1900] & i) ? 1 : 0; return s + lLeapDays(y); }
+function lunarFromDate(dt){
+  var base = new Date(1900, 0, 31);
+  var offset = Math.floor((new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()) - base) / 86400000);
+  if (offset < 0 || dt.getFullYear() > 2100) return null;
+  var y = 1900;
+  for (; y <= 2100; y++){ var yd = lYearDays(y); if (offset < yd) break; offset -= yd; }
+  var lm = lLeapMonth(y), isLeap = false, m = 1, temp = 0;
+  for (m = 1; m < 13 && offset > 0; m++){
+    if (lm > 0 && m === (lm + 1) && !isLeap){ m--; isLeap = true; temp = lLeapDays(y); }
+    else temp = lMonthDays(y, m);
+    if (isLeap && m === (lm + 1)) isLeap = false;
+    offset -= temp;
+  }
+  if (offset === 0 && lm > 0 && m === lm + 1){ if (isLeap) isLeap = false; else { isLeap = true; m--; } }
+  if (offset < 0){ offset += temp; m--; }
+  return { lYear: y, lMonth: m, lDay: offset + 1, isLeap: isLeap };
+}
+function lunarText(l){
+  if (!l) return '';
+  return l.lDay === 1 ? (LMONTH_NAMES[l.lMonth - 1] + (l.isLeap ? '闰' : '') + '月') : LDAY_NAMES[l.lDay - 1];
+}
+function dateFromLunar(y, m, d){   /* 阳历 Date；d 按非闰月计，m 月无 d 日时收敛到月末 */
+  if (y < 1900 || y > 2100) return null;
+  var days = 0;
+  for (var i = 1900; i < y; i++) days += lYearDays(i);
+  var lm = lLeapMonth(y);
+  for (var mm = 1; mm < m; mm++){ days += lMonthDays(y, mm); if (lm === mm) days += lLeapDays(y); }
+  days += Math.min(d, lMonthDays(y, m)) - 1;
+  var dt = new Date(1900, 0, 31);
+  return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + days);
+}
+
+/* ---------- 月份快跳（v5.3：三种视图点左上角月份呼出，年份翻页 + 12 月直选） ---------- */
+var ymPick = document.getElementById('ymPick'), ympY = 0;
+function ympOpen(){
+  var ref = calView === 'day' ? tCur : cur;
+  ympY = ref.getFullYear();
+  ympRender(ref.getMonth());
+  ymPick.hidden = false;
+}
+function ympRender(curM){
+  document.getElementById('ympYear').textContent = ympY + '年';
+  document.getElementById('ympGrid').innerHTML = Array.apply(null, { length: 12 }).map(function(_, i){
+    return '<button data-m="' + i + '"' + (i === curM && ympY === (calView === 'day' ? tCur : cur).getFullYear() ? ' class="cur"' : '') + '>' + (i + 1) + '月</button>';
+  }).join('');
+  document.querySelectorAll('#ympGrid button').forEach(function(b){
+    b.onclick = function(){
+      var mm = +b.dataset.m;
+      if (calView === 'day') {
+        var dd = Math.min(tCur.getDate(), new Date(ympY, mm + 1, 0).getDate());
+        tCur = new Date(ympY, mm, dd, 12);
+        cur = new Date(ympY, mm, 1);
+        vRenderTime();
+      } else setMonth(ympY, mm);
+      ymPick.hidden = true;
+    };
+  });
+}
+document.getElementById('ympPrev').onclick = function(){ ympY--; ympRender((calView === 'day' ? tCur : cur).getMonth()); };
+document.getElementById('ympNext').onclick = function(){ ympY++; ympRender((calView === 'day' ? tCur : cur).getMonth()); };
+ymPick.addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('cmLabel').onclick = ympOpen;
+document.getElementById('mLabel').onclick = ympOpen;
+document.getElementById('tDateL').onclick = ympOpen;
+
+/* ---------- 月视图 ---------- */
+function cmRender(){
+  var y = cur.getFullYear(), m = cur.getMonth();
+  document.getElementById('cmLabel').textContent = y + '年' + (m + 1) + '月';
+  var first = new Date(y, m, 1);
+  var gridStart = new Date(y, m, 1 - first.getDay());
+  var evs = allEvents();
+  var today = fmtD(new Date());
+  var h = '';
+  '日一二三四五六'.split('').forEach(function(w){ h += '<div class="cwk">' + w + '</div>'; });
+  for (var i = 0; i < 42; i++){
+    var d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+    var ds = fmtD(d);
+    var cls = 'cday' + (d.getMonth() !== m ? ' other' : '') + (ds === today ? ' today' : '')
+            + ((d.getDay() === 0 || d.getDay() === 6) ? ' wk' : '');
+    h += '<div class="' + cls + '" data-d="' + ds + '"><span class="n">' + d.getDate() + '</span>';
+    var lu = lunarFromDate(d);
+    if (lu) h += '<span class="lu">' + lunarText(lu) + '</span>';
+    var dl = lu || {};
+    var ans = annivs.filter(function(a){
+      if (a.lunar) return !dl.isLeap && dl.lMonth === a.m && dl.lDay === a.d;
+      return a.m === d.getMonth() + 1 && a.d === d.getDate();
+    });
+    if (ans.length) h += '<span class="an" title="' + esc(ans.map(function(a){ return a.name; }).join('、')) + '">★' + (ans.length > 1 ? '×' + ans.length : '') + '</span>';
+    evs.forEach(function(e){
+      if (e.start <= ds && ds <= (e.end || e.start)) {
+        var c = gameColor(e.game);
+        h += '<div class="ev" style="background:' + c + '33;color:' + c + '">' + esc(e.title) + '</div>';
+      }
+    });
+    if (vTl.some(function(e){ return !e.del && e.d === ds; })) h += '<span class="tl-dot" title="当日有时间线记录"></span>';
+    h += '</div>';
+  }
+  document.getElementById('calGrid').innerHTML = h;
+  document.querySelectorAll('#calGrid .cday').forEach(function(c){
+    c.onclick = function(){ tCur = new Date(this.dataset.d + 'T12:00:00'); cvSet('day'); };
+  });
+}
+document.getElementById('cmPrev').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth() - 1); };
+document.getElementById('cmNext').onclick = function(){ setMonth(cur.getFullYear(), cur.getMonth() + 1); };
+document.getElementById('cmToday').onclick = function(){ var n = new Date(); setMonth(n.getFullYear(), n.getMonth()); };
+
+/* ---------- 纪念日（每年重复，随 data.json 同步） ---------- */
+var ANNIV_KEY = 'cal_anniv_v1';
+var annivs = [];
+try { annivs = JSON.parse(localStorage.getItem(ANNIV_KEY) || '[]'); } catch(e){}
+function persistAnniv(){ try { localStorage.setItem(ANNIV_KEY, JSON.stringify(annivs)); } catch(e){} }
+/* v5.3：下一次到来的日期（阳历按当年/次年；阴历按农历年枚举 t0 前一年/当年/后一年的同月同日，月内无该日时收敛到月末） */
+function anNext(a, t0){
+  if (a.lunar) {
+    var l0 = lunarFromDate(t0) || { lYear: t0.getFullYear() };
+    var best = null;
+    for (var dy = -1; dy <= 1; dy++) {
+      var dt = dateFromLunar(l0.lYear + dy, a.m, a.d);
+      if (dt && dt >= t0 && (!best || dt < best)) best = dt;
+    }
+    return best || t0;
+  }
+  var next = new Date(t0.getFullYear(), a.m - 1, a.d);
+  if (next < t0) next = new Date(t0.getFullYear() + 1, a.m - 1, a.d);
+  return next;
+}
+function anRender(){
+  var t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  var rows = annivs.map(function(a, i){ return { a: a, i: i, days: Math.round((anNext(a, t0) - t0) / 86400000) }; })
+    .sort(function(x, y){ return x.days - y.days; });
+  document.getElementById('annivList').innerHTML = rows.map(function(r){
+    var a = r.a;
+    var dt = a.lunar ? '农历' + LMONTH_NAMES[a.m - 1] + '月' + a.d + '日' : a.m + '月' + a.d + '日';
+    return '<div class="anrow"><span class="dt">' + dt + '</span><span class="nm">' + esc(a.name) + '</span>'
+      + '<span class="cd">' + (r.days === 0 ? '就是今天！' : '还有 ' + r.days + ' 天') + '</span>'
+      + '<button class="del" data-adel="' + r.i + '" title="删除">×</button></div>';
+  }).join('') || '<div style="color:var(--tx-3);font-size:12px">暂无纪念日，在下面添加。</div>';
+  document.querySelectorAll('#annivList [data-adel]').forEach(function(b){
+    b.onclick = function(){
+      var i = +this.dataset.adel;
+      if (!confirm('删除纪念日「' + annivs[i].name + '」？')) return;
+      annivs.splice(i, 1);
+      persistAnniv(); anRender(); cmRender();
+    };
+  });
+}
+document.getElementById('anAdd').onclick = function(){
+  var name = document.getElementById('anName').value.trim();
+  var v = document.getElementById('anDate').value;
+  if (!name || !v) { alert('名称和日期必填'); return; }
+  annivs.push({ id: 'a' + Date.now().toString(36), name: name, m: +v.slice(5, 7), d: +v.slice(8, 10),
+    lunar: document.getElementById('anLunar').checked || undefined });
+  document.getElementById('anName').value = '';
+  document.getElementById('anDate').value = '';
+  document.getElementById('anLunar').checked = false;
+  persistAnniv(); anRender(); cmRender();
+};
+
 
 /* ---------- 设置（同步 / 导入 / 手册 集中于此） ---------- */
 var ovSettings = document.getElementById('ovSettings');
@@ -1523,26 +1817,24 @@ ovSettings.addEventListener('click', function(e){ if (e.target === this) this.hi
 /* ---------- 工具管理（v4.7 独立界面：分类页签 + 增改删；vTools 随 velvet/data.json 同步） ---------- */
 var ovTools = document.getElementById('ovTools');
 var tmFilter = '全部', tmEditing = -1;
-function tmAll(){ return TOOLS.concat(vTools || []); }
+function tmAll(){ return vTools || []; }
 function tmRender(){
   var el = document.getElementById('tmList');
-  var list = tmAll().map(function(t, i){ return { t: t, i: i, custom: i >= TOOLS.length }; })
+  var list = tmAll().map(function(t, i){ return { t: t, i: i, custom: true }; })
     .filter(function(x){ return tmFilter === '全部' || tmCatOf(x.t) === tmFilter; });
   el.innerHTML = list.map(function(x){
     var b = x.t;
     return '<div class="mrow" style="cursor:default"><span class="ic" style="width:18px;flex:none;color:var(--cyan);display:flex">'
       + (b.icon || TOOL_ICON_DEFAULT) + '</span>'
       + '<span class="mn">' + esc(b.name) + '</span>'
-      + '<span class="dim">' + (x.custom ? '自定义' : '内置') + ' · ' + esc(tmCatOf(b)) + '</span>'
-      + (x.custom
-          ? '<button data-tmedit="' + x.i + '">改</button><button class="del" data-tmdel="' + (x.i - TOOLS.length) + '">删</button>'
-          : '<span style="font-size:10px;color:var(--tx-3);flex:none">代码内置</span>')
+      + '<span class="dim">' + esc(tmCatOf(b)) + '</span>'
+      + '<button data-tmedit="' + x.i + '">改</button><button class="del" data-tmdel="' + x.i + '">删</button>'
       + '</div>';
   }).join('') || '<div style="color:var(--tx-3);font-size:12px;padding:12px 0">该分类还没有工具。</div>';
   el.querySelectorAll('[data-tmedit]').forEach(function(btn){
     btn.onclick = function(){
       var t = tmAll()[+this.dataset.tmedit];
-      tmEditing = +this.dataset.tmedit - TOOLS.length;
+      tmEditing = +this.dataset.tmedit;
       document.getElementById('tmName').value = t.name || '';
       document.getElementById('tmUrl').value = t.url || '';
       document.getElementById('tmDesc').value = t.desc || '';
@@ -1842,6 +2134,7 @@ function collectSync(){
     customs: customs,
     done: doneMap,
     hidden: hiddenMap,
+    anniversaries: annivs.slice(),
     budget: (function(){ try { return JSON.parse(localStorage.getItem('cal_budget_v1')); } catch(e){ return null; } })()
   };
 }
@@ -1851,10 +2144,17 @@ function applySync(d){
   if (Array.isArray(d.customs)) { customs = d.customs; persistCustom(); }
   if (d.done) { doneMap = d.done; persistDone(); }
   if (d.hidden) { hiddenMap = d.hidden; persistHidden(); }
-  if (d.budget && Array.isArray(d.budget.categories)) {
-    try { localStorage.setItem('cal_budget_v1', JSON.stringify(d.budget)); } catch(e) {}
+  if (d.budget) {
+    var mb = bMigrate(d.budget);
+    if (mb) { try { localStorage.setItem('cal_budget_v1', JSON.stringify(mb)); } catch(e){} }
+  }
+  if (Array.isArray(d.anniversaries)) {
+    annivs = d.anniversaries.filter(function(a){ return a && a.name && a.m >= 1 && a.m <= 12; });
+    persistAnniv();
   }
   render(); bRenderWeekStrip();
+  var pgCal = document.getElementById('page-cal');
+  if (pgCal && pgCal.classList.contains('on')) cvRender();
 }
 function mergeSync(local, remote){
   if (!remote) return local;
@@ -1868,6 +2168,10 @@ function mergeSync(local, remote){
   local.customs = Object.keys(cmap).map(function(k){ return cmap[k]; });
   for (var k in (remote.done || {})) local.done[k] = remote.done[k];
   for (var k2 in (remote.hidden || {})) local.hidden[k2] = remote.hidden[k2];
+  var amap = {};
+  (local.anniversaries || []).forEach(function(a){ if (a && a.id) amap[a.id] = a; });
+  (remote.anniversaries || []).forEach(function(a){ if (a && a.id && !amap[a.id]) amap[a.id] = a; });
+  local.anniversaries = Object.keys(amap).map(function(k){ return amap[k]; });
   var rb = remote.budget;
   if (rb && (Array.isArray(rb.bars) || Array.isArray(rb.categories)) && (!local.budget || (rb.updatedAt || 0) > (local.budget.updatedAt || 0))) {
     local.budget = rb;
@@ -1992,6 +2296,8 @@ var _oldPersistCustom = persistCustom;
 persistCustom = function(){ _oldPersistCustom(); if (!ghMute) ghSchedule(); };
 var _oldPersistHidden = persistHidden;
 persistHidden = function(){ _oldPersistHidden(); if (!ghMute) ghSchedule(); };
+var _oldPersistAnniv = persistAnniv;
+persistAnniv = function(){ _oldPersistAnniv(); if (!ghMute) ghSchedule(); };
 var _oldBSave = bSave;
 bSave = function(){ _oldBSave(); if (!ghMute) ghSchedule(); };
 
@@ -2179,6 +2485,21 @@ try { vTimer = JSON.parse(localStorage.getItem('velvet_timer_v1') || 'null'); } 
 try { vMdCache = JSON.parse(localStorage.getItem('velvet_md_v1') || 'null') || { todo:null, work:null }; } catch(e){}
 try { vRankSeen = JSON.parse(localStorage.getItem('velvet_ranks_v1') || 'null'); } catch(e){}
 try { vTools = JSON.parse(localStorage.getItem('velvet_tools_v1') || '[]'); } catch(e){}
+/* ---------- v5.4 内置工具下放：首次运行把代码内置卡片并入 vTools（按 链接+名称 去重），此后与普通卡片一样可改、可删、随 data.json 同步 ---------- */
+try {
+  if (!localStorage.getItem('velvet_tools_migrated_v1')) {
+    var ex = {};
+    (vTools || []).forEach(function(t){ if (t) ex[String(t.url) + '|' + String(t.name)] = 1; });
+    var add = BUILTIN_TOOLS.filter(function(t){ return !ex[String(t.url) + '|' + String(t.name)]; });
+    if (add.length) {
+      vTools = add.concat(vTools);
+      localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools));
+      vUpdatedAt = Date.now();   /* 让迁移本身成为一次可推送的改动，双端各自首次打开都会自我迁移 */
+      localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
+    }
+    localStorage.setItem('velvet_tools_migrated_v1', '1');
+  }
+} catch(e){}
 function vSaveAll(){
   try {
     localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
@@ -3645,7 +3966,7 @@ setInterval(function(){ if (ghCfg && !document.hidden && !vGhBusy) { vPullData()
 document.getElementById('ghBtnNow').addEventListener('click', function(){ vSyncAll(); });
 
 render();
-go('today');
+go('cal');
 </script>
 </body>
 </html>
