@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="5.7">
+<meta name="app-version" content="5.9">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -186,6 +186,24 @@ nav button.on::before {
 
 /* ===== 页面 ===== */
 .page { display:none; padding:16px 14px; max-width:980px; margin:0 auto; }
+
+/* ===== 库存（v5.8） ===== */
+.pn-stats { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.pn-stat { flex:1; min-width:80px; text-align:center; padding:8px 4px; border:1px solid var(--line); background:var(--card); clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+.pn-stat b { display:block; font-size:20px; font-weight:800; }
+.pn-stat span { font-size:10px; letter-spacing:2px; color:var(--tx-3); }
+.pn-item { display:flex; align-items:center; gap:10px; padding:8px 10px; margin-bottom:6px; border:1px solid var(--line); background:var(--card); clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+.pn-name { flex:1; min-width:0; font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pn-meta { font-size:11px; color:var(--tx-3); white-space:nowrap; }
+.pn-exp { font-size:12px; font-weight:700; white-space:nowrap; }
+.pn-exp.ok { color:var(--tx-3); }
+.pn-exp.warn { color:var(--gold); }
+.pn-exp.over { color:var(--magenta); }
+.pn-x { width:22px; height:22px; line-height:20px; text-align:center; border:1px solid var(--line); background:transparent; color:var(--tx-3); cursor:pointer; font-size:13px; flex:none; }
+.pn-x:hover { color:var(--magenta); border-color:var(--magenta); }
+.pn-empty { font-size:12.5px; color:var(--tx-3); padding:14px 6px; text-align:center; }
+@media (max-width:640px){ .pn-item{ flex-wrap:wrap; } }
+
 .page.on { display:block; }
 .page.wide { max-width:none; }
 
@@ -738,7 +756,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v5.7 · 2026-11-05</span>
+  <span class="ver">v5.9 · 2026-11-06</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -838,6 +856,34 @@ nav button.on::before {
   </div>
 </section>
 
+<section class="page" id="page-pantry">
+  <div class="ptitle">食物库存<span class="en">PANTRY</span><span class="sub">保质期台账 · 临期置顶</span></div>
+  <div class="panel">
+    <div class="pn-stats" id="pnStats"></div>
+    <div id="pnList"></div>
+    <div class="b-sec" style="margin-top:14px">录入</div>
+    <div class="fg">
+      <label>名称</label>
+      <input id="pnName" list="pnNames" placeholder="例如：全麦面包" autocomplete="off">
+      <datalist id="pnNames"></datalist>
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label>生产日期</label>
+        <input type="date" id="pnProd">
+      </div>
+      <div class="fg" style="max-width:110px">
+        <label>保质期（天）</label>
+        <input type="number" id="pnDays" min="1" placeholder="90">
+      </div>
+    </div>
+    <div class="bx-actions">
+      <button class="btn pri" id="pnSave">保存</button>
+    </div>
+    <div class="b-msg" id="pnMsg"></div>
+  </div>
+</section>
+
 </main>
 
 <!-- ===== 底部导航 ===== -->
@@ -845,6 +891,7 @@ nav button.on::before {
   <button id="nav-cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15.5" r="2.2"/></svg>日历<span class="en">CALENDAR</span></button>
   <button id="nav-growth"><svg viewBox="0 0 24 24"><polygon points="12,3 20,9 17,19 7,19 4,9"/><circle cx="12" cy="12" r="2"/></svg>成长<span class="en">GROWTH</span></button>
   <button id="nav-budget"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 9.8c0-1 1.1-1.8 2.5-1.8s2.5.8 2.5 1.8c0 2.6-5 1.4-5 4 0 1 1.1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg>预算<span class="en">BUDGET</span></button>
+  <button id="nav-pantry"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H9a1.8 1.8 0 0 1-1.8-1.6L6 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>库存<span class="en">PANTRY</span></button>
 </nav>
 
 <!-- 电脑端左侧边栏（手机端不显示，用底导航） -->
@@ -852,6 +899,7 @@ nav button.on::before {
   <button class="lnav" data-go="cal"><span class="no">01</span>日历<span class="en">CALENDAR</span></button>
   <button class="lnav" data-go="growth"><span class="no">02</span>成长<span class="en">GROWTH</span></button>
   <button class="lnav" data-go="budget"><span class="no">03</span>预算<span class="en">BUDGET</span></button>
+  <button class="lnav" data-go="pantry"><span class="no">04</span>库存<span class="en">PANTRY</span></button>
 </aside>
 
 <!-- 添加记录 -->
@@ -981,9 +1029,9 @@ nav button.on::before {
     <div class="set-sec man">
       <div class="st">维护手册</div>
       <h4>功能</h4>
-      <p>P3 风格个人工作台：日历（v5.3 时光+活动合并：月视图 / 甘特图 / 日视图 三视图 + 纪念日，月视图带阴历，三视图点左上角月份可快跳）/ 成长（五维 Rank，xp 从 md 日志推导，只增不减）/ 预算（指令单看板 + 本周纪律 + 待办）+ 老工具入口抽屉。</p>
+      <p>P3 风格个人工作台：日历（v5.3 时光+活动合并：月视图 / 甘特图 / 日视图 三视图 + 纪念日，月视图带阴历，三视图点左上角月份可快跳）/ 成长（五维 Rank，xp 从 md 日志推导，只增不减）/ 预算（指令单看板 + 本周纪律 + 待办）/ 库存（食物保质期台账：名称+生产日期+保质期自动算到期日，按到期日升序、临期黄色、过期品红，名称输入模糊联想已有条目）+ 老工具入口抽屉。</p>
       <h4>数据存储</h4>
-      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_anniv_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
+      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_anniv_v1 / cal_pantry_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算/库存/纪念日）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
       <h4>使用说明</h4>
       <ul>
         <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块（可移除、不留记录），点计划块落定实际起止。右下悬浮钮计时，结束自动成时段卡。<b>关联了待办/工坊的时段，备注即当日日志</b>：保存时自动写进 md，改备注同步改日志（同日整行替换）。</li>
@@ -991,6 +1039,7 @@ nav button.on::before {
         <li>成长页：雷达轴长 = 该维总经验 / R10 满级（360）的绝对进度，每次升级都会变长；五角数字 = 总 Rank；等级名到 R4 / R7 / R10 才有庆祝章，下一级名未达前显示 ???。</li>
         <li>手机用底部导航切三页；电脑点左上角月相呼出左侧边栏。日历页内"月视图/甘特图/日视图"开关切换；月视图点格子进当天日视图。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
         <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析（整体替换：纪律文本 + 进度条 + 缩进待办）；行首空一格的行进待办清单，可就地勾选。</li>
+        <li>库存页：输入名称、生产日期、保质期（天），保存后自动算到期日并按到期日升序排列（最接近过期的在最上）；顶部统计已过期 / 临期 ≤3 天 / 正常；名称框输入时自动联想已有条目（去重后的全部历史名称，原生模糊匹配，点选即填，同品类复购只需补日期和天数）。</li>
         <li>ob 侧：首次在电脑库里跑 <code>python .tools/velvet_sync.py push</code> 初始化镜像，之后日常跑 <code>python .tools/velvet_sync.py</code> 拉取覆盖。</li>
       </ul>
       <h4>维护要点</h4>
@@ -1002,6 +1051,8 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v5.9（2026-11-06）库存页两处返工（用户裁定）：① <b>删除扫码录入</b>——同品类不同规格/批次条码各不相同，条码→名称学习表学不全，连同内嵌的 ZXing 库（约 330KB）、扫码弹层、摄像头权限处理一并移除，文件显著变小；② 名称输入改<b>模糊联想</b>：全部历史名称去重后进原生 datalist，打字即过滤、点选即填——同一样东西再买只需改日期和天数。v5.8 引入的 cal_pantry_bc_v1 键废弃不再读写（旧数据残留无害，可无视）。</p>
+      <p>v5.8（2026-11-06）新增<b>食物库存</b>页（第四页，底导航与电脑左侧边栏均有入口）：名称 + 生产日期 + 保质期（天）→ 自动算到期日、保存即生效，按到期日升序排列（最先过期的置顶），顶部统计块显示已过期 / 临期 ≤3 天 / 正常三色计数，过期品红、临期黄、正常灰。支持<b>扫码录入</b>：内嵌 ZXing 解码库（约 330KB）作兜底——原生 BarcodeDetector 先试，6 秒无结果自动切换；条码本身不带生产日期，故采用「本地学习」：首次扫到的条码填名称保存后被记住（cal_pantry_bc_v1，仅本机），此后扫同一条码自动填名。摄像头权限被拒给出明确指引（地址栏 🔒 网站权限）。库存数据随根 data.json 的 pantry 字段按 id 并集多端同步（沿用纪念日同套合并契约）。</p>
       <p>v5.7（2026-11-06）两修：① 手机窄屏（≤640px）下表单行允许换行、输入框允许收缩——修复月视图底部「纪念日添加」行超宽被裁且因 overflow-x:clip 拖不动的问题（390px 实测，名称独占一行，日期与按钮落第二行）；② 工具卡页签顶部新增同步状态行：已配 Token 显示「随 velvet/data.json 上云（tools 字段）+ 本机数据时间」，未配 Token 红字直说「只存本机」——工具卡同步位置由此前说不清变为界面可见。（回应「工具卡是不是存本地」：代码路径一直会推 velvet/data.json，疑点是它不在根目录 data.json；若手机端没填 Token 则确实只在本地。）</p>
       <p>v5.6（2026-11-05）管理大并版（用户一次拍板五件事）：① 设置页「工具卡片」一节删除（入口收编）；② 维护弹层「工坊」页签退役——0-工坊.md 项目数据原样保留，日视图「追加需求」照旧按项目名写回，但不再有工坊项目的增删改界面（工坊改信息/加需求的弹层代码随之不可达，留体不删）；③ 工具分类新增「本地」：此类卡片渲染为不可跳转的陈列卡（浏览器安全沙箱禁止网页按路径打开本地文件，位置请记入选填的「维护站」），表单里选「本地」时链接可留空；④ 工具卡新增选填字段「维护站」（维护入口网址或存放位置），管理列表与抽屉卡片均显示；⑤ 「管理工具卡」与「管理需求与日志」合为一个弹层：ovMaint 变三页签（待办 / 已完成 / 工具卡），原 ovTools 弹层与设置页按钮退役，工具抽屉两个按钮分别直达不同页签。默认四卡加回目录移入工具卡页签底部提示。</p>
       <p>v5.5（2026-11-05）管理入口合并（用户拍板：不做大面板，走抽屉直达）：工具抽屉（顶栏 🔧 打开）底部新增「管理工具卡」「管理需求与日志」两个按钮——前者打开工具管理弹层（z-61），后者打开与日视图 🔧 完全相同的维护弹层（z-70，待办/已完成/工坊三栏，写回逻辑零改动）；点击自动收起抽屉，弹层层级均高于抽屉不受遮挡。设置页原有入口保留不动。</p>
@@ -1358,7 +1409,7 @@ function fmtD(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDa
 })();
 
 /* ================= 页面切换 ================= */
-var PAGES = ['cal', 'growth', 'budget'];
+var PAGES = ['cal', 'growth', 'budget', 'pantry'];
 var navL = document.getElementById('navL');
 function go(p){
   PAGES.forEach(function(x){
@@ -1370,6 +1421,7 @@ function go(p){
   if (p === 'cal') { cvRender(); }
   if (p === 'budget') { bRender(); bRenderWeekStrip(); }
   if (p === 'growth') { renderGrowth(); }
+  if (p === 'pantry') { pnRender(); }
   window.scrollTo(0, 0);
 }
 PAGES.forEach(function(x){
@@ -2127,6 +2179,75 @@ function b64d(str){ return decodeURIComponent(escape(atob(str.replace(/\n/g, '')
 function syncLine(t, err){ var el = document.getElementById('syncLine'); if (el) { el.textContent = t; el.style.color = err ? 'var(--magenta)' : ''; } }
 function ghStatus(t){ var el = document.getElementById('ghStatus'); if (el) el.textContent = t; }
 
+/* ================= 食物库存（v5.8）：名称+生产日期+保质期 → 到期日，按到期日升序 ================= */
+var PANTRY_KEY = 'cal_pantry_v1';
+var pantry = [];
+try { pantry = JSON.parse(localStorage.getItem(PANTRY_KEY) || '[]'); } catch(e){}
+function persistPantry(){ try { localStorage.setItem(PANTRY_KEY, JSON.stringify(pantry)); } catch(e){} }
+function pnExpiryOf(it){ var d = new Date(it.prod + 'T00:00:00'); d.setDate(d.getDate() + (it.days || 0)); return d; }
+function pnDayDiff(it){
+  var t0 = new Date(); t0.setHours(0,0,0,0);
+  return Math.round((pnExpiryOf(it) - t0) / 86400000);
+}
+function pnRender(){
+  var el = document.getElementById('pnList');
+  var st = document.getElementById('pnStats');
+  if (!el) return;
+  var arr = pantry.slice().sort(function(a,b){ return pnExpiryOf(a) - pnExpiryOf(b); });
+  var over = 0, warn = 0;
+  pantry.forEach(function(it){ var d = pnDayDiff(it); if (d < 0) over++; else if (d <= 3) warn++; });
+  st.innerHTML = '<div class="pn-stat"><b style="color:var(--magenta)">' + over + '</b><span>已过期</span></div>'
+    + '<div class="pn-stat"><b style="color:var(--gold)">' + warn + '</b><span>临期 ≤3 天</span></div>'
+    + '<div class="pn-stat"><b style="color:var(--cyan)">' + (pantry.length - over - warn) + '</b><span>正常</span></div>';
+  if (!arr.length) { el.innerHTML = '<div class="pn-empty">还没有库存记录。输入名称、生产日期、保质期，点「保存」；熟食品可「扫码录入」自动填名称。</div>'; return; }
+  var h = '';
+  arr.forEach(function(it){
+    var d = pnDayDiff(it);
+    var cls = d < 0 ? 'over' : (d <= 3 ? 'warn' : 'ok');
+    var label = d < 0 ? '已过期 ' + (-d) + ' 天' : (d === 0 ? '今天到期' : (d + ' 天后到期'));
+    var exp = pnExpiryOf(it);
+    h += '<div class="pn-item">'
+      + '<span class="pn-name">' + (it.name || '').replace(/</g,'&lt;') + '</span>'
+      + '<span class="pn-meta">' + it.prod + ' · ' + it.days + ' 天</span>'
+      + '<span class="pn-exp ' + cls + '">' + (exp.getMonth()+1) + '/' + exp.getDate() + ' ' + label + '</span>'
+      + '<button class="pn-x" data-id="' + it.id + '" title="删除">×</button>'
+      + '</div>';
+  });
+  el.innerHTML = h;
+  el.querySelectorAll('.pn-x').forEach(function(b){
+    b.onclick = function(){
+      pantry = pantry.filter(function(x){ return x.id !== b.dataset.id; });
+      persistPantry(); pnRender();
+    };
+  });
+  /* 名称联想：已有名字去重进 datalist，输入即模糊匹配（原生行为） */
+  var seen = {}, dl = document.getElementById('pnNames');
+  if (dl) {
+    var opts = '';
+    pantry.forEach(function(it){
+      var n = (it.name || '').trim();
+      if (n && !seen[n]) { seen[n] = 1; opts += '<option value="' + n.replace(/"/g,'&quot;') + '">'; }
+    });
+    dl.innerHTML = opts;
+  }
+}
+function pnMsg(txt, bad){ var m = document.getElementById('pnMsg'); m.textContent = txt || ''; m.style.color = bad ? 'var(--magenta)' : 'var(--tx-3)'; }
+document.getElementById('pnSave').onclick = function(){
+  var name = document.getElementById('pnName').value.trim();
+  var prod = document.getElementById('pnProd').value;
+  var days = parseInt(document.getElementById('pnDays').value, 10);
+  if (!name) { pnMsg('填个名字。', true); return; }
+  if (!prod) { pnMsg('选生产日期。', true); return; }
+  if (!(days > 0)) { pnMsg('保质期填正整数天数。', true); return; }
+  var it = { id: 'pn' + Date.now().toString(36) + Math.floor(Math.random()*999), name: name, prod: prod, days: days };
+  pnMsg('');
+  pantry.push(it);
+  persistPantry(); pnRender();
+  document.getElementById('pnName').value = '';
+  document.getElementById('pnDays').value = '';
+};
+
+
 function collectSync(){
   /* 只打包"用户层"数据：导入的活动 + 自定义 + 勾选 + 隐藏 + 预算。
      monitored（公开 events.json 内容）是只读公共层，每次打开自动重新 fetch，不进同步。 */
@@ -2137,6 +2258,7 @@ function collectSync(){
     done: doneMap,
     hidden: hiddenMap,
     anniversaries: annivs.slice(),
+    pantry: pantry.slice(),
     budget: (function(){ try { return JSON.parse(localStorage.getItem('cal_budget_v1')); } catch(e){ return null; } })()
   };
 }
@@ -2153,6 +2275,10 @@ function applySync(d){
   if (Array.isArray(d.anniversaries)) {
     annivs = d.anniversaries.filter(function(a){ return a && a.name && a.m >= 1 && a.m <= 12; });
     persistAnniv();
+  }
+  if (Array.isArray(d.pantry)) {
+    pantry = d.pantry.filter(function(a){ return a && a.name && a.prod && a.days > 0; });
+    persistPantry();
   }
   render(); bRenderWeekStrip();
   var pgCal = document.getElementById('page-cal');
@@ -2174,6 +2300,10 @@ function mergeSync(local, remote){
   (local.anniversaries || []).forEach(function(a){ if (a && a.id) amap[a.id] = a; });
   (remote.anniversaries || []).forEach(function(a){ if (a && a.id && !amap[a.id]) amap[a.id] = a; });
   local.anniversaries = Object.keys(amap).map(function(k){ return amap[k]; });
+  var pmap = {};
+  (local.pantry || []).forEach(function(a){ if (a && a.id) pmap[a.id] = a; });
+  (remote.pantry || []).forEach(function(a){ if (a && a.id && !pmap[a.id]) pmap[a.id] = a; });
+  local.pantry = Object.keys(pmap).map(function(k){ return pmap[k]; });
   var rb = remote.budget;
   if (rb && (Array.isArray(rb.bars) || Array.isArray(rb.categories)) && (!local.budget || (rb.updatedAt || 0) > (local.budget.updatedAt || 0))) {
     local.budget = rb;
@@ -2196,10 +2326,12 @@ function ghPull(){
       try { localStorage.setItem(LS_CUSTOM, JSON.stringify(merged.customs)); } catch(e){}
       try { localStorage.setItem(LS_DONE, JSON.stringify(merged.done)); } catch(e){}
       try { localStorage.setItem('cal_hidden_v1', JSON.stringify(merged.hidden)); } catch(e){}
+      try { localStorage.setItem('cal_pantry_v1', JSON.stringify(merged.pantry)); } catch(e){}
       if (merged.budget && Array.isArray(merged.budget.categories)) {
         try { localStorage.setItem('cal_budget_v1', JSON.stringify(merged.budget)); } catch(e){}
       }
       imported = merged.events; customs = merged.customs; doneMap = merged.done; hiddenMap = merged.hidden;
+      if (Array.isArray(merged.pantry)) pantry = merged.pantry;
       render(); bRenderWeekStrip();
       syncLine('已同步 ' + new Date().toLocaleTimeString());
       return true;
@@ -2300,6 +2432,8 @@ var _oldPersistHidden = persistHidden;
 persistHidden = function(){ _oldPersistHidden(); if (!ghMute) ghSchedule(); };
 var _oldPersistAnniv = persistAnniv;
 persistAnniv = function(){ _oldPersistAnniv(); if (!ghMute) ghSchedule(); };
+var _oldPersistPantry = persistPantry;
+persistPantry = function(){ _oldPersistPantry(); if (!ghMute) ghSchedule(); };
 var _oldBSave = bSave;
 bSave = function(){ _oldBSave(); if (!ghMute) ghSchedule(); };
 
