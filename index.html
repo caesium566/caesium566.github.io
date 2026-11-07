@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="6.2">
+<meta name="app-version" content="6.3">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -772,7 +772,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v6.2 · 2026-11-06</span>
+  <span class="ver">v6.3 · 2026-11-06</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -1030,7 +1030,7 @@ nav button.on::before {
     <div class="set-sec">
       <div class="st">导入数据</div>
       <div class="hint">
-        粘贴 events.json（活动）或 budget.json（预算）的内容，或选择文件，自动识别。<br>
+        粘贴旧 data.json / events.json / budget.json 的内容，或选择文件，自动识别。<br>
         活动按 id 合并：同 id 更新、新 id 追加，<b>不删除任何已有数据</b>；预算整体覆盖本地。
       </div>
       <textarea id="impTa" class="b-ta" style="min-height:120px" placeholder='{"events":[{"id":"ak-01","game":"明日方舟","type":"活动","title":"…","start":"2026-10-01","end":"2026-10-15"}]}'></textarea>
@@ -1046,7 +1046,7 @@ nav button.on::before {
       <h4>功能</h4>
       <p>P3 风格个人工作台：日历（v5.3 时光+活动合并：月视图 / 甘特图 / 日视图 三视图 + 纪念日，月视图带阴历，三视图点左上角月份可快跳）/ 成长（五维 Rank，xp 从 md 日志推导，只增不减）/ 预算（指令单看板 + 本周纪律 + 待办）/ 库存（食物保质期台账：名称+生产日期+保质期自动算到期日，按到期日升序、临期黄色、过期品红，名称输入模糊联想已有条目）+ 老工具入口抽屉。</p>
       <h4>数据存储</h4>
-      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_anniv_v1 / cal_pantry_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>：冻结的 <code>data.json</code>（活动/预算/库存/纪念日）+ <code>velvet/data.json</code>（时光页）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 是只读层，不进同步。</p>
+      <p>真身在浏览器 localStorage：<code>cal_done_v1 / cal_custom_v1 / cal_import_v1 / cal_hidden_v1 / cal_budget_v1 / cal_anniv_v1 / cal_pantry_v1 / cal_gh</code> 与 <code>velvet_*</code> 段（时间线 / 感受 / 计划块 / 时段分类 / md 镜像缓存）。同步走 Private 仓 <code>cal-data</code>（v6.3 按域拆名，旧文件留仓不删）：<code>calendar.json</code>（活动/勾选/隐藏/纪念日/预算/库存，按条目合并）+ <code>velvet.json</code>（时光+成长，按 mu/updatedAt 合并）+ <code>tools.json</code>（工具卡目录，整包按时间取新）+ <code>velvet/0-待办事项.md</code>、<code>velvet/0-工坊.md</code>（ob 镜像，工作台唯一写入端，写前必校验 sha）。Token 只存本机。公开 events.json 监控层已退役（2026-10 后无维护），活动真身 = calendar.json 的 events 字段，月更即更新该字段。</p>
       <h4>使用说明</h4>
       <ul>
         <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块（可移除、不留记录），点计划块落定实际起止。右下悬浮钮计时，结束自动成时段卡。<b>关联了待办/工坊的时段，备注即当日日志</b>：保存时自动写进 md，改备注同步改日志（同日整行替换）。</li>
@@ -1066,6 +1066,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v6.3（2026-11-07）数据布局按域拆名（用户拍板）：cal-data 仓 <b>data.json → calendar.json</b>（活动/勾选/隐藏/纪念日/预算/库存）、<b>velvet/data.json → velvet.json</b>（时光+成长，tools 字段拆出）、新增 <b>tools.json</b>（工具卡目录独立，整包 updatedAt 语义随它走，与日历/时光的条目级合并彻底解耦）。<b>公开仓 events.json 监控层退役</b>：2026-10-02 后无维护，代码不再 fetch，活动真身 = calendar.json 的 events 字段，以后月更直接改 calendar.json。<b>零手动迁移</b>：数据真身在 localStorage，新代码首次同步自动推建新文件；工具卡时间戳继承旧 vUpdatedAt，双端近端改动不丢；旧 data.json / velvet/data.json 留仓不删（代码不再读写），确认新文件正常后可手动删。注意双端同时更新本版本，旧代码会往旧文件名写、互相覆盖。</p>
       <p>v6.2（2026-11-06）需求与日志面板美术重做（用户拍板「太丑了」）：数据源不动（仍是 0-工坊.md，卡片名对应条目），只改视觉——整体装进斜切暗色面板（.tw-wrap），头部标题 + 来源章（0-工坊.md / 未建档），「需求 / 日志」金色分区题，需求行卡化（斜切小卡 + ☐/☑ 勾选章 + 悬停亮边 + 完成划线），日志逐条虚线分隔 + 金色日期章，头部统计「N 进行中 / 共 M」。未建档与未选卡的提示态同样装进面板，不再裸奔。</p>
       <p>v6.1（2026-11-06）管理界面重切（用户裁定）：① 日视图 🔧 的维护弹层只留 待办 / 已完成 两页签，工具卡页签迁出；② 工具抽屉底部原「管理工具卡」「管理需求与日志」两个按钮<b>合一</b>为「管理工具与需求」，打开工具卡专管弹层（z-66）：点选一张卡，上方表单管<b>跳转</b>（链接）与<b>基本信息</b>（名称/描述/版本/分类/图标/维护站），下方<b>需求与日志</b>面板按卡片名对应 0-工坊.md 条目——需求就地勾选/追加（写回 md）、日志看最近五条并可写回，无档案的卡一键建档（链接与维护站自动带入）。卡片列表点击即选（不再只有「改」按钮）。vRenderMaint 里 v5.6 遗留的整段死代码（不可达的工坊分支）一并清除。</p>
       <p>v6.0（2026-11-06）月视图手机端瘦身（实测 390px 屏活动长标题把格子撑乱、一行放不下）：≤640px 时活动不再显示文字——有活动 = 一条彩色横条划过日期格（取当天首个活动的游戏色，长标题收进悬浮提示），纪念日仍旧 ★、当日时间线仍旧青点。当天详情一律走「点格子 → 日视图」一览（日视图本就承载当天活动+时间线+计划）。桌面端显示不变。</p>
@@ -1334,7 +1335,7 @@ var BUILTIN_TOOLS = [
 ];
 /* 图标约定：一段 <svg viewBox="0 0 24 24"> 线性图标代码，只放 path/circle 等元素，颜色粗细由卡片样式统一施加 */
 var TOOL_ICON_DEFAULT = '<svg viewBox="0 0 24 24"><path d="M12 2l2.4 5.9 6.3.5-4.8 4.1 1.5 6.2L12 15.8 6.6 18.7l1.5-6.2-4.8-4.1 6.3-.5z"/></svg>';
-/* 预置数据：格式示例，可改可删。监控接入后由 events.json 提供 */
+/* 预置数据：格式示例，可改可删（v6.3 起活动真身在 calendar.json 的 events 字段） */
 var BASE_EVENTS = [
   { id:'demo-1', game:'明日方舟', type:'签到', title:'示例：旬旬签到（可删）', start:'2026-09-01', end:'2026-09-07' },
   { id:'demo-2', game:'自定义',   type:'发售', title:'示例：某单机发售日（可删）', start:'2026-10-01', end:'' }
@@ -1352,22 +1353,8 @@ try { imported = JSON.parse(localStorage.getItem('cal_import_v1') || '[]'); } ca
 try { hiddenMap = JSON.parse(localStorage.getItem('cal_hidden_v1') || '{}'); } catch(e){}
 function persistImported(){ try{ localStorage.setItem('cal_import_v1', JSON.stringify(imported)); }catch(e){} }
 function persistHidden(){ try{ localStorage.setItem('cal_hidden_v1', JSON.stringify(hiddenMap)); }catch(e){} }
-/* 公开 events.json：活动初始数据 + 可选全量字段（存在什么覆盖什么） */
-fetch('./events.json?t=' + Date.now())
-  .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(d){
-    if (!d) return;
-    if (Array.isArray(d.events)) { monitored = d.events; }
-    if (Array.isArray(d.customs)) { customs = d.customs; persistCustom(); }
-    if (d.done) { doneMap = d.done; persistDone(); }
-    if (d.hidden) { hiddenMap = d.hidden; persistHidden(); }
-    if (d.budget) {
-      var eb = bMigrate(d.budget);
-      if (eb) { try { localStorage.setItem('cal_budget_v1', JSON.stringify(eb)); } catch(e){} }
-    }
-    render(); bRenderWeekStrip();
-  })
-  .catch(function(){});
+/* v6.3：公开 events.json 监控层退役，不再 fetch（旧文件如仍在仓里会被此代码无视；
+     活动真身 = calendar.json 的 events 字段，月更 = 更新该字段）。 */
 
 function persistDone(){ try{ localStorage.setItem(LS_DONE, JSON.stringify(doneMap)); }catch(e){} }
 function persistCustom(){ try{ localStorage.setItem(LS_CUSTOM, JSON.stringify(customs)); }catch(e){} }
@@ -1907,7 +1894,7 @@ function tmRender(){
   var si = document.getElementById('tmSyncInfo');
   if (si) {
     si.innerHTML = ghCfg
-      ? '工具卡随 velvet/data.json 上云（tools 字段，<b>不是</b>根目录 data.json）。本机数据时间：' + (vUpdatedAt ? new Date(vUpdatedAt).toLocaleString('zh-CN', { hour12:false }) : '—') + '。改动后约 3 秒自动推送，也可到设置页手动同步。'
+      ? '工具卡随 tools.json 上云（独立文件，整包按时间取新，与日历/时光互不干扰）。本机数据时间：' + (vToolsUpdated ? new Date(vToolsUpdated).toLocaleString('zh-CN', { hour12:false }) : '—') + '。改动后约 3 秒自动推送，也可到设置页手动同步。'
       : '<b style="color:var(--magenta)">本机还没配置同步 Token（设置 → 数据同步）：工具卡当前只存本机，配好后自动上云。</b>';
   }
   var list = tmAll().map(function(t, i){ return { t: t, i: i, custom: true }; })
@@ -2280,7 +2267,7 @@ document.getElementById('bBtnParse').onclick = function(){
 var ghCfg = null, ghTimer = null, ghBusy = false;
 try { ghCfg = JSON.parse(localStorage.getItem('cal_gh') || 'null'); } catch(e) {}
 function ghSaveCfg(){ if (ghCfg) { try { localStorage.setItem('cal_gh', JSON.stringify(ghCfg)); } catch(e) {} } else { localStorage.removeItem('cal_gh'); } }
-function ghUrl(){ return 'https://api.github.com/repos/' + ghCfg.user + '/' + ghCfg.repo + '/contents/data.json'; }
+function ghUrl(){ return 'https://api.github.com/repos/' + ghCfg.user + '/' + ghCfg.repo + '/contents/calendar.json'; }
 function b64e(str){ return btoa(unescape(encodeURIComponent(str))); }
 function b64d(str){ return decodeURIComponent(escape(atob(str.replace(/\n/g, '')))); }
 
@@ -2357,8 +2344,8 @@ document.getElementById('pnSave').onclick = function(){
 
 
 function collectSync(){
-  /* 只打包"用户层"数据：导入的活动 + 自定义 + 勾选 + 隐藏 + 预算。
-     monitored（公开 events.json 内容）是只读公共层，每次打开自动重新 fetch，不进同步。 */
+  /* v6.3：只打包"用户层"数据（events/customs/done/hidden/anniversaries/pantry/budget），写入 calendar.json。
+     公开 events.json 监控层已退役（2026-10-02 后无人维护，活动真身 = 本文件的 events 字段）。 */
   return {
     updatedAt: Date.now(),
     events: imported.slice(),
@@ -2719,6 +2706,8 @@ try { vXpRev = +localStorage.getItem('velvet_rev_v1') || 0; } catch(e){}
 try { vAch = JSON.parse(localStorage.getItem('velvet_ach_v1') || '{}'); } catch(e){}
 try { vAchSeen = JSON.parse(localStorage.getItem('velvet_achseen_v1') || '{}'); } catch(e){}
 try { vUpdatedAt = +localStorage.getItem('velvet_updated_v1') || 0; } catch(e){}
+/* v6.3：工具卡拆入 tools.json，独立时间戳；初值继承 vUpdatedAt（旧体系 tools 与它共享时间戳，继承才不会丢近端改动） */
+var vToolsUpdated = vUpdatedAt;
 try { vTl = JSON.parse(localStorage.getItem('velvet_tl_v1') || '[]'); } catch(e){}
 try { vFeel = JSON.parse(localStorage.getItem('velvet_feel_v1') || '{}'); } catch(e){}
 try { vPlans = JSON.parse(localStorage.getItem('velvet_plans_v1') || '{}'); } catch(e){}
@@ -2729,7 +2718,7 @@ try { vTimer = JSON.parse(localStorage.getItem('velvet_timer_v1') || 'null'); } 
 try { vMdCache = JSON.parse(localStorage.getItem('velvet_md_v1') || 'null') || { todo:null, work:null }; } catch(e){}
 try { vRankSeen = JSON.parse(localStorage.getItem('velvet_ranks_v1') || 'null'); } catch(e){}
 try { vTools = JSON.parse(localStorage.getItem('velvet_tools_v1') || '[]'); } catch(e){}
-/* ---------- v5.4 内置工具下放：首次运行把代码内置卡片并入 vTools（按 链接+名称 去重），此后与普通卡片一样可改、可删、随 data.json 同步 ---------- */
+/* ---------- v5.4 内置工具下放：首次运行把代码内置卡片并入 vTools（按 链接+名称 去重），此后与普通卡片一样可改、可删、随 tools.json 同步 ---------- */
 try {
   if (!localStorage.getItem('velvet_tools_migrated_v1')) {
     var ex = {};
@@ -2739,6 +2728,7 @@ try {
       vTools = add.concat(vTools);
       localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools));
       vUpdatedAt = Date.now();   /* 让迁移本身成为一次可推送的改动，双端各自首次打开都会自我迁移 */
+      vToolsUpdated = vUpdatedAt;
       localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
     }
     localStorage.setItem('velvet_tools_migrated_v1', '1');
@@ -2755,7 +2745,9 @@ function vSaveAll(){
     localStorage.setItem('velvet_ach_v1', JSON.stringify(vAch));
     localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools));
     vUpdatedAt = Date.now();
+    vToolsUpdated = vUpdatedAt;
     localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
+    localStorage.setItem('velvet_tools_updated_v1', String(vToolsUpdated));
   } catch(e){}
   vSchedule();
 }
@@ -3091,9 +3083,9 @@ function vFileWrite(which, editFn, done){
     }).catch(function(e){ syncLine('写入失败：' + e.message); alert('写入失败：' + e.message); });
   }).catch(function(e){ syncLine('读取失败：' + e.message); alert('读取失败：' + e.message); });
 }
-/* velvet/data.json：拉（合并） / 推（去抖 3 秒） */
+/* v6.3：velvet.json（时光+成长，拉合并/推去抖 3 秒）+ tools.json（整包） */
 var vGhTimer = null, vGhBusy = false;
-function vCollect(){ return { updatedAt:vUpdatedAt, tl:vTl, feel:vFeel, plans:vPlans, cats:vCats, ccol:vCatColor, xpo:vXpOff, rev:vXpRev || 0, ach:vAch, rks:vRankSeen || {}, tools:vTools }; }
+function vCollect(){ return { updatedAt:vUpdatedAt, tl:vTl, feel:vFeel, plans:vPlans, cats:vCats, ccol:vCatColor, xpo:vXpOff, rev:vXpRev || 0, ach:vAch, rks:vRankSeen || {} }; }
 function vMergeData(local, remote){
   if (!remote) return local;
   var map = {};
@@ -3120,12 +3112,11 @@ function vMergeData(local, remote){
     }
   }
   for (var k3 in (remote.ach || {})) if (!local.ach[k3] || remote.ach[k3] < local.ach[k3]) local.ach[k3] = remote.ach[k3];
-  if (Array.isArray(remote.tools) && (remote.updatedAt || 0) > (local.updatedAt || 0)) local.tools = remote.tools;
   return local;
 }
 function vPullData(){
   if (!ghCfg) return Promise.resolve(false);
-  return vGet('data.json').then(function(f){
+  var p1 = vGet('velvet.json').then(function(f){
     if (!f) return false;
     var remote = JSON.parse(f.text);
     var merged = vMergeData(vCollect(), remote);
@@ -3133,7 +3124,6 @@ function vPullData(){
     vCatColor = merged.ccol || vCatColor; vXpOff = merged.xpo || vXpOff; vAch = merged.ach || vAch;
     if (merged.rks) vRankSeen = merged.rks;
     if (merged.rev) { vXpRev = merged.rev; try { localStorage.setItem('velvet_rev_v1', String(vXpRev)); } catch(e){} }
-    if (Array.isArray(merged.tools)) { vTools = merged.tools; renderTools(); }
     vUpdatedAt = Math.max(vUpdatedAt, remote.updatedAt || 0);
     try {
       localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
@@ -3144,10 +3134,27 @@ function vPullData(){
       localStorage.setItem('velvet_xpoff_v1', JSON.stringify(vXpOff));
       localStorage.setItem('velvet_ach_v1', JSON.stringify(vAch));
       localStorage.setItem('velvet_ranks_v1', JSON.stringify(vRankSeen));
-      localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools));
       localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
     } catch(e){}
     vRenderTime(); renderGrowth();
+    return true;
+  }).catch(function(){ return false; });
+  /* tools.json：整包按 updatedAt 取新（与 velvet 的条目级合并语义不同，故拆文件） */
+  var p2 = tPull();
+  return Promise.all([p1, p2]).then(function(rs){ return rs[0] || rs[1]; });
+}
+function tPull(){
+  return vGet('tools.json').then(function(f){
+    if (!f) return false;
+    var remote = JSON.parse(f.text);
+    if (Array.isArray(remote.tools) && (remote.updatedAt || 0) > (vToolsUpdated || 0)) {
+      vTools = remote.tools;
+      vToolsUpdated = remote.updatedAt;
+      try { localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools)); localStorage.setItem('velvet_tools_updated_v1', String(vToolsUpdated)); } catch(e){}
+      renderTools();
+      var mgr = document.getElementById('ovToolMgr');
+      if (mgr && !mgr.hidden) tmRender();
+    }
     return true;
   }).catch(function(){ return false; });
 }
@@ -3155,10 +3162,18 @@ function vPushData(){
   if (!ghCfg || vGhBusy) return Promise.resolve(false);
   vGhBusy = true;
   var attempt = function(){
-    return vGet('data.json').then(function(f){
+    return vGet('velvet.json').then(function(f){
       var merged = vMergeData(vCollect(), f ? JSON.parse(f.text) : null);
       merged.updatedAt = Date.now();
-      return vPut('data.json', JSON.stringify(merged), f ? f.sha : null, 'velvet sync');
+      return vPut('velvet.json', JSON.stringify(merged), f ? f.sha : null, 'velvet sync');
+    }).then(function(){
+      return vGet('tools.json').then(function(f2){
+        var rm = f2 ? JSON.parse(f2.text) : null;
+        var base = (rm && Array.isArray(rm.tools) && (rm.updatedAt || 0) > (vToolsUpdated || 0)) ? rm : { updatedAt: vToolsUpdated, tools: vTools };
+        var nts = Date.now();
+        return vPut('tools.json', JSON.stringify({ updatedAt: nts, tools: base.tools || [] }), f2 ? f2.sha : null, 'tools sync')
+          .then(function(){ vToolsUpdated = nts; try { localStorage.setItem('velvet_tools_updated_v1', String(nts)); } catch(e){} });
+      });
     });
   };
   return attempt().catch(function(e){
