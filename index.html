@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="6.4">
+<meta name="app-version" content="6.5">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -772,7 +772,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v6.4 · 2026-11-06</span>
+  <span class="ver">v6.5 · 2026-11-07</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -1013,6 +1013,7 @@ nav button.on::before {
       <div class="bx-actions" style="margin-top:4px">
         <button class="btn" id="ghBtnOff">断开</button>
         <button class="btn" id="ghBtnNow">立即同步</button>
+        <button class="btn" id="ghBtnExport">导出本机数据</button>
         <button class="btn pri" id="ghBtnSave">保存并同步</button>
       </div>
       <div class="b-msg" id="syncLine" style="text-align:right"></div>
@@ -2362,11 +2363,11 @@ function ghPull(){
       if (!f || !f.content) { syncLine('远程暂无数据'); return false; }
       var merged = mergeSync(collectSync(), JSON.parse(b64d(f.content)));
       /* 直接写存储与内存（绕开 persist* 的 ghSchedule 包装：打开页面不应触发推送） */
-      try { localStorage.setItem('cal_import_v1', JSON.stringify(merged.events)); } catch(e){}
-      try { localStorage.setItem(LS_CUSTOM, JSON.stringify(merged.customs)); } catch(e){}
-      try { localStorage.setItem(LS_DONE, JSON.stringify(merged.done)); } catch(e){}
-      try { localStorage.setItem('cal_hidden_v1', JSON.stringify(merged.hidden)); } catch(e){}
-      try { localStorage.setItem('cal_pantry_v1', JSON.stringify(merged.pantry)); } catch(e){}
+      lsSet('cal_import_v1', JSON.stringify(merged.events));
+      lsSet(LS_CUSTOM, JSON.stringify(merged.customs));
+      lsSet(LS_DONE, JSON.stringify(merged.done));
+      lsSet('cal_hidden_v1', JSON.stringify(merged.hidden));
+      lsSet('cal_pantry_v1', JSON.stringify(merged.pantry));
       if (merged.budget && (Array.isArray(merged.budget.bars) || Array.isArray(merged.budget.categories))) {
         try { localStorage.setItem('cal_budget_v1', JSON.stringify(merged.budget)); } catch(e){}   /* v6.4：v5.0 起预算形状是 bars，旧过滤只认 categories，轮询/启动拉取时远端预算永不落地（预算页显示旧数据的实锤根因） */
       }
@@ -2679,20 +2680,32 @@ try {
     localStorage.setItem('velvet_tools_migrated_v1', '1');
   }
 } catch(e){}
+var lsWarned = false;
+function lsSet(k, v){
+  try { localStorage.setItem(k, v); return true; }
+  catch(e) {
+    if (!lsWarned) {
+      lsWarned = true;
+      syncLine('本机存储空间已满：部分数据未能写入本机（云端同步不受影响，建议清理）', true);
+      alert('本机存储空间已满！\n本次会话内数据仍在内存中，但没能写进浏览器存储，刷新后会丢。建议导出备份后清理浏览器站点数据。');
+    }
+    return false;
+  }
+}
 function vSaveAll(){
   try {
-    localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
-    localStorage.setItem('velvet_feel_v1', JSON.stringify(vFeel));
-    localStorage.setItem('velvet_plans_v1', JSON.stringify(vPlans));
-    localStorage.setItem('velvet_cats_v1', JSON.stringify(vCats));
-    localStorage.setItem('velvet_catcol_v1', JSON.stringify(vCatColor));
-    localStorage.setItem('velvet_xpoff_v1', JSON.stringify(vXpOff));
-    localStorage.setItem('velvet_ach_v1', JSON.stringify(vAch));
-    localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools));
+    lsSet('velvet_tl_v1', JSON.stringify(vTl));
+    lsSet('velvet_feel_v1', JSON.stringify(vFeel));
+    lsSet('velvet_plans_v1', JSON.stringify(vPlans));
+    lsSet('velvet_cats_v1', JSON.stringify(vCats));
+    lsSet('velvet_catcol_v1', JSON.stringify(vCatColor));
+    lsSet('velvet_xpoff_v1', JSON.stringify(vXpOff));
+    lsSet('velvet_ach_v1', JSON.stringify(vAch));
+    lsSet('velvet_tools_v1', JSON.stringify(vTools));
     vUpdatedAt = Date.now();
     vToolsUpdated = vUpdatedAt;
-    localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
-    localStorage.setItem('velvet_tools_updated_v1', String(vToolsUpdated));
+    lsSet('velvet_updated_v1', String(vUpdatedAt));
+    lsSet('velvet_tools_updated_v1', String(vToolsUpdated));
   } catch(e){}
   vSchedule();
 }
@@ -3050,7 +3063,10 @@ function vMergeData(local, remote){
     if (remote.rks) local.rks = remote.rks;
   } else {
     local.rev = lRev;
-    if (remote.xpo && (remote.updatedAt||0) > (local.updatedAt||0)) local.xpo = remote.xpo;
+    if (remote.xpo) {   /* v6.5：同代内偏移按维取大——云端空心/过期的全 0 不再清零本机归零偏移 */
+      if (!local.xpo) local.xpo = {};
+      for (var kx in remote.xpo) local.xpo[kx] = Math.max(local.xpo[kx] || 0, remote.xpo[kx] || 0);
+    }
     if (remote.rks) {   /* 各维已庆祝过的最高 Rank：按维取大，里程碑不重复庆祝 */
       if (!local.rks) local.rks = {};
       for (var k4 in remote.rks) local.rks[k4] = Math.max(local.rks[k4] || 0, remote.rks[k4] || 0);
@@ -3071,15 +3087,15 @@ function vPullData(){
     if (merged.rev) { vXpRev = merged.rev; try { localStorage.setItem('velvet_rev_v1', String(vXpRev)); } catch(e){} }
     vUpdatedAt = Math.max(vUpdatedAt, remote.updatedAt || 0);
     try {
-      localStorage.setItem('velvet_tl_v1', JSON.stringify(vTl));
-      localStorage.setItem('velvet_feel_v1', JSON.stringify(vFeel));
-      localStorage.setItem('velvet_plans_v1', JSON.stringify(vPlans));
-      localStorage.setItem('velvet_cats_v1', JSON.stringify(vCats));
-      localStorage.setItem('velvet_catcol_v1', JSON.stringify(vCatColor));
-      localStorage.setItem('velvet_xpoff_v1', JSON.stringify(vXpOff));
-      localStorage.setItem('velvet_ach_v1', JSON.stringify(vAch));
-      localStorage.setItem('velvet_ranks_v1', JSON.stringify(vRankSeen));
-      localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
+      lsSet('velvet_tl_v1', JSON.stringify(vTl));
+      lsSet('velvet_feel_v1', JSON.stringify(vFeel));
+      lsSet('velvet_plans_v1', JSON.stringify(vPlans));
+      lsSet('velvet_cats_v1', JSON.stringify(vCats));
+      lsSet('velvet_catcol_v1', JSON.stringify(vCatColor));
+      lsSet('velvet_xpoff_v1', JSON.stringify(vXpOff));
+      lsSet('velvet_ach_v1', JSON.stringify(vAch));
+      lsSet('velvet_ranks_v1', JSON.stringify(vRankSeen));
+      lsSet('velvet_updated_v1', String(vUpdatedAt));
     } catch(e){}
     vRenderTime(); renderGrowth();
     return true;
@@ -3095,7 +3111,7 @@ function tPull(){
     if (Array.isArray(remote.tools) && (remote.updatedAt || 0) > (vToolsUpdated || 0)) {
       vTools = remote.tools;
       vToolsUpdated = remote.updatedAt;
-      try { localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools)); localStorage.setItem('velvet_tools_updated_v1', String(vToolsUpdated)); } catch(e){}
+      lsSet('velvet_tools_v1', JSON.stringify(vTools)); lsSet('velvet_tools_updated_v1', String(vToolsUpdated));
       renderTools();
       var mgr = document.getElementById('ovToolMgr');
       if (mgr && !mgr.hidden) tmRender();
@@ -3108,7 +3124,13 @@ function vPushData(){
   vGhBusy = true;
   var attempt = function(){
     return vGet('velvet.json').then(function(f){
-      var merged = vMergeData(vCollect(), f ? JSON.parse(f.text) : null);
+      var remote0 = f ? JSON.parse(f.text) : null;
+      if (remote0 && (remote0.tl || []).length && !(vCollect().tl || []).length) {   /* v6.5：本机时光线为空而云端有数据时只拉不推，防止空心覆盖 */
+        vGhBusy = false;
+        syncLine('本机时光线为空、云端有数据：已跳过推送（先拉取恢复）', true);
+        return false;
+      }
+      var merged = vMergeData(vCollect(), remote0);
       merged.updatedAt = Date.now();
       return vPut('velvet.json', JSON.stringify(merged), f ? f.sha : null, 'velvet sync');
     }).then(function(){
@@ -3141,7 +3163,7 @@ function vPullMd(){
     return changed;
   });
 }
-function vSyncAll(){ return Promise.all([vPullData(), vPushData(), vPullMd()]); }
+function vSyncAll(){ return vPullData().then(function(){ return Promise.all([vPushData(), vPullMd()]); }); }
 
 /* ---- 抽选（契约二：种子 + 权重 1/(1+历史抽中次数)，（不确定）×0.3） ---- */
 function vPool(){
@@ -4095,6 +4117,19 @@ function vStartupSync(){
 if (ghCfg) vStartupSync();   /* 首屏优先：网络同步延后到渲染之后 */
 setInterval(function(){ if (ghCfg && !document.hidden && !vGhBusy) { vPullData(); vPullMd(); } }, 120000);
 document.getElementById('ghBtnNow').addEventListener('click', function(){ vSyncAll(); });
+/* v6.5 数据急救：一键导出本机全部数据（内存现状 + 各键占用字节），排障/迁移用 */
+document.getElementById('ghBtnExport').addEventListener('click', function(){
+  var sizes = {};
+  for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); sizes[k] = (localStorage.getItem(k) || '').length; }
+  var dump = { exportedAt: new Date().toISOString(), version: (document.querySelector('meta[name="app-version"]') || {}).content || '', lsBytes: sizes, calendar: collectSync(), velvet: vCollect(), tools: vTools };
+  var blob = new Blob([JSON.stringify(dump)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'velvet-export-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+  ghStatus('已导出：' + a.download + '（设置里可看到下载）');
+});
 
 render();
 go('cal');
