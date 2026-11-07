@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="5.9">
+<meta name="app-version" content="6.1">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -552,7 +552,7 @@ nav button.on::before {
 .anrow button.del { display:none; border:none; background:none; color:var(--tx-3); font-size:14px; cursor:pointer; padding:0 2px; }
 .anrow:hover button.del { display:block; }
 .anrow button.del:hover { color:var(--magenta); }
-@media (max-width:640px){ .cday { min-height:58px; padding:3px 3px; } .cday .ev { font-size:8.5px; }
+@media (max-width:640px){ .cday { min-height:58px; padding:3px 3px; } .cday .ev { height:4px; padding:0 3px; margin-top:4px; font-size:0; }
   .frow { flex-wrap:wrap; }
   .frow > .fg { min-width:0; }
   #cvMonth .frow > .fg:first-child { flex:1 1 100%; } }
@@ -655,6 +655,7 @@ nav button.on::before {
 
 /* 维护弹出页（全屏遮罩，z-index 梯度：设置 60 → 维护 70 → 庆祝 80） */
 #ovMaint { z-index:70; }
+#ovToolMgr { z-index:66; }
 #ovMaint .box { max-width:640px; max-height:92vh; }
 .mtabs { display:flex; gap:8px; margin-bottom:14px; }
 .mtabs button {
@@ -756,7 +757,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v5.9 · 2026-11-06</span>
+  <span class="ver">v6.1 · 2026-11-06</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -952,8 +953,7 @@ nav button.on::before {
   <div id="dlist"></div>
   <!-- v5.5：管理双入口（卡片下方）：工具卡管理 + 需求/日志维护，与日视图 🔧 同一个弹层 -->
   <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
-    <button class="hbtn" id="dtManageTools" style="width:100%;height:36px">管理工具卡</button>
-    <button class="hbtn" id="dtMaintMd" style="width:100%;height:36px">管理需求与日志</button>
+    <button class="hbtn" id="dtManageTools" style="width:100%;height:36px">管理工具与需求</button>
   </div>
 </aside>
 
@@ -1035,9 +1035,9 @@ nav button.on::before {
       <h4>使用说明</h4>
       <ul>
         <li>时光页：日期栏 ←→ 翻日（凌晨 4 点切日）；右侧两图标 = 重新抽取 / 维护。每天首次打开自动抽三项落 19:00 计划块（可移除、不留记录），点计划块落定实际起止。右下悬浮钮计时，结束自动成时段卡。<b>关联了待办/工坊的时段，备注即当日日志</b>：保存时自动写进 md，改备注同步改日志（同日整行替换）。</li>
-        <li>管理弹出页（日视图 🔧 或工具抽屉底部两个直达按钮打开）：待办（进行中：新增/完成/删/追加日志）、已完成（档案馆：点开看开始日期与全部日志，可恢复为进行中）、工具卡（增删改卡片；分类含「本地」，此类卡片不可跳转仅陈列）三页签；v5.6 起原「工坊」页签退役——工坊项目数据仍在 0-工坊.md，日视图「追加需求」照旧按项目名写回，但不再有工坊项目的增删改界面，工具入口统一由工具卡管理；全部手术刀式写回 md，不重排全文。</li>
+        <li>维护弹层（日视图右上角 🔧 打开）：待办（进行中：新增/完成/删/日志）、已完成（档案馆：点开看开始日期与全部日志，可恢复为进行中）两页签——只管待办清单。工具卡另有专管弹层：工具抽屉底部「管理工具与需求」打开（v6.1 起原两个按钮合一），点选一张卡 → 上方表单改它的跳转（链接）与基本信息（名称/描述/版本/分类/图标/维护站），下方「需求与日志」按卡片名对应 0-工坊.md 条目：需求就地勾选/追加、日志查看最近五条并可直接写回（无档案时一键建档，卡的链接与维护站自动带入）。全部手术刀式写回 md，不重排全文。</li>
         <li>成长页：雷达轴长 = 该维总经验 / R10 满级（360）的绝对进度，每次升级都会变长；五角数字 = 总 Rank；等级名到 R4 / R7 / R10 才有庆祝章，下一级名未达前显示 ???。</li>
-        <li>手机用底部导航切三页；电脑点左上角月相呼出左侧边栏。日历页内"月视图/甘特图/日视图"开关切换；月视图点格子进当天日视图。活动页：月份导航、＋添加、筛选抽屉；删条目用每行悬停的 ×。</li>
+        <li>手机用底部导航切四页；电脑点左上角月相呼出左侧边栏。日历页内"月视图/甘特图/日视图"开关切换；<b>月视图点格子直接进当天日视图</b>——手机上月视图不显示活动文字（有活动的日期一条彩色横条、纪念日 ★、有时间线青点），当天有什么事项一律进日视图一览。</li>
         <li>预算页：本周纪律条在顶部；「更新数据」粘贴指令单解析（整体替换：纪律文本 + 进度条 + 缩进待办）；行首空一格的行进待办清单，可就地勾选。</li>
         <li>库存页：输入名称、生产日期、保质期（天），保存后自动算到期日并按到期日升序排列（最接近过期的在最上）；顶部统计已过期 / 临期 ≤3 天 / 正常；名称框输入时自动联想已有条目（去重后的全部历史名称，原生模糊匹配，点选即填，同品类复购只需补日期和天数）。</li>
         <li>ob 侧：首次在电脑库里跑 <code>python .tools/velvet_sync.py push</code> 初始化镜像，之后日常跑 <code>python .tools/velvet_sync.py</code> 拉取覆盖。</li>
@@ -1051,6 +1051,8 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v6.1（2026-11-06）管理界面重切（用户裁定）：① 日视图 🔧 的维护弹层只留 待办 / 已完成 两页签，工具卡页签迁出；② 工具抽屉底部原「管理工具卡」「管理需求与日志」两个按钮<b>合一</b>为「管理工具与需求」，打开工具卡专管弹层（z-66）：点选一张卡，上方表单管<b>跳转</b>（链接）与<b>基本信息</b>（名称/描述/版本/分类/图标/维护站），下方<b>需求与日志</b>面板按卡片名对应 0-工坊.md 条目——需求就地勾选/追加（写回 md）、日志看最近五条并可写回，无档案的卡一键建档（链接与维护站自动带入）。卡片列表点击即选（不再只有「改」按钮）。vRenderMaint 里 v5.6 遗留的整段死代码（不可达的工坊分支）一并清除。</p>
+      <p>v6.0（2026-11-06）月视图手机端瘦身（实测 390px 屏活动长标题把格子撑乱、一行放不下）：≤640px 时活动不再显示文字——有活动 = 一条彩色横条划过日期格（取当天首个活动的游戏色，长标题收进悬浮提示），纪念日仍旧 ★、当日时间线仍旧青点。当天详情一律走「点格子 → 日视图」一览（日视图本就承载当天活动+时间线+计划）。桌面端显示不变。</p>
       <p>v5.9（2026-11-06）库存页两处返工（用户裁定）：① <b>删除扫码录入</b>——同品类不同规格/批次条码各不相同，条码→名称学习表学不全，连同内嵌的 ZXing 库（约 330KB）、扫码弹层、摄像头权限处理一并移除，文件显著变小；② 名称输入改<b>模糊联想</b>：全部历史名称去重后进原生 datalist，打字即过滤、点选即填——同一样东西再买只需改日期和天数。v5.8 引入的 cal_pantry_bc_v1 键废弃不再读写（旧数据残留无害，可无视）。</p>
       <p>v5.8（2026-11-06）新增<b>食物库存</b>页（第四页，底导航与电脑左侧边栏均有入口）：名称 + 生产日期 + 保质期（天）→ 自动算到期日、保存即生效，按到期日升序排列（最先过期的置顶），顶部统计块显示已过期 / 临期 ≤3 天 / 正常三色计数，过期品红、临期黄、正常灰。支持<b>扫码录入</b>：内嵌 ZXing 解码库（约 330KB）作兜底——原生 BarcodeDetector 先试，6 秒无结果自动切换；条码本身不带生产日期，故采用「本地学习」：首次扫到的条码填名称保存后被记住（cal_pantry_bc_v1，仅本机），此后扫同一条码自动填名。摄像头权限被拒给出明确指引（地址栏 🔒 网站权限）。库存数据随根 data.json 的 pantry 字段按 id 并集多端同步（沿用纪念日同套合并契约）。</p>
       <p>v5.7（2026-11-06）两修：① 手机窄屏（≤640px）下表单行允许换行、输入框允许收缩——修复月视图底部「纪念日添加」行超宽被裁且因 overflow-x:clip 拖不动的问题（390px 实测，名称独占一行，日期与按钮落第二行）；② 工具卡页签顶部新增同步状态行：已配 Token 显示「随 velvet/data.json 上云（tools 字段）+ 本机数据时间」，未配 Token 红字直说「只存本机」——工具卡同步位置由此前说不清变为界面可见。（回应「工具卡是不是存本地」：代码路径一直会推 velvet/data.json，疑点是它不在根目录 data.json；若手机端没填 Token 则确实只在本地。）</p>
@@ -1150,17 +1152,25 @@ nav button.on::before {
   </div>
 </div>
 
-<!-- 管理（v5.6：待办 / 已完成 / 工具卡 三页签合一；原「工坊」页签退役——项目数据仍在 0-工坊.md，日视图「追加需求」照旧按项目写回，但不再提供工坊项目的增删改界面） -->
+<!-- 管理（v6.1：日视图 🔧 只管 待办 / 已完成；工具卡移去独立弹层 ovToolMgr） -->
 <div class="ov" id="ovMaint" hidden>
   <div class="box" style="max-width:640px" onclick="event.stopPropagation()">
     <h3>管理<span class="en">MAINTENANCE</span></h3>
     <div class="mtabs">
       <button id="mtTodo" class="on">待办</button>
       <button id="mtDone">已完成</button>
-      <button id="mtTools">工具卡</button>
     </div>
     <div id="mtBody"></div>
-    <div id="mtToolsPanel" hidden>
+    <div class="bx-actions">
+      <button class="btn pri" id="mtClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- v6.1：工具卡专管弹层（抽屉单入口；跳转 / 基本信息 / 需求与日志 一体；卡片按名称对应 0-工坊.md 条目） -->
+<div class="ov" id="ovToolMgr" hidden>
+  <div class="box" style="max-width:640px" onclick="event.stopPropagation()">
+    <h3>工具卡管理<span class="en">TOOLS</span></h3>
       <div class="mtabs" id="tmTabs" style="margin-top:2px">
         <button data-tmf="全部" class="on">全部</button>
         <button data-tmf="日常">日常</button>
@@ -1190,8 +1200,9 @@ nav button.on::before {
       <div class="hint" id="tmSyncInfo" style="margin-top:8px"></div>
       <div class="hint" style="margin-top:10px">默认四卡加回目录：彩墨管理 <code>./gilt-ink/</code>（日常 v2.3）｜ 铁巢重炮 <code>./iron-nest/</code>（游戏 v1.0）｜ 极简书房 <code>https://caesium566.github.io/shelf/</code>（日常 v2.4）｜ 随机视频抽取器 <code>./murmur/</code>（游戏 v1.2）。「本地」分类的卡片不可跳转，仅陈列名称 / 描述 / 维护站。图标约定：以 <code>&lt;svg viewBox="0 0 24 24"&gt;</code> 开头的线性图标代码，不填颜色。</div>
     </div>
-    <div class="bx-actions">
-      <button class="btn pri" id="mtClose">关闭</button>
+    <div id="twPanel" style="margin-top:14px"></div>
+    <div class="bx-actions" style="margin-top:12px">
+      <button class="btn pri" id="tmMgrClose">关闭</button>
     </div>
   </div>
 </div>
@@ -1647,8 +1658,10 @@ function refreshMask(){ dmask.hidden = !(dF.classList.contains('on') || dT.class
 document.getElementById('btnFilter').onclick = function(){ toggleF(!dF.classList.contains('on')); };
 document.getElementById('btnDrawer').onclick = function(){ toggleT(!dT.classList.contains('on')); };
 /* v5.5 抽屉底部双入口 */
-document.getElementById('dtManageTools').onclick = function(){ toggleT(false); openMaint('tools'); };
-document.getElementById('dtMaintMd').onclick = function(){ toggleT(false); openMaint('todo'); };
+document.getElementById('dtManageTools').onclick = function(){
+  toggleT(false); tmResetForm(); tmRender();
+  document.getElementById('ovToolMgr').hidden = false;
+};
 dmask.onclick = function(){ toggleF(false); toggleT(false); };
 /* ================= v5.2 日历三视图 + 纪念日 ================= */
 var calView = 'month';
@@ -1785,12 +1798,19 @@ function cmRender(){
       return a.m === d.getMonth() + 1 && a.d === d.getDate();
     });
     if (ans.length) h += '<span class="an" title="' + esc(ans.map(function(a){ return a.name; }).join('、')) + '">★' + (ans.length > 1 ? '×' + ans.length : '') + '</span>';
-    evs.forEach(function(e){
-      if (e.start <= ds && ds <= (e.end || e.start)) {
+    var hits = evs.filter(function(e){ return e.start <= ds && ds <= (e.end || e.start); });
+    if (window.matchMedia('(max-width:640px)').matches) {
+      /* v6.0 手机端：不显示活动文字（长标题会把格子撑乱），有活动 = 一条彩色横条划过去 */
+      if (hits.length) {
+        var c0 = gameColor(hits[0].game);
+        h += '<div class="ev" style="background:' + c0 + '33;color:transparent" title="' + esc(hits.map(function(e){ return e.title; }).join('、')) + '"></div>';
+      }
+    } else {
+      hits.forEach(function(e){
         var c = gameColor(e.game);
         h += '<div class="ev" style="background:' + c + '33;color:' + c + '">' + esc(e.title) + '</div>';
-      }
-    });
+      });
+    }
     if (vTl.some(function(e){ return !e.del && e.d === ds; })) h += '<span class="tl-dot" title="当日有时间线记录"></span>';
     h += '</div>';
   }
@@ -1878,29 +1898,21 @@ function tmRender(){
     .filter(function(x){ return tmFilter === '全部' || tmCatOf(x.t) === tmFilter; });
   el.innerHTML = list.map(function(x){
     var b = x.t;
-    return '<div class="mrow" style="cursor:default"><span class="ic" style="width:18px;flex:none;color:var(--cyan);display:flex">'
+    return '<div class="mrow" data-tmsel="' + x.i + '" title="点选此卡：上方填表改跳转与基本信息，下方管它的需求与日志"><span class="ic" style="width:18px;flex:none;color:var(--cyan);display:flex">'
       + (b.icon || TOOL_ICON_DEFAULT) + '</span>'
       + '<span class="mn">' + esc(b.name) + '</span>'
       + '<span class="dim">' + esc(tmCatOf(b)) + (b.station ? ' · ' + esc(b.station) : '') + '</span>'
       + '<button data-tmedit="' + x.i + '">改</button><button class="del" data-tmdel="' + x.i + '">删</button>'
       + '</div>';
   }).join('') || '<div style="color:var(--tx-3);font-size:12px;padding:12px 0">该分类还没有工具。</div>';
-  el.querySelectorAll('[data-tmedit]').forEach(function(btn){
-    btn.onclick = function(){
-      var t = tmAll()[+this.dataset.tmedit];
-      tmEditing = +this.dataset.tmedit;
-      document.getElementById('tmName').value = t.name || '';
-      document.getElementById('tmUrl').value = t.url || '';
-      document.getElementById('tmDesc').value = t.desc || '';
-      document.getElementById('tmVer').value = t.ver || '';
-      document.getElementById('tmIcon').value = t.icon || '';
-      document.getElementById('tmStation').value = t.station || '';
-      document.getElementById('tmCat').value = tmCatOf(t);
-      document.getElementById('tmFormTitle').textContent = '编辑工具';
-      document.getElementById('tmSave').textContent = '保存修改';
-      document.getElementById('tmCancelEdit').hidden = false;
-      document.getElementById('tmHintEdit').hidden = false;
+  el.querySelectorAll('[data-tmsel]').forEach(function(row){
+    row.onclick = function(ev){
+      if (ev.target.tagName === 'BUTTON') return;
+      tmFillForm(tmAll()[+row.dataset.tmsel], +row.dataset.tmsel);
     };
+  });
+  el.querySelectorAll('[data-tmedit]').forEach(function(btn){
+    btn.onclick = function(){ tmFillForm(tmAll()[+this.dataset.tmedit], +this.dataset.tmedit); };
   });
   el.querySelectorAll('[data-tmdel]').forEach(function(btn){
     btn.onclick = function(){
@@ -1909,9 +1921,79 @@ function tmRender(){
       if (!confirm('删除工具卡片「' + t.name + '」？（只删抽屉入口，不动工具本身）')) return;
       if (tmEditing === idx) tmResetForm();
       vTools.splice(idx, 1);
+      if (tmEditing >= vTools.length) tmResetForm();
       vSaveAll(); renderTools(); tmRender();
     };
   });
+  twRender();
+}
+/* v6.1：点选卡片 → 表单进入编辑态 + 下方需求/日志面板定位到这张卡 */
+function tmFillForm(tt, idx){
+  if (!tt) return;
+  tmEditing = idx;
+  document.getElementById('tmName').value = tt.name || '';
+  document.getElementById('tmUrl').value = tt.url || '';
+  document.getElementById('tmDesc').value = tt.desc || '';
+  document.getElementById('tmVer').value = tt.ver || '';
+  document.getElementById('tmIcon').value = tt.icon || '';
+  document.getElementById('tmStation').value = tt.station || '';
+  document.getElementById('tmCat').value = tmCatOf(tt);
+  document.getElementById('tmFormTitle').textContent = '编辑工具';
+  document.getElementById('tmSave').textContent = '保存修改';
+  document.getElementById('tmCancelEdit').hidden = false;
+  document.getElementById('tmHintEdit').hidden = false;
+  twRender();
+}
+/* v6.1：需求与日志面板——按卡片名对应 0-工坊.md 条目；无档案可一键建档 */
+function twRender(){
+  var p = document.getElementById('twPanel');
+  if (!p) return;
+  if (!vMdCache.work) { p.innerHTML = '<div class="hint">还没有 0-工坊.md 镜像：配好同步后在电脑库跑 <code>python .tools/velvet_sync.py push</code> 初始化后，这里就能记每张卡的需求与日志。</div>'; return; }
+  if (tmEditing < 0 || !vTools[tmEditing]) { p.innerHTML = '<div class="hint">点上方列表中的一张卡片：此处按卡片名对应 0-工坊.md 条目，管理它的需求（勾选 / 追加）与日志（查看 / 写回）。改名会断开对应关系，需在新名下重新建档。</div>'; return; }
+  var t = vTools[tmEditing];
+  var b = vFindBlock(vWorkBlocks, t.name);
+  if (!b) {
+    p.innerHTML = '<div class="mgrp">需求与日志 · ' + esc(t.name) + '</div>'
+      + '<div class="hint">这张卡还没有工坊档案（0-工坊.md 里同名条目）。建档后此卡的需求与日志都在这里记。</div>'
+      + '<div class="bx-actions" style="margin-top:6px"><button class="btn" id="twCreate">建立档案</button></div>';
+    document.getElementById('twCreate').onclick = function(){
+      vFileWrite('work', vEditWorkAdd(t.name, t.desc || '', t.url || '', t.station || ''), function(){ twRender(); vAchUnlock(1); });
+    };
+    return;
+  }
+  var h = '<div class="mgrp">需求与日志 · ' + esc(b.name) + '</div>';
+  if (b.use || b.pos || b.site) {
+    h += '<div style="font-size:11px;color:var(--tx-3);margin-bottom:6px">'
+      + (b.use ? '用途：' + esc(b.use) + '　' : '')
+      + (b.pos ? '位置：' + esc(b.pos) + '　' : '')
+      + (b.site ? '维护站：' + esc(b.site) : '') + '</div>';
+  }
+  h += b.reqs.length
+    ? b.reqs.map(function(r, ri){ return '<div class="wreq' + (r.done ? ' done' : '') + '" data-twreq="' + ri + '">' + (r.done ? '☑' : '☐') + ' ' + esc(r.text) + '</div>'; }).join('')
+    : '<div class="hint">暂无需求。</div>';
+  h += '<div class="frow" style="margin-top:8px"><div class="fg" style="flex:1;min-width:0"><input id="twReqText" placeholder="想要它新增 / 改进什么？"></div>'
+    + '<div class="fg" style="flex:none"><button class="btn" id="twReqAdd">＋需求</button></div></div>';
+  if (b.logs.length) {
+    h += '<div style="margin-top:8px">' + b.logs.slice(-5).map(function(l){ return '<div style="font-size:11.5px;margin-bottom:2px"><span class="dd">' + l.date + '</span><span class="dl">' + esc(l.text) + '</span></div>'; }).join('') + '</div>'
+      + (b.logs.length > 5 ? '<div class="hint">……共 ' + b.logs.length + ' 条，写日志时可看全部。</div>' : '');
+  }
+  h += '<div class="bx-actions" style="margin-top:6px"><button class="btn" id="twLog">写日志</button></div>';
+  p.innerHTML = h;
+  p.querySelectorAll('[data-twreq]').forEach(function(w){
+    w.onclick = function(){
+      var ri = +w.dataset.twreq;
+      vFileWrite('work', vEditWorkReqToggle(b.name, ri), function(){
+        var dn = w.classList.toggle('done');
+        w.textContent = (dn ? '☑ ' : '☐ ') + w.textContent.slice(2);
+      });
+    };
+  });
+  document.getElementById('twReqAdd').onclick = function(){
+    var txt = document.getElementById('twReqText').value.trim();
+    if (!txt) return;
+    vFileWrite('work', vEditWorkReq(b.name, txt), function(){ twRender(); });
+  };
+  document.getElementById('twLog').onclick = function(){ vOpenLog({ t:'work', name:b.name }, '', function(){ twRender(); }); };
 }
 function tmResetForm(){
   tmEditing = -1;
@@ -3763,13 +3845,8 @@ var mtTab = 'todo';
 function openMaint(tab){ mtTab = tab; vRenderMaint(); document.getElementById('ovMaint').hidden = false; }
 function vRenderMaint(){
   var body = document.getElementById('mtBody');
-  var toolsPanel = document.getElementById('mtToolsPanel');
-  toolsPanel.hidden = mtTab !== 'tools';
-  body.hidden = mtTab === 'tools';
   document.getElementById('mtTodo').classList.toggle('on', mtTab === 'todo');
   document.getElementById('mtDone').classList.toggle('on', mtTab === 'done');
-  document.getElementById('mtTools').classList.toggle('on', mtTab === 'tools');
-  if (mtTab === 'tools') { tmRender(); return; }
   var dimOpts = DIMS.map(function(d){ return '<option>' + d.name + '</option>'; }).join('');
   var h = '';
   if (mtTab === 'done') {
@@ -3884,88 +3961,15 @@ function vRenderMaint(){
         };
       });
     });
-  } else {
-    if (!vMdCache.work) { body.innerHTML = '<div class="hint">还没有工坊镜像。配好同步后跑 <code>python .tools/velvet_sync.py push</code> 初始化。</div>'; return; }
-    h += '<div class="panel" style="margin-bottom:12px"><div class="fg" style="margin-bottom:8px"><label>新增工坊项目</label>'
-      + '<input id="mbName" placeholder="项目名（会做成 [[双链]] 标题）"></div>'
-      + '<div class="fg" style="margin-bottom:8px"><label>用途</label><input id="mbUse"></div>'
-      + '<div class="frow"><div class="fg"><label>文件位置</label><input id="mbPos" placeholder="路径或 URL"></div>'
-      + '<div class="fg"><label>维护站（可选）</label><input id="mbSite" placeholder="URL"></div></div>'
-      + '<div class="bx-actions" style="margin-top:4px"><button class="btn pri" id="mbAdd">新增</button></div></div>';
-    vWorkBlocks.forEach(function(b){
-      h += '<div class="mrow" data-name="' + esc(b.name) + '">'
-        + '<span class="mn">' + esc(b.name) + '</span>'
-        + '<span class="dim">匠心</span>'
-        + '<button data-op="log">日志</button>'
-        + '<button data-op="edit">改</button>'
-        + '<button class="del" data-op="del">删</button></div>'
-        + '<div style="font-size:11px;color:var(--tx-3);margin:-2px 0 6px 10px">' + esc(b.use || '') + '</div>';
-    });
-    body.innerHTML = h;
-    document.getElementById('mbAdd').onclick = function(){
-      var name = document.getElementById('mbName').value.trim();
-      if (!name) { alert('项目名必填'); return; }
-      vFileWrite('work', vEditWorkAdd(name,
-        document.getElementById('mbUse').value.trim(),
-        document.getElementById('mbPos').value.trim(),
-        document.getElementById('mbSite').value.trim()), function(){ vRenderMaint(); vAchUnlock(1); });
-    };
-    body.querySelectorAll('.mrow').forEach(function(row){
-      var name = row.dataset.name;
-      row.addEventListener('click', function(ev){
-        if (ev.target.tagName === 'BUTTON') return;
-        var nxt = row.nextElementSibling;
-        if (nxt && nxt.classList && nxt.classList.contains('mdetail')) { nxt.remove(); return; }
-        /* 跳过紧跟的用途小字行 */
-        if (nxt && !nxt.classList.contains('mrow') && !nxt.classList.contains('mgrp')) nxt = nxt.nextElementSibling;
-        if (nxt && nxt.classList && nxt.classList.contains('mdetail')) { nxt.remove(); return; }
-        var b = vFindBlock(vWorkBlocks, name);
-        if (!b) return;
-        var div = document.createElement('div');
-        div.className = 'mdetail';
-        div.innerHTML = (b.pos ? '位置：' + esc(b.pos) + '<br>' : '')
-          + (b.site ? '维护站：' + esc(b.site) + '<br>' : '')
-          + (b.reqs && b.reqs.length
-              ? '需求：<br>' + b.reqs.map(function(r, ri){
-                  return '<span class="wreq' + (r.done ? ' done' : '') + '" data-wr="' + esc(b.name) + '|' + ri + '">'
-                    + (r.done ? '☑' : '☐') + ' ' + esc(r.text) + '</span>';
-                }).join('<br>') + '<br>'
-              : '')
-          + (b.logs.length
-              ? b.logs.map(function(l){ return '<span class="dd">' + l.date + '</span><span class="dl">' + esc(l.text) + '</span>'; }).join('<br>')
-              : '暂无日志');
-        /* 插到用途小字行之后 */
-        var anchor = row.nextElementSibling;
-        if (anchor && !anchor.classList.contains('mrow') && !anchor.classList.contains('mgrp')) anchor = anchor.nextElementSibling;
-        row.parentNode.insertBefore(div, anchor);
-        div.querySelectorAll('.wreq').forEach(function(wr){
-          wr.onclick = function(ev){
-            ev.stopPropagation();
-            var p = wr.dataset.wr.split('|'), ri = +p.pop(), wn = p.join('|');
-            vFileWrite('work', vEditWorkReqToggle(wn, ri), function(){
-              var dn = wr.classList.toggle('done');
-              wr.textContent = (dn ? '☑ ' : '☐ ') + wr.textContent.slice(2);   /* 就地翻转，不重建维护页 */
-            });
-          };
-        });
-      });
-      row.querySelectorAll('button').forEach(function(btn){
-        btn.onclick = function(ev){
-          ev.stopPropagation();
-          if (btn.dataset.op === 'edit') vOpenWEdit(name);
-          if (btn.dataset.op === 'del') { if (confirm('删除工坊条目「' + name + '」？')) vFileWrite('work', vEditWorkDelete(name), function(){ vRenderMaint(); }); }
-          if (btn.dataset.op === 'log') vOpenLog({ t:'work', name:name }, '', function(){ vRenderMaint(); });
-        };
-      });
-    });
   }
 }
 document.getElementById('tMaint').onclick = function(){ openMaint('todo'); };
 document.getElementById('mtTodo').onclick = function(){ mtTab = 'todo'; vRenderMaint(); };
-document.getElementById('mtTools').onclick = function(){ mtTab = 'tools'; vRenderMaint(); };
 document.getElementById('mtDone').onclick = function(){ mtTab = 'done'; vRenderMaint(); };
 document.getElementById('mtClose').onclick = function(){ document.getElementById('ovMaint').hidden = true; };
 document.getElementById('ovMaint').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
+document.getElementById('tmMgrClose').onclick = function(){ document.getElementById('ovToolMgr').hidden = true; };
+document.getElementById('ovToolMgr').addEventListener('click', function(e){ if (e.target === this) this.hidden = true; });
 
 /* ---- 成长页：雷达（近 30 天占比）+ Rank 列表 ---- */
 function renderGrowth(){
