@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="6.1">
+<meta name="app-version" content="6.2">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -638,6 +638,21 @@ nav button.on::before {
 .wreq { cursor:pointer; display:inline-block; padding:2px 4px; border-radius:4px; }
 .wreq:hover { background:rgba(65,199,255,.12); }
 .wreq.done { color:var(--tx-3); text-decoration:line-through; }
+/* ===== 需求与日志面板（v6.2：按 P3 视觉规范重做） ===== */
+.tw-wrap { border:1px solid var(--line); background:rgba(5,7,13,.82); padding:10px 12px 12px; clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
+.tw-head { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.tw-head .t { font-size:13px; font-weight:900; font-style:italic; letter-spacing:2px; color:var(--cyan); }
+.tw-head .src { font-size:9px; letter-spacing:2px; color:var(--tx-3); border:1px solid var(--line); padding:1px 6px; }
+.tw-sub { font-size:11px; color:var(--tx-3); line-height:1.7; }
+.tw-sec { font-size:10px; font-weight:700; letter-spacing:3px; color:var(--gold); margin:12px 0 6px; border-left:3px solid var(--gold-dim); padding-left:8px; }
+.tw-req { display:flex; gap:8px; align-items:baseline; padding:6px 8px; margin-bottom:4px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:12.5px; clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.tw-req:hover { border-color:var(--cyan); }
+.tw-req .bx { flex:none; color:var(--cyan); font-weight:700; }
+.tw-req.done { color:var(--tx-3); }
+.tw-req.done .tx2 { text-decoration:line-through; }
+.tw-log { display:flex; gap:8px; padding:5px 0; border-bottom:1px dashed rgba(255,255,255,.07); font-size:12px; line-height:1.5; }
+.tw-log:last-of-type { border-bottom:none; }
+.tw-log .dt { flex:none; font-size:10.5px; color:var(--gold); font-weight:700; font-style:italic; white-space:nowrap; padding-top:1px; }
 
 /* 计时 FAB */
 #tFab {
@@ -757,7 +772,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v6.1 · 2026-11-06</span>
+  <span class="ver">v6.2 · 2026-11-06</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -1051,6 +1066,7 @@ nav button.on::before {
         <li>md 写回前扫描 Token 特征（<code>ghp_</code> 等），命中直接拒绝。</li>
       </ul>
       <h4>更新记录</h4>
+      <p>v6.2（2026-11-06）需求与日志面板美术重做（用户拍板「太丑了」）：数据源不动（仍是 0-工坊.md，卡片名对应条目），只改视觉——整体装进斜切暗色面板（.tw-wrap），头部标题 + 来源章（0-工坊.md / 未建档），「需求 / 日志」金色分区题，需求行卡化（斜切小卡 + ☐/☑ 勾选章 + 悬停亮边 + 完成划线），日志逐条虚线分隔 + 金色日期章，头部统计「N 进行中 / 共 M」。未建档与未选卡的提示态同样装进面板，不再裸奔。</p>
       <p>v6.1（2026-11-06）管理界面重切（用户裁定）：① 日视图 🔧 的维护弹层只留 待办 / 已完成 两页签，工具卡页签迁出；② 工具抽屉底部原「管理工具卡」「管理需求与日志」两个按钮<b>合一</b>为「管理工具与需求」，打开工具卡专管弹层（z-66）：点选一张卡，上方表单管<b>跳转</b>（链接）与<b>基本信息</b>（名称/描述/版本/分类/图标/维护站），下方<b>需求与日志</b>面板按卡片名对应 0-工坊.md 条目——需求就地勾选/追加（写回 md）、日志看最近五条并可写回，无档案的卡一键建档（链接与维护站自动带入）。卡片列表点击即选（不再只有「改」按钮）。vRenderMaint 里 v5.6 遗留的整段死代码（不可达的工坊分支）一并清除。</p>
       <p>v6.0（2026-11-06）月视图手机端瘦身（实测 390px 屏活动长标题把格子撑乱、一行放不下）：≤640px 时活动不再显示文字——有活动 = 一条彩色横条划过日期格（取当天首个活动的游戏色，长标题收进悬浮提示），纪念日仍旧 ★、当日时间线仍旧青点。当天详情一律走「点格子 → 日视图」一览（日视图本就承载当天活动+时间线+计划）。桌面端显示不变。</p>
       <p>v5.9（2026-11-06）库存页两处返工（用户裁定）：① <b>删除扫码录入</b>——同品类不同规格/批次条码各不相同，条码→名称学习表学不全，连同内嵌的 ZXing 库（约 330KB）、扫码弹层、摄像头权限处理一并移除，文件显著变小；② 名称输入改<b>模糊联想</b>：全部历史名称去重后进原生 datalist，打字即过滤、点选即填——同一样东西再买只需改日期和天数。v5.8 引入的 cal_pantry_bc_v1 键废弃不再读写（旧数据残留无害，可无视）。</p>
@@ -1944,47 +1960,57 @@ function tmFillForm(tt, idx){
   document.getElementById('tmHintEdit').hidden = false;
   twRender();
 }
-/* v6.1：需求与日志面板——按卡片名对应 0-工坊.md 条目；无档案可一键建档 */
+/* v6.2：需求与日志面板——数据源 0-工坊.md（按卡片名对应条目）；P3 风格重做 */
 function twRender(){
   var p = document.getElementById('twPanel');
   if (!p) return;
-  if (!vMdCache.work) { p.innerHTML = '<div class="hint">还没有 0-工坊.md 镜像：配好同步后在电脑库跑 <code>python .tools/velvet_sync.py push</code> 初始化后，这里就能记每张卡的需求与日志。</div>'; return; }
-  if (tmEditing < 0 || !vTools[tmEditing]) { p.innerHTML = '<div class="hint">点上方列表中的一张卡片：此处按卡片名对应 0-工坊.md 条目，管理它的需求（勾选 / 追加）与日志（查看 / 写回）。改名会断开对应关系，需在新名下重新建档。</div>'; return; }
+  if (!vMdCache.work) {
+    p.innerHTML = '<div class="tw-wrap"><div class="tw-head"><span class="t">需求与日志</span></div>'
+      + '<div class="tw-sub">还没有 0-工坊.md 镜像：配好同步后在电脑库跑 <code>python .tools/velvet_sync.py push</code> 初始化后，这里就能记每张卡的需求与日志。</div></div>';
+    return;
+  }
+  if (tmEditing < 0 || !vTools[tmEditing]) {
+    p.innerHTML = '<div class="tw-wrap"><div class="tw-head"><span class="t">需求与日志</span><span class="src">0-工坊.md</span></div>'
+      + '<div class="tw-sub">点上方列表中的一张卡片：此处按卡片名对应 0-工坊.md 条目，管理它的需求（勾选 / 追加）与日志（查看 / 写回）。改名会断开对应关系，需在新名下重新建档。</div></div>';
+    return;
+  }
   var t = vTools[tmEditing];
   var b = vFindBlock(vWorkBlocks, t.name);
   if (!b) {
-    p.innerHTML = '<div class="mgrp">需求与日志 · ' + esc(t.name) + '</div>'
-      + '<div class="hint">这张卡还没有工坊档案（0-工坊.md 里同名条目）。建档后此卡的需求与日志都在这里记。</div>'
-      + '<div class="bx-actions" style="margin-top:6px"><button class="btn" id="twCreate">建立档案</button></div>';
+    p.innerHTML = '<div class="tw-wrap"><div class="tw-head"><span class="t">' + esc(t.name) + '</span><span class="src">未建档</span></div>'
+      + '<div class="tw-sub">这张卡还没有工坊档案（0-工坊.md 里同名条目）。建档后此卡的需求与日志都在这里记。</div>'
+      + '<div class="bx-actions" style="margin-top:8px"><button class="btn pri" id="twCreate">建立档案</button></div></div>';
     document.getElementById('twCreate').onclick = function(){
       vFileWrite('work', vEditWorkAdd(t.name, t.desc || '', t.url || '', t.station || ''), function(){ twRender(); vAchUnlock(1); });
     };
     return;
   }
-  var h = '<div class="mgrp">需求与日志 · ' + esc(b.name) + '</div>';
+  var h = '<div class="tw-wrap"><div class="tw-head"><span class="t">' + esc(b.name) + '</span><span class="src">0-工坊.md</span></div>';
   if (b.use || b.pos || b.site) {
-    h += '<div style="font-size:11px;color:var(--tx-3);margin-bottom:6px">'
+    h += '<div class="tw-sub">'
       + (b.use ? '用途：' + esc(b.use) + '　' : '')
       + (b.pos ? '位置：' + esc(b.pos) + '　' : '')
       + (b.site ? '维护站：' + esc(b.site) : '') + '</div>';
   }
+  var openN = b.reqs.filter(function(r){ return !r.done; }).length;
+  h += '<div class="tw-sec">需求' + (b.reqs.length ? ' · ' + openN + ' 进行中 / 共 ' + b.reqs.length : '') + '</div>';
   h += b.reqs.length
-    ? b.reqs.map(function(r, ri){ return '<div class="wreq' + (r.done ? ' done' : '') + '" data-twreq="' + ri + '">' + (r.done ? '☑' : '☐') + ' ' + esc(r.text) + '</div>'; }).join('')
-    : '<div class="hint">暂无需求。</div>';
+    ? b.reqs.map(function(r, ri){ return '<div class="tw-req' + (r.done ? ' done' : '') + '" data-twreq="' + ri + '"><span class="bx">' + (r.done ? '☑' : '☐') + '</span><span class="tx2">' + esc(r.text) + '</span></div>'; }).join('')
+    : '<div class="tw-sub">暂无需求。</div>';
   h += '<div class="frow" style="margin-top:8px"><div class="fg" style="flex:1;min-width:0"><input id="twReqText" placeholder="想要它新增 / 改进什么？"></div>'
-    + '<div class="fg" style="flex:none"><button class="btn" id="twReqAdd">＋需求</button></div></div>';
-  if (b.logs.length) {
-    h += '<div style="margin-top:8px">' + b.logs.slice(-5).map(function(l){ return '<div style="font-size:11.5px;margin-bottom:2px"><span class="dd">' + l.date + '</span><span class="dl">' + esc(l.text) + '</span></div>'; }).join('') + '</div>'
-      + (b.logs.length > 5 ? '<div class="hint">……共 ' + b.logs.length + ' 条，写日志时可看全部。</div>' : '');
-  }
-  h += '<div class="bx-actions" style="margin-top:6px"><button class="btn" id="twLog">写日志</button></div>';
+    + '<div class="fg" style="flex:none"><button class="btn pri" id="twReqAdd">＋需求</button></div></div>';
+  h += '<div class="tw-sec">日志' + (b.logs.length > 5 ? ' · 最近 5 / 共 ' + b.logs.length : '') + '</div>';
+  h += b.logs.length
+    ? b.logs.slice(-5).map(function(l){ return '<div class="tw-log"><span class="dt">' + l.date + '</span><span>' + esc(l.text) + '</span></div>'; }).join('')
+    : '<div class="tw-sub">暂无日志。</div>';
+  h += '<div class="bx-actions" style="margin-top:10px"><button class="btn" id="twLog">写日志</button></div></div>';
   p.innerHTML = h;
   p.querySelectorAll('[data-twreq]').forEach(function(w){
     w.onclick = function(){
       var ri = +w.dataset.twreq;
       vFileWrite('work', vEditWorkReqToggle(b.name, ri), function(){
-        var dn = w.classList.toggle('done');
-        w.textContent = (dn ? '☑ ' : '☐ ') + w.textContent.slice(2);
+        w.classList.toggle('done');
+        w.querySelector('.bx').textContent = w.classList.contains('done') ? '☑' : '☐';
       });
     };
   });
