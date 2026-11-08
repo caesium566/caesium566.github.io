@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="6.9">
+<meta name="app-version" content="7.1">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -545,6 +545,7 @@ nav button.on::before {
 .cday .lu { position:absolute; bottom:4px; left:5px; font-size:9px; line-height:1; color:var(--tx-3); }
 #cvMonth[hidden], #cvGantt[hidden], #cvDay[hidden] { display:none; }
 /* 纪念日列表 */
+.anrow .aninfo{flex:none;font-size:11px;color:var(--tx-3);letter-spacing:.5px}
 .anrow { display:flex; align-items:center; gap:12px; padding:8px 12px; margin-bottom:6px; border:1px solid var(--line); background:var(--bar-2); clip-path:var(--slant-sm); font-size:13px; }
 .anrow .dt { color:var(--gold); font-weight:900; font-style:italic; font-variant-numeric:tabular-nums; }
 .anrow .nm { flex:1; font-weight:700; }
@@ -780,7 +781,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v6.9 · 2026-11-08</span>
+  <span class="ver">v7.1 · 2026-11-08</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -814,8 +815,11 @@ nav button.on::before {
     <label style="font-size:12.5px;color:var(--tx-2);display:flex;gap:6px;align-items:center;margin:2px 0 8px;cursor:pointer"><input type="checkbox" id="anLunar"> 这是<b>阴历（农历）</b>日期，每年按农历重复</label>
     <div class="frow" style="margin-top:8px;align-items:flex-end">
       <div class="fg"><label>名称</label><input id="anName" class="b-ta" style="min-height:0;padding:8px 10px" placeholder="如：生日 / 初见纪念日"></div>
-      <div class="fg" style="flex:none"><label>日期（每年重复）</label><input id="anDate" type="date" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+      <div class="fg" style="flex:none;max-width:72px"><label>月</label><input id="anM" type="number" min="1" max="12" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+      <div class="fg" style="flex:none;max-width:72px"><label>日</label><input id="anD" type="number" min="1" max="31" class="b-ta" style="min-height:0;padding:8px 10px"></div>
+      <div class="fg" style="flex:none;max-width:110px"><label>首次年份（选填）</label><input id="anYear" type="number" min="1900" max="2100" class="b-ta" style="min-height:0;padding:8px 10px" placeholder="如 2020"></div>
       <button class="btn pri" id="anAdd" style="margin-bottom:12px">＋ 添加</button>
+      <button class="btn" id="anCancel" style="margin-bottom:12px" hidden>取消修改</button>
     </div>
   </div>
 
@@ -1839,30 +1843,79 @@ function anRender(){
   document.getElementById('annivList').innerHTML = rows.map(function(r){
     var a = r.a;
     var dt = a.lunar ? '农历' + LMONTH_NAMES[a.m - 1] + '月' + a.d + '日' : a.m + '月' + a.d + '日';
+    /* v7.0：填了首次年份的，按即将到来的那次循环推算次数 */
+    var info = '';
+    if (a.y) {
+      var nx = anNext(a, t0);
+      var yy = a.lunar ? (lunarFromDate(nx) || { lYear: nx.getFullYear() }).lYear : nx.getFullYear();
+      var first = a.lunar ? '农历' + a.y + '年' + LMONTH_NAMES[a.m - 1] + '月' + a.d + '日' : a.y + '年' + a.m + '月' + a.d + '日';
+      var times = yy - a.y + 1;
+      info = '<span class="aninfo">首次 ' + first + ' · 第 ' + times + ' 次</span>';
+    }
     return '<div class="anrow"><span class="dt">' + dt + '</span><span class="nm">' + esc(a.name) + '</span>'
+      + info
       + '<span class="cd">' + (r.days === 0 ? '就是今天！' : '还有 ' + r.days + ' 天') + '</span>'
+      + '<button class="del" data-aedit="' + r.i + '" title="修改">✎</button>'
       + '<button class="del" data-adel="' + r.i + '" title="删除">×</button></div>';
   }).join('') || '<div style="color:var(--tx-3);font-size:12px">暂无纪念日，在下面添加。</div>';
   document.querySelectorAll('#annivList [data-adel]').forEach(function(b){
     b.onclick = function(){
       var i = +this.dataset.adel;
       if (!confirm('删除纪念日「' + annivs[i].name + '」？')) return;
+      if (anEditing === annivs[i].id) anCancelEdit();
       annivs.splice(i, 1);
       persistAnniv(); anRender(); cmRender();
     };
   });
+  document.querySelectorAll('#annivList [data-aedit]').forEach(function(b){
+    b.onclick = function(){ anStartEdit(+this.dataset.aedit); };
+  });
+}
+/* v7.1：编辑已有纪念日 */
+var anEditing = null;
+function anStartEdit(i){
+  var a = annivs[i]; if (!a) return;
+  anEditing = a.id;
+  document.getElementById('anName').value = a.name;
+  document.getElementById('anM').value = a.m;
+  document.getElementById('anD').value = a.d;
+  document.getElementById('anYear').value = a.y || '';
+  document.getElementById('anLunar').checked = !!a.lunar;
+  document.getElementById('anAdd').textContent = '✓ 保存修改';
+  document.getElementById('anCancel').hidden = false;
+  document.getElementById('anName').focus();
+  document.querySelector('.b-sec').scrollIntoView({ block: 'nearest' });
+}
+function anCancelEdit(){
+  anEditing = null;
+  document.getElementById('anName').value = '';
+  document.getElementById('anM').value = '';
+  document.getElementById('anD').value = '';
+  document.getElementById('anYear').value = '';
+  document.getElementById('anLunar').checked = false;
+  document.getElementById('anAdd').textContent = '＋ 添加';
+  document.getElementById('anCancel').hidden = true;
 }
 document.getElementById('anAdd').onclick = function(){
   var name = document.getElementById('anName').value.trim();
-  var v = document.getElementById('anDate').value;
-  if (!name || !v) { alert('名称和日期必填'); return; }
-  annivs.push({ id: 'a' + Date.now().toString(36), name: name, m: +v.slice(5, 7), d: +v.slice(8, 10),
-    lunar: document.getElementById('anLunar').checked || undefined });
-  document.getElementById('anName').value = '';
-  document.getElementById('anDate').value = '';
-  document.getElementById('anLunar').checked = false;
+  var m = +document.getElementById('anM').value;
+  var d = +document.getElementById('anD').value;
+  var yv = document.getElementById('anYear').value.trim();
+  if (!name || !m || !d || m < 1 || m > 12 || d < 1 || d > 31) { alert('名称、月、日必填且要合法'); return; }
+  var y = yv ? +yv : undefined;
+  if (y && (y < 1900 || y > 2100)) { alert('首次年份应在 1900-2100 之间'); return; }
+  var lunar = document.getElementById('anLunar').checked || undefined;
+  if (anEditing) {
+    var a = annivs.find(function(x){ return x.id === anEditing; });
+    if (a) { a.name = name; a.m = m; a.d = d; a.y = y; a.lunar = lunar; }
+    anCancelEdit();
+  } else {
+    annivs.push({ id: 'a' + Date.now().toString(36), name: name, m: m, d: d, y: y, lunar: lunar });
+    anCancelEdit();
+  }
   persistAnniv(); anRender(); cmRender();
 };
+document.getElementById('anCancel').onclick = anCancelEdit;
 
 
 /* ---------- 设置（同步 / 导入 / 手册 集中于此） ---------- */
