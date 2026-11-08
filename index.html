@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="6.5">
+<meta name="app-version" content="6.7">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -772,7 +772,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v6.5 · 2026-11-07</span>
+  <span class="ver">v6.7 · 2026-11-07</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -1293,17 +1293,17 @@ var DW = 26; // 每日宽度 px
 var cur = new Date(); cur.setDate(1);
 var filter = '全部';
 var doneMap = {}, customs = [], monitored = [], imported = [], hiddenMap = {};
-try { doneMap = JSON.parse(localStorage.getItem(LS_DONE) || '{}'); } catch(e){}
-try { customs = JSON.parse(localStorage.getItem(LS_CUSTOM) || '[]'); } catch(e){}
-try { imported = JSON.parse(localStorage.getItem('cal_import_v1') || '[]'); } catch(e){}
-try { hiddenMap = JSON.parse(localStorage.getItem('cal_hidden_v1') || '{}'); } catch(e){}
-function persistImported(){ try{ localStorage.setItem('cal_import_v1', JSON.stringify(imported)); }catch(e){} }
-function persistHidden(){ try{ localStorage.setItem('cal_hidden_v1', JSON.stringify(hiddenMap)); }catch(e){} }
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+function persistImported(){ kvSet('cal_import_v1', JSON.stringify(imported)); }
+function persistHidden(){ kvSet('cal_hidden_v1', JSON.stringify(hiddenMap)); }
 /* v6.3：公开 events.json 监控层退役，不再 fetch（旧文件如仍在仓里会被此代码无视；
      活动真身 = calendar.json 的 events 字段，月更 = 更新该字段）。 */
 
-function persistDone(){ try{ localStorage.setItem(LS_DONE, JSON.stringify(doneMap)); }catch(e){} }
-function persistCustom(){ try{ localStorage.setItem(LS_CUSTOM, JSON.stringify(customs)); }catch(e){} }
+function persistDone(){ kvSet(LS_DONE, JSON.stringify(doneMap)); }
+function persistCustom(){ kvSet(LS_CUSTOM, JSON.stringify(customs)); }
 function allEvents(){
   var map = {};
   monitored.concat(imported).forEach(function(e){ map[e.id] = e; });
@@ -1775,8 +1775,8 @@ document.getElementById('cmToday').onclick = function(){ var n = new Date(); set
 /* ---------- 纪念日（每年重复，随 data.json 同步） ---------- */
 var ANNIV_KEY = 'cal_anniv_v1';
 var annivs = [];
-try { annivs = JSON.parse(localStorage.getItem(ANNIV_KEY) || '[]'); } catch(e){}
-function persistAnniv(){ try { localStorage.setItem(ANNIV_KEY, JSON.stringify(annivs)); } catch(e){} }
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+function persistAnniv(){ kvSet(ANNIV_KEY, JSON.stringify(annivs)); }
 /* v5.3：下一次到来的日期（阳历按当年/次年；阴历按农历年枚举 t0 前一年/当年/后一年的同月同日，月内无该日时收敛到月末） */
 function anNext(a, t0){
   if (a.lunar) {
@@ -2017,7 +2017,7 @@ function doImportText(text){
   if (d.hidden) { for (var k2 in d.hidden) hiddenMap[k2] = d.hidden[k2]; persistHidden(); }
   if (d.budget) {
     var mb = bMigrate(d.budget);
-    if (mb) { try { localStorage.setItem('cal_budget_v1', JSON.stringify(mb)); } catch(e){} msgs.push('预算已覆盖'); }
+    if (mb) { kvSet('cal_budget_v1', JSON.stringify(mb)); msgs.push('预算已覆盖'); }
   }
   if (!msgs.length) return { ok:false, msg:'找不到可识别的数据（events / customs / budget）' };
   return { ok:true, msg:msgs.join('；') };
@@ -2050,7 +2050,7 @@ var budget = null;
 function bCurMonth(){ var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1 < 10 ? '0' : '') + (d.getMonth() + 1); }
 function bFmt(n){ n = Math.round((+n || 0) * 100) / 100; return '¥' + (n % 1 === 0 ? String(n) : n.toFixed(2)); }
 function bBlank(){ return { month: bCurMonth(), updatedAt: 0, weekly: [], bars: [], todos: [] }; }
-function bSave(){ try { budget.updatedAt = new Date().toISOString(); localStorage.setItem(BKEY, JSON.stringify(budget)); } catch(e){} }
+function bSave(){ try { budget.updatedAt = new Date().toISOString(); kvSet(BKEY, JSON.stringify(budget)); } catch(e){} }
 
 /* v5.0 迁移：旧形状（categories/locked）→ bars；已购锁定的金额并入绑定分类的已用，未购锁定项直接丢弃 */
 function bMigrate(raw){
@@ -2067,7 +2067,7 @@ function bMigrate(raw){
 }
 function bLoad(){
   var raw = null;
-  try { raw = JSON.parse(localStorage.getItem(BKEY)); } catch(e){}
+  try { raw = JSON.parse(KV[BKEY] || 'null'); } catch(e){}
   var m = bMigrate(raw);
   if (!m) { budget = bBlank(); return; }
   var migrated = !raw.bars && !!raw.categories;
@@ -2223,8 +2223,8 @@ function ghStatus(t){ var el = document.getElementById('ghStatus'); if (el) el.t
 /* ================= 食物库存（v5.8）：名称+生产日期+保质期 → 到期日，按到期日升序 ================= */
 var PANTRY_KEY = 'cal_pantry_v1';
 var pantry = [];
-try { pantry = JSON.parse(localStorage.getItem(PANTRY_KEY) || '[]'); } catch(e){}
-function persistPantry(){ try { localStorage.setItem(PANTRY_KEY, JSON.stringify(pantry)); } catch(e){} }
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+function persistPantry(){ kvSet(PANTRY_KEY, JSON.stringify(pantry)); }
 function pnExpiryOf(it){ var d = new Date(it.prod + 'T00:00:00'); d.setDate(d.getDate() + (it.days || 0)); return d; }
 function pnDayDiff(it){
   var t0 = new Date(); t0.setHours(0,0,0,0);
@@ -2300,7 +2300,7 @@ function collectSync(){
     hidden: hiddenMap,
     anniversaries: annivs.slice(),
     pantry: pantry.slice(),
-    budget: (function(){ try { return JSON.parse(localStorage.getItem('cal_budget_v1')); } catch(e){ return null; } })()
+    budget: (function(){ try { return JSON.parse(KV['cal_budget_v1'] || 'null'); } catch(e){ return null; } })()
   };
 }
 function applySync(d){
@@ -2311,7 +2311,7 @@ function applySync(d){
   if (d.hidden) { hiddenMap = d.hidden; persistHidden(); }
   if (d.budget) {
     var mb = bMigrate(d.budget);
-    if (mb) { try { localStorage.setItem('cal_budget_v1', JSON.stringify(mb)); } catch(e){} }
+    if (mb) { kvSet('cal_budget_v1', JSON.stringify(mb)); }
   }
   if (Array.isArray(d.anniversaries)) {
     annivs = d.anniversaries.filter(function(a){ return a && a.name && a.m >= 1 && a.m <= 12; });
@@ -2369,7 +2369,7 @@ function ghPull(){
       lsSet('cal_hidden_v1', JSON.stringify(merged.hidden));
       lsSet('cal_pantry_v1', JSON.stringify(merged.pantry));
       if (merged.budget && (Array.isArray(merged.budget.bars) || Array.isArray(merged.budget.categories))) {
-        try { localStorage.setItem('cal_budget_v1', JSON.stringify(merged.budget)); } catch(e){}   /* v6.4：v5.0 起预算形状是 bars，旧过滤只认 categories，轮询/启动拉取时远端预算永不落地（预算页显示旧数据的实锤根因） */
+        kvSet('cal_budget_v1', JSON.stringify(merged.budget));   /* v6.4：v5.0 起预算形状是 bars，旧过滤只认 categories，轮询/启动拉取时远端预算永不落地（预算页显示旧数据的实锤根因） */
       }
       imported = merged.events; customs = merged.customs; doneMap = merged.done; hiddenMap = merged.hidden;
       if (Array.isArray(merged.pantry)) pantry = merged.pantry;
@@ -2434,7 +2434,7 @@ function ghSyncAll(){
     });
 }
 /* 数据变化后 3 秒自动同步 */
-function ghSchedule(){ if (!ghCfg) return; try { localStorage.setItem('cal_gh_pending', '1'); } catch(e){} clearTimeout(ghTimer); ghTimer = setTimeout(ghSyncAll, 3000); }
+function ghSchedule(){ if (!ghCfg) return; try { localStorage.setItem('cal_gh_pending', '1'); } catch(e){} syncLine('有修改待同步（v6.6 起同步为手动）：点「立即同步」推送'); }   /* v6.6：同步全部手动化，不再自动定时推送 */
 
 /* 设置弹窗（顶栏「设置」打开，自动带出已保存的同步配置） */
 function openSettings(){
@@ -2648,22 +2648,121 @@ var vAchSeen = {};          /* 回廊里已看过翻牌的（本机） */
 var vUpdatedAt = 0;         /* 本地数据最后改动时刻（合并比较用，v3.8 修复） */
 var vStable = true;          /* v4.6：启动同步窗口内为 false，此时不许庆祝检查（防中间态误弹 Rank） */
 var vXpRev = 0;              /* v4.6 契约五·重置代次：归零时前进（时间戳），云端按代次合并 */
-try { vXpRev = +localStorage.getItem('velvet_rev_v1') || 0; } catch(e){}
-try { vAch = JSON.parse(localStorage.getItem('velvet_ach_v1') || '{}'); } catch(e){}
-try { vAchSeen = JSON.parse(localStorage.getItem('velvet_achseen_v1') || '{}'); } catch(e){}
-try { vUpdatedAt = +localStorage.getItem('velvet_updated_v1') || 0; } catch(e){}
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
 /* v6.3：工具卡拆入 tools.json，独立时间戳；初值继承 vUpdatedAt（旧体系 tools 与它共享时间戳，继承才不会丢近端改动） */
 var vToolsUpdated = vUpdatedAt;
-try { vTl = JSON.parse(localStorage.getItem('velvet_tl_v1') || '[]'); } catch(e){}
-try { vFeel = JSON.parse(localStorage.getItem('velvet_feel_v1') || '{}'); } catch(e){}
-try { vPlans = JSON.parse(localStorage.getItem('velvet_plans_v1') || '{}'); } catch(e){}
-try { vCats = JSON.parse(localStorage.getItem('velvet_cats_v1') || 'null') || CATS_DEFAULT.slice(); } catch(e){}
-try { vCatColor = JSON.parse(localStorage.getItem('velvet_catcol_v1') || '{}') || {}; } catch(e){}
-try { vXpOff = JSON.parse(localStorage.getItem('velvet_xpoff_v1') || 'null') || vXpOff; } catch(e){}
-try { vTimer = JSON.parse(localStorage.getItem('velvet_timer_v1') || 'null'); } catch(e){}
-try { vMdCache = JSON.parse(localStorage.getItem('velvet_md_v1') || 'null') || { todo:null, work:null }; } catch(e){}
-try { vRankSeen = JSON.parse(localStorage.getItem('velvet_ranks_v1') || 'null'); } catch(e){}
-try { vTools = JSON.parse(localStorage.getItem('velvet_tools_v1') || '[]'); } catch(e){}
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+/* v6.7：改由 boot() 从 IndexedDB 统一装载 */
+function lsSet(k, v){ return kvSet(k, v); }   /* v6.7：落库走 IndexedDB（KV 镜像 + 异步写库），失败由 kvFail 告警 */
+
+/* ================= v6.7 IndexedDB 数据层 =================
+   大字段全部迁入 IndexedDB（容量与 localStorage 的 5MB 配额相互独立、按磁盘百分比给），
+   localStorage 只留 cal_gh / cal_gh_pending / velvet_tools_migrated_v1 三个小项。
+   KV = 内存镜像，运行期同步读；kvSet 先写镜像再异步落库。首次运行自动从 localStorage 搬迁并删除旧键。 */
+var KV = {}, IDB = null;
+function idbOpen(){
+  return new Promise(function(res){
+    try {
+      var rq = indexedDB.open('velvet-room', 1);
+      rq.onupgradeneeded = function(e){ try { e.target.result.createObjectStore('kv'); } catch(_){} };
+      rq.onsuccess = function(e){ IDB = e.target.result; res(true); };
+      rq.onerror = function(){ res(false); };
+      rq.onblocked = function(){ res(false); };
+    } catch(e){ res(false); }
+  });
+}
+function kvGet(k){
+  if (!IDB) return Promise.resolve(null);
+  return new Promise(function(res){
+    try {
+      var rq = IDB.transaction('kv', 'readonly').objectStore('kv').get(k);
+      rq.onsuccess = function(){ res(rq.result === undefined ? null : rq.result); };
+      rq.onerror = function(){ res(null); };
+    } catch(e){ res(null); }
+  });
+}
+var kvWarned = false;
+function kvFail(){
+  if (kvWarned) return;
+  kvWarned = true;
+  syncLine('本机数据库写入失败（数据在本会话内存中，刷新前请导出备份）', true);
+  alert('本机存储写入失败！\n数据在本会话内仍可使用，但没有写进浏览器数据库。建议立即用「导出本机数据」留底。');
+}
+function kvSet(k, v){
+  KV[k] = v;
+  if (!IDB) { kvFail(); return Promise.resolve(false); }
+  return new Promise(function(res){
+    try {
+      var rq = IDB.transaction('kv', 'readwrite').objectStore('kv').put(v, k);
+      rq.onsuccess = function(){ res(true); };
+      rq.onerror = function(){ res(false); };
+    } catch(e){ res(false); }
+  }).then(function(ok){ if (!ok) kvFail(); return ok; });
+}
+function kvDel(k){
+  delete KV[k];
+  if (!IDB) return Promise.resolve(false);
+  return new Promise(function(res){
+    try {
+      var rq = IDB.transaction('kv', 'readwrite').objectStore('kv').delete(k);
+      rq.onsuccess = function(){ res(true); };
+      rq.onerror = function(){ res(false); };
+    } catch(e){ res(false); }
+  });
+}
+var MIG_KEYS = ['cal_done_v1','cal_custom_v1','cal_import_v1','cal_hidden_v1','cal_budget_v1','cal_anniv_v1','cal_pantry_v1',
+  'velvet_tl_v1','velvet_feel_v1','velvet_plans_v1','velvet_cats_v1','velvet_catcol_v1','velvet_xpoff_v1',
+  'velvet_ach_v1','velvet_achseen_v1','velvet_ranks_v1','velvet_rev_v1','velvet_updated_v1','velvet_md_v1',
+  'velvet_timer_v1','velvet_redraw_v1','velvet_ach_init','velvet_tools_v1','velvet_tools_updated_v1'];
+function kvMigrate(k){
+  return kvGet(k).then(function(v){
+    if (v !== null) { KV[k] = v; return; }
+    var legacy = null;
+    try { legacy = localStorage.getItem(k); } catch(e){}
+    if (legacy !== null && legacy !== undefined) {
+      KV[k] = legacy;
+      kvSet(k, legacy);
+      try { localStorage.removeItem(k); } catch(e){}
+    }
+  });
+}
+function boot(){
+  return idbOpen().then(function(){
+    return Promise.all(MIG_KEYS.map(kvMigrate));   /* v6.7：并行装载，启动更快 */
+  }).then(function(){
+    try { doneMap = JSON.parse(KV[LS_DONE] || '{}'); } catch(e){}
+    try { customs = JSON.parse(KV[LS_CUSTOM] || '[]'); } catch(e){}
+    try { imported = JSON.parse(KV['cal_import_v1'] || '[]'); } catch(e){}
+    try { hiddenMap = JSON.parse(KV['cal_hidden_v1'] || '{}'); } catch(e){}
+    try { annivs = JSON.parse(KV[ANNIV_KEY] || '[]'); } catch(e){}
+    try { pantry = JSON.parse(KV[PANTRY_KEY] || '[]'); } catch(e){}
+    bLoad();
+    try { vXpRev = +KV['velvet_rev_v1'] || 0; } catch(e){}
+    try { vAch = JSON.parse(KV['velvet_ach_v1'] || '{}'); } catch(e){}
+    try { vAchSeen = JSON.parse(KV['velvet_achseen_v1'] || '{}'); } catch(e){}
+    try { vUpdatedAt = +KV['velvet_updated_v1'] || 0; } catch(e){}
+    try { vTl = JSON.parse(KV['velvet_tl_v1'] || '[]'); } catch(e){}
+    try { vFeel = JSON.parse(KV['velvet_feel_v1'] || '{}'); } catch(e){}
+    try { vPlans = JSON.parse(KV['velvet_plans_v1'] || '{}'); } catch(e){}
+    try { vCats = JSON.parse(KV['velvet_cats_v1'] || 'null') || CATS_DEFAULT.slice(); } catch(e){}
+    try { vCatColor = JSON.parse(KV['velvet_catcol_v1'] || '{}') || {}; } catch(e){}
+    try { vXpOff = JSON.parse(KV['velvet_xpoff_v1'] || 'null') || vXpOff; } catch(e){}
+    try { vTimer = JSON.parse(KV['velvet_timer_v1'] || 'null'); } catch(e){}
+    try { vMdCache = JSON.parse(KV['velvet_md_v1'] || 'null') || { todo:null, work:null }; } catch(e){}
+    try { vRankSeen = JSON.parse(KV['velvet_ranks_v1'] || 'null'); } catch(e){}
+    try { vTools = JSON.parse(KV['velvet_tools_v1'] || '[]'); } catch(e){}
+    vToolsUpdated = vUpdatedAt;   /* v6.3 继承语义，勿改 */
 /* ---------- v5.4 内置工具下放：首次运行把代码内置卡片并入 vTools（按 链接+名称 去重），此后与普通卡片一样可改、可删、随 tools.json 同步 ---------- */
 try {
   if (!localStorage.getItem('velvet_tools_migrated_v1')) {
@@ -2672,26 +2771,23 @@ try {
     var add = BUILTIN_TOOLS.filter(function(t){ return !ex[String(t.url) + '|' + String(t.name)]; });
     if (add.length) {
       vTools = add.concat(vTools);
-      localStorage.setItem('velvet_tools_v1', JSON.stringify(vTools));
+      kvSet('velvet_tools_v1', JSON.stringify(vTools));
       vUpdatedAt = Date.now();   /* 让迁移本身成为一次可推送的改动，双端各自首次打开都会自我迁移 */
       vToolsUpdated = vUpdatedAt;
-      localStorage.setItem('velvet_updated_v1', String(vUpdatedAt));
+      kvSet('velvet_updated_v1', String(vUpdatedAt));
     }
     localStorage.setItem('velvet_tools_migrated_v1', '1');
   }
 } catch(e){}
-var lsWarned = false;
-function lsSet(k, v){
-  try { localStorage.setItem(k, v); return true; }
-  catch(e) {
-    if (!lsWarned) {
-      lsWarned = true;
-      syncLine('本机存储空间已满：部分数据未能写入本机（云端同步不受影响，建议清理）', true);
-      alert('本机存储空间已满！\n本次会话内数据仍在内存中，但没能写进浏览器存储，刷新后会丢。建议导出备份后清理浏览器站点数据。');
+    if (navigator.storage && navigator.storage.estimate) {
+      navigator.storage.estimate().then(function(est){
+        if (est.quota && est.usage / est.quota > 0.8) syncLine('浏览器存储用量超 80%，请关注', true);
+      }).catch(function(){});
     }
-    return false;
-  }
+  });
 }
+
+
 function vSaveAll(){
   try {
     lsSet('velvet_tl_v1', JSON.stringify(vTl));
@@ -2709,7 +2805,7 @@ function vSaveAll(){
   } catch(e){}
   vSchedule();
 }
-function vSaveMdCache(){ try { localStorage.setItem('velvet_md_v1', JSON.stringify(vMdCache)); } catch(e){} }
+function vSaveMdCache(){ kvSet('velvet_md_v1', JSON.stringify(vMdCache)); }
 
 /* ---- 日期：凌晨 4 点切日 ---- */
 var tCur = new Date();
@@ -2837,7 +2933,7 @@ function vCheckRanks(){
     seen[d.key] = r;
   });
   vRankSeen = seen;
-  try { localStorage.setItem('velvet_ranks_v1', JSON.stringify(vRankSeen)); } catch(e){}
+  try { kvSet('velvet_ranks_v1', JSON.stringify(vRankSeen)); } catch(e){}
   vCheckAch();
 }
 document.getElementById('rkOk').onclick = function(){ document.getElementById('ovRank').hidden = true; };
@@ -2872,7 +2968,7 @@ function vAchUnlock(i, silent){
   var k = String(i);
   if (vAch[k]) return;
   vAch[k] = vToday();
-  try { localStorage.setItem('velvet_ach_v1', JSON.stringify(vAch)); } catch(e){}
+  try { kvSet('velvet_ach_v1', JSON.stringify(vAch)); } catch(e){}
   vSchedule();
   var ap = document.getElementById('achProg');
   if (ap) ap.textContent = Object.keys(vAch).length + ' / 22 已解锁';
@@ -2950,7 +3046,7 @@ function vRenderAchG(){
   }
   document.getElementById('achGrid').innerHTML = h;
   for (var i2 = 0; i2 < 22; i2++) if (vAch[String(i2)]) vAchSeen[String(i2)] = 1;
-  try { localStorage.setItem('velvet_achseen_v1', JSON.stringify(vAchSeen)); } catch(e){}
+  try { kvSet('velvet_achseen_v1', JSON.stringify(vAchSeen)); } catch(e){}
 }
 document.getElementById('btnAch').onclick = function(){
   vRenderAchG();
@@ -3084,7 +3180,7 @@ function vPullData(){
     vTl = merged.tl || []; vFeel = merged.feel || {}; vPlans = merged.plans || {}; vCats = merged.cats || vCats;
     vCatColor = merged.ccol || vCatColor; vXpOff = merged.xpo || vXpOff; vAch = merged.ach || vAch;
     if (merged.rks) vRankSeen = merged.rks;
-    if (merged.rev) { vXpRev = merged.rev; try { localStorage.setItem('velvet_rev_v1', String(vXpRev)); } catch(e){} }
+    if (merged.rev) { vXpRev = merged.rev; try { kvSet('velvet_rev_v1', String(vXpRev)); } catch(e){} }
     vUpdatedAt = Math.max(vUpdatedAt, remote.updatedAt || 0);
     try {
       lsSet('velvet_tl_v1', JSON.stringify(vTl));
@@ -3139,7 +3235,7 @@ function vPushData(){
         var base = (rm && Array.isArray(rm.tools) && (rm.updatedAt || 0) > (vToolsUpdated || 0)) ? rm : { updatedAt: vToolsUpdated, tools: vTools };
         var nts = Date.now();
         return vPut('tools.json', JSON.stringify({ updatedAt: nts, tools: base.tools || [] }), f2 ? f2.sha : null, 'tools sync')
-          .then(function(){ vToolsUpdated = nts; try { localStorage.setItem('velvet_tools_updated_v1', String(nts)); } catch(e){} });
+          .then(function(){ vToolsUpdated = nts; kvSet('velvet_tools_updated_v1', String(nts)); });
       });
     });
   };
@@ -3355,9 +3451,9 @@ document.getElementById('tRedraw').onclick = function(){
   var d = vDayStr(tCur);
   if (!vPool().length) { alert('待办池是空的：先去「维护」或初始化 md 镜像'); return; }
   var rd = '';
-  try { rd = localStorage.getItem('velvet_redraw_v1') || ''; } catch(e){}
+  rd = KV['velvet_redraw_v1'] || '';
   if (rd === vToday()) { alert('今天的重新抽取已经用过了，明天再来。'); return; }
-  try { localStorage.setItem('velvet_redraw_v1', vToday()); } catch(e){}
+  kvSet('velvet_redraw_v1', vToday());
   vDoDraw(d, (Math.random()*0xffffffff)>>>0);
   vRenderTime();
 };
@@ -3493,12 +3589,12 @@ document.getElementById('btnXpReset').onclick = function(){
   for (var k in t0) vXpOff[k] = (vXpOff[k] || 0) + t0[k];
   /* v4.6 契约五·重置代：归零推进重置代次，云端以代次为准合并，旧代庆祝记录不合入新代 */
   vXpRev = Date.now();
-  try { localStorage.setItem('velvet_rev_v1', String(vXpRev)); } catch(e){}
+  try { kvSet('velvet_rev_v1', String(vXpRev)); } catch(e){}
   /* 庆祝基线 = 归零后的实际 Rank（不再用 null 当基线）；关掉可能挂着的升级弹窗 */
   var xp0 = vComputeXp().total;
   vRankSeen = {};
   DIMS.forEach(function(d){ vRankSeen[d.key] = vRankOf(xp0[d.key]); });
-  try { localStorage.setItem('velvet_ranks_v1', JSON.stringify(vRankSeen)); } catch(e){}
+  try { kvSet('velvet_ranks_v1', JSON.stringify(vRankSeen)); } catch(e){}
   document.getElementById('ovRank').hidden = true;
   vSaveAll(); renderGrowth(); vCheckRanks();
   alert('已归零。重新开始吧。');
@@ -3535,7 +3631,7 @@ document.getElementById('teOk').onclick = function(){
   var note = document.getElementById('teNote').value.trim();
   if (teMode === 'timer') {
     vTimer = { c:cat, note:note, link:teLink, ts:Date.now() };
-    try { localStorage.setItem('velvet_timer_v1', JSON.stringify(vTimer)); } catch(e){}
+    kvSet('velvet_timer_v1', JSON.stringify(vTimer));
     vFabTick();
     document.getElementById('ovTEntry').hidden = true;
     return;
@@ -3587,7 +3683,7 @@ document.getElementById('tFab').onclick = function(){
     s:pad(st.getHours()) + ':' + pad(st.getMinutes()), e:pad(en.getHours()) + ':' + pad(en.getMinutes()),
     note:vTimer.note || '', link:vTimer.link || null, mu:Date.now() });
   vTimer = null;
-  try { localStorage.removeItem('velvet_timer_v1'); } catch(e){}
+  kvDel('velvet_timer_v1');
   vSaveAll(); vRenderTime(); vFabTick();
 };
 
@@ -4094,12 +4190,13 @@ function vXpRadarSVG(dimKey, fHi, xpAll){
 document.getElementById('ovXp').addEventListener('click', function(){ this.hidden = true; if (vXpRadarAnim) cancelAnimationFrame(vXpRadarAnim); });
 
 /* ---- 启动 velvet 数据 ---- */
+boot().then(function(){
 vParseAll();
 renderTools();   /* vTools 此时已从 localStorage 载入，重渲抽屉 */
 try {   /* 成就首次回填静默，不进庆祝队列 */
-  var _achFirst = !localStorage.getItem('velvet_ach_init');
+  var _achFirst = !KV['velvet_ach_init'];
   vCheckAch(true);
-  if (_achFirst) localStorage.setItem('velvet_ach_init', '1');
+  if (_achFirst) kvSet('velvet_ach_init', '1');
   var _ap = document.getElementById('achProg');
   if (_ap) _ap.textContent = Object.keys(vAch).length + ' / 22 已解锁';
 } catch(e){}
@@ -4115,7 +4212,7 @@ function vStartupSync(){
   });
 }
 if (ghCfg) vStartupSync();   /* 首屏优先：网络同步延后到渲染之后 */
-setInterval(function(){ if (ghCfg && !document.hidden && !vGhBusy) { vPullData(); vPullMd(); } }, 120000);
+/* v6.6：120 秒自动轮询已撤，同步走手动（启动时仍有一次只进不出的拉取用于恢复） */
 document.getElementById('ghBtnNow').addEventListener('click', function(){ vSyncAll(); });
 /* v6.5 数据急救：一键导出本机全部数据（内存现状 + 各键占用字节），排障/迁移用 */
 document.getElementById('ghBtnExport').addEventListener('click', function(){
@@ -4133,6 +4230,7 @@ document.getElementById('ghBtnExport').addEventListener('click', function(){
 
 render();
 go('cal');
+});
 </script>
 </body>
 </html>
