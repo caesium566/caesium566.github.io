@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="app-version" content="7.3">
+<meta name="app-version" content="7.4">
 <title>天鹅绒房间</title>
 <style>
 /* ===== P3R 设计语言：亮蓝水场 × 黑条 × 青蓝荧光（参照 the-velvet.com p3 频道） =====
@@ -202,7 +202,20 @@ nav button.on::before {
 .pn-x { width:22px; height:22px; line-height:20px; text-align:center; border:1px solid var(--line); background:transparent; color:var(--tx-3); cursor:pointer; font-size:13px; flex:none; }
 .pn-x:hover { color:var(--magenta); border-color:var(--magenta); }
 .pn-empty { font-size:12.5px; color:var(--tx-3); padding:14px 6px; text-align:center; }
-@media (max-width:640px){ .pn-item{ flex-wrap:wrap; } }
+@media (max-width:640px){
+  .pn-item{ flex-wrap:wrap; row-gap:4px; }
+  .pn-name{ order:1; flex:1 1 auto; max-width:calc(100% - 58px); white-space:normal; overflow:visible; }
+  .pn-ops{ order:2; margin-left:auto; }
+  .pn-meta{ order:3; flex:1 1 auto; white-space:normal; }
+  .pn-exp{ order:4; margin-left:auto; }
+}
+.pn-ops{ display:flex; gap:6px; flex:none; }
+.pn-edit{ width:22px; height:22px; line-height:20px; text-align:center; border:1px solid var(--line); background:transparent; color:var(--tx-3); cursor:pointer; font-size:12px; flex:none; }
+.pn-edit:hover{ color:var(--cyan); border-color:var(--cyan); }
+#pnSuggest{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+#pnSuggest:empty{ display:none; }
+.pn-chip{ border:1px solid var(--line); background:var(--card); color:var(--tx-2); font-size:12px; padding:3px 10px; cursor:pointer; }
+.pn-chip:hover{ border-color:var(--cyan); color:var(--cyan); }
 
 .page.on { display:block; }
 .page.wide { max-width:none; }
@@ -781,7 +794,7 @@ nav button.on::before {
     </svg>
     <b id="hDate"></b>
   </span>
-  <span class="ver">v7.3 · 2026-11-08</span>
+  <span class="ver">v7.4 · 2026-11-08</span>
   <span class="spacer"></span>
   <button class="icobtn" id="btnDrawer" title="工具"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
   <button class="icobtn" id="btnSettings" title="设置"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -892,21 +905,34 @@ nav button.on::before {
     <div class="b-sec" style="margin-top:14px">录入</div>
     <div class="fg">
       <label>名称</label>
-      <input id="pnName" list="pnNames" placeholder="例如：全麦面包" autocomplete="off">
-      <datalist id="pnNames"></datalist>
+      <input id="pnName" placeholder="例如：全麦面包" autocomplete="off">
+      <div id="pnSuggest"></div>
     </div>
     <div class="frow">
       <div class="fg">
         <label>生产日期</label>
         <input type="date" id="pnProd">
       </div>
-      <div class="fg" style="max-width:110px">
-        <label>保质期（天）</label>
+      <div class="fg" style="max-width:92px">
+        <label>方式</label>
+        <select id="pnMode" class="b-ta" style="min-height:0;padding:8px 10px">
+          <option value="d">天数</option>
+          <option value="m">月数</option>
+          <option value="e">到期日</option>
+        </select>
+      </div>
+      <div class="fg" id="pnLenFg" style="max-width:110px">
+        <label id="pnLenLabel">保质期（天）</label>
         <input type="number" id="pnDays" min="1" placeholder="90">
+      </div>
+      <div class="fg" id="pnExpFg" style="max-width:150px" hidden>
+        <label>到期日期</label>
+        <input type="date" id="pnExp">
       </div>
     </div>
     <div class="bx-actions">
       <button class="btn pri" id="pnSave">保存</button>
+      <button class="btn" id="pnCancel" hidden>取消修改</button>
     </div>
     <div class="b-msg" id="pnMsg"></div>
   </div>
@@ -2331,7 +2357,19 @@ var PANTRY_KEY = 'cal_pantry_v1';
 var pantry = [];
 /* v6.7：改由 boot() 从 IndexedDB 统一装载 */
 function persistPantry(){ kvSet(PANTRY_KEY, JSON.stringify(pantry)); }
-function pnExpiryOf(it){ var d = new Date(it.prod + 'T00:00:00'); d.setDate(d.getDate() + (it.days || 0)); return d; }
+/* v7.4：支持直接记到期日（月数/到期日两种新方式折算成 exp 存） */
+function pnExpiryOf(it){
+  if (it.exp) { var e = new Date(it.exp + 'T00:00:00'); if (!isNaN(e)) return e; }
+  var d = new Date(it.prod + 'T00:00:00');
+  d.setDate(d.getDate() + (it.days || 0));
+  return d;
+}
+function pnAddMonths(iso, n){
+  var d = new Date(iso + 'T00:00:00'), dd = d.getDate();
+  d.setMonth(d.getMonth() + n);
+  if (d.getDate() < dd) d.setDate(0);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 function pnDayDiff(it){
   var t0 = new Date(); t0.setHours(0,0,0,0);
   return Math.round((pnExpiryOf(it) - t0) / 86400000);
@@ -2353,46 +2391,131 @@ function pnRender(){
     var cls = d < 0 ? 'over' : (d <= 3 ? 'warn' : 'ok');
     var label = d < 0 ? '已过期 ' + (-d) + ' 天' : (d === 0 ? '今天到期' : (d + ' 天后到期'));
     var exp = pnExpiryOf(it);
+    var meta = it.exp
+      ? (it.prod ? it.prod + ' · ' : '') + (it.mode === 'm' && it.len != null ? it.len + ' 个月 · ' : '') + '到期 ' + it.exp
+      : it.prod + ' · ' + (it.len != null ? it.len : it.days) + (it.mode === 'm' ? ' 个月' : ' 天');
     h += '<div class="pn-item">'
       + '<span class="pn-name">' + (it.name || '').replace(/</g,'&lt;') + '</span>'
-      + '<span class="pn-meta">' + it.prod + ' · ' + it.days + ' 天</span>'
+      + '<span class="pn-meta">' + meta + '</span>'
       + '<span class="pn-exp ' + cls + '">' + (exp.getMonth()+1) + '/' + exp.getDate() + ' ' + label + '</span>'
-      + '<button class="pn-x" data-id="' + it.id + '" title="删除">×</button>'
+      + '<span class="pn-ops"><button class="pn-edit" data-edit="' + it.id + '" title="修改">✎</button>'
+      + '<button class="pn-x" data-id="' + it.id + '" title="删除">×</button></span>'
       + '</div>';
   });
   el.innerHTML = h;
   el.querySelectorAll('.pn-x').forEach(function(b){
     b.onclick = function(){
+      if (pnEditing === b.dataset.id) pnResetForm();
       pantry = pantry.filter(function(x){ return x.id !== b.dataset.id; });
       persistPantry(); pnRender();
     };
   });
-  /* 名称联想：已有名字去重进 datalist，输入即模糊匹配（原生行为） */
-  var seen = {}, dl = document.getElementById('pnNames');
-  if (dl) {
-    var opts = '';
-    pantry.forEach(function(it){
-      var n = (it.name || '').trim();
-      if (n && !seen[n]) { seen[n] = 1; opts += '<option value="' + n.replace(/"/g,'&quot;') + '">'; }
+  el.querySelectorAll('[data-edit]').forEach(function(b){
+    b.onclick = function(){
+      var it = pantry.find(function(x){ return x.id === b.dataset.edit; });
+      if (it) pnStartEdit(it);
+    };
+  });
+  pnSuggest();
+}
+/* v7.4：名称建议条（替代手机端不可靠的 datalist） */
+function pnSuggest(){
+  var box = document.getElementById('pnSuggest');
+  if (!box) return;
+  var q = document.getElementById('pnName').value.trim();
+  var seen = {}, out = [];
+  pantry.forEach(function(it){
+    var n = (it.name || '').trim();
+    if (n && !seen[n]) { seen[n] = 1; if (q && n.indexOf(q) >= 0 && n !== q) out.push(n); }
+  });
+  box.innerHTML = out.slice(0, 6).map(function(n){
+    return '<button type="button" class="pn-chip">' + n.replace(/</g,'&lt;') + '</button>';
+  }).join('');
+  box.querySelectorAll('.pn-chip').forEach(function(c){
+    c.addEventListener('mousedown', function(ev){
+      ev.preventDefault();
+      document.getElementById('pnName').value = c.textContent;
+      pnSuggest();
     });
-    dl.innerHTML = opts;
+  });
+}
+/* v7.4：编辑已有条目 */
+var pnEditing = null;
+function pnSetMode(){
+  var m = document.getElementById('pnMode').value;
+  document.getElementById('pnExpFg').hidden = m !== 'e';
+  document.getElementById('pnLenFg').hidden = m === 'e';
+  document.getElementById('pnLenLabel').textContent = m === 'm' ? '保质期（月）' : '保质期（天）';
+}
+function pnStartEdit(it){
+  pnEditing = it.id;
+  document.getElementById('pnName').value = it.name || '';
+  document.getElementById('pnProd').value = it.prod || '';
+  var m = it.mode || (it.exp ? 'e' : 'd');
+  document.getElementById('pnMode').value = m;
+  if (m === 'e') {
+    document.getElementById('pnExp').value = it.exp || '';
+    document.getElementById('pnDays').value = '';
+  } else {
+    document.getElementById('pnDays').value = it.len != null ? it.len : (it.days || '');
+    document.getElementById('pnExp').value = '';
   }
+  pnSetMode();
+  document.getElementById('pnSave').textContent = '✓ 保存修改';
+  document.getElementById('pnCancel').hidden = false;
+  pnSuggest();
+  document.getElementById('pnName').focus();
+  document.querySelector('#page-pantry .bx-actions').scrollIntoView({ block: 'center' });
+}
+function pnResetForm(){
+  pnEditing = null;
+  document.getElementById('pnName').value = '';
+  document.getElementById('pnProd').value = '';
+  document.getElementById('pnDays').value = '';
+  document.getElementById('pnExp').value = '';
+  document.getElementById('pnMode').value = 'd';
+  pnSetMode();
+  document.getElementById('pnSave').textContent = '保存';
+  document.getElementById('pnCancel').hidden = true;
+  pnSuggest();
 }
 function pnMsg(txt, bad){ var m = document.getElementById('pnMsg'); m.textContent = txt || ''; m.style.color = bad ? 'var(--magenta)' : 'var(--tx-3)'; }
+document.getElementById('pnMode').addEventListener('change', pnSetMode);
+document.getElementById('pnName').addEventListener('input', pnSuggest);
+document.getElementById('pnCancel').onclick = pnResetForm;
 document.getElementById('pnSave').onclick = function(){
   var name = document.getElementById('pnName').value.trim();
   var prod = document.getElementById('pnProd').value;
-  var days = parseInt(document.getElementById('pnDays').value, 10);
+  var mode = document.getElementById('pnMode').value;
   if (!name) { pnMsg('填个名字。', true); return; }
-  if (!prod) { pnMsg('选生产日期。', true); return; }
-  if (!(days > 0)) { pnMsg('保质期填正整数天数。', true); return; }
-  var it = { id: 'pn' + Date.now().toString(36) + Math.floor(Math.random()*999), name: name, prod: prod, days: days };
+  var it = { name: name, prod: prod || undefined };
+  if (mode === 'e') {
+    it.exp = document.getElementById('pnExp').value;
+    if (!it.exp) { pnMsg('选到期日期。', true); return; }
+    it.mode = 'e';
+  } else {
+    if (!prod) { pnMsg('选生产日期。', true); return; }
+    var len = parseInt(document.getElementById('pnDays').value, 10);
+    if (!(len > 0)) { pnMsg('保质期填正整数。', true); return; }
+    it.mode = mode; it.len = len;
+    if (mode === 'm') it.exp = pnAddMonths(prod, len);
+    else it.days = len;
+  }
   pnMsg('');
-  pantry.push(it);
+  if (pnEditing) {
+    var old = pantry.find(function(x){ return x.id === pnEditing; });
+    if (old) { it.id = old.id; pantry[pantry.indexOf(old)] = it; }
+    pnResetForm();
+  } else {
+    it.id = 'pn' + Date.now().toString(36) + Math.floor(Math.random() * 999);
+    pantry.push(it);
+    document.getElementById('pnName').value = '';
+    document.getElementById('pnDays').value = '';
+    pnSuggest();
+  }
   persistPantry(); pnRender();
-  document.getElementById('pnName').value = '';
-  document.getElementById('pnDays').value = '';
 };
+pnSetMode();
 
 
 function collectSync(){
@@ -2424,7 +2547,7 @@ function applySync(d){
     persistAnniv();
   }
   if (Array.isArray(d.pantry)) {
-    pantry = d.pantry.filter(function(a){ return a && a.name && a.prod && a.days > 0; });
+    pantry = d.pantry.filter(function(a){ return a && a.name && (a.days > 0 || a.exp); });
     persistPantry();
   }
   render(); bRenderWeekStrip();
